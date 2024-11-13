@@ -14,8 +14,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -45,14 +50,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             DAT068TentaminaTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    MainLayout("LEU432","Grundläggande dator teknink", "20030923", modifier = Modifier )
+                    MainLayout( "20030923", modifier = Modifier )
                 }
             }
         }
     }
 }
 @Composable
-fun MainLayout(courseCode: String, courseName: String, date : String, modifier: Modifier = Modifier) {
+fun MainLayout(date : String, modifier: Modifier = Modifier) {
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -66,13 +71,13 @@ fun MainLayout(courseCode: String, courseName: String, date : String, modifier: 
             lineHeight = 25.sp,
             textAlign = TextAlign.Right,
             modifier = Modifier
-                .padding(10.dp)
+                .padding(20.dp)
                 .align(alignment = Alignment.End)
         )
         Text(
-            text = courseCode,
-            fontSize = 100.sp,
-            lineHeight = 116.sp,
+            text = "Please enter the following information and check in to the exam",
+            fontSize = 50.sp,
+            lineHeight = 80.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .padding(16.dp)
@@ -113,11 +118,17 @@ fun MainLayout(courseCode: String, courseName: String, date : String, modifier: 
             }
         ElevatedButton(
             onClick = { ready() },
+            colors = ButtonColors(Color.DarkGray,Color.White,Color.LightGray, Color.LightGray),
             modifier = Modifier
                 .align(alignment = Alignment.CenterHorizontally)
-                .padding(20.dp)
+                .padding(10.dp)
+                .requiredHeight(75.dp)
+                .requiredWidth(250.dp)
+
         ) {
-            Text("Check in")
+            Text("Check in", fontSize = 25.sp)
+
+
         }
         Image(
             painter = painterResource(id = R.drawable.chalmers_logo),
@@ -127,15 +138,6 @@ fun MainLayout(courseCode: String, courseName: String, date : String, modifier: 
                 .fillMaxSize()
                 .align(alignment = Alignment.CenterHorizontally)
         )
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun LayoutPreview() {
-    DAT068TentaminaTheme {
-        MainLayout("DAT068", "Projekt", "20241113")
     }
 }
 
