@@ -63,7 +63,7 @@ fun Exam() {
         {
         }
         ElevatedButton(
-            onClick = { ready() },
+            onClick = { print("hi") },
             colors = ButtonColors(Color.DarkGray, Color.White, Color.LightGray, Color.LightGray),
             modifier = Modifier
                 .align(alignment = Alignment.CenterHorizontally)
