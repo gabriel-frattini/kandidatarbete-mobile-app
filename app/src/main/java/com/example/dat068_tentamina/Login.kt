@@ -26,18 +26,19 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.time.LocalDate
 
 @Composable
-fun Login(date : String, modifier: Modifier = Modifier) {
+fun Login(onNavigateToExam: () -> Unit) {
 
     Column(
         verticalArrangement = Arrangement.Center,
-        modifier = modifier
+        modifier = Modifier
             .background(Color.LightGray)
             .fillMaxSize()
     ) {
         Text(
-            text = date,
+            text = LocalDate.now().toString(),
             fontSize = 25.sp,
             lineHeight = 25.sp,
             textAlign = TextAlign.Right,
@@ -57,7 +58,7 @@ fun Login(date : String, modifier: Modifier = Modifier) {
         Row (
 
             horizontalArrangement = Arrangement.Center,
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
         )
         {
@@ -88,7 +89,7 @@ fun Login(date : String, modifier: Modifier = Modifier) {
             )
         }
         ElevatedButton(
-            onClick = { ready() },
+            onClick = { onNavigateToExam() },
             colors = ButtonColors(Color.DarkGray, Color.White, Color.LightGray, Color.LightGray),
             modifier = Modifier
                 .align(alignment = Alignment.CenterHorizontally)
@@ -110,9 +111,4 @@ fun Login(date : String, modifier: Modifier = Modifier) {
                 .align(alignment = Alignment.CenterHorizontally)
         )
     }
-}
-
-fun ready()
-{
-    println("Button pressed")
 }
