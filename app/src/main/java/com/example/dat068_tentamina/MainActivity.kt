@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dat068_tentamina.ui.theme.DAT068TentaminaTheme
 import java.time.format.TextStyle
-import com.example.dat068_tentamina.Exam // Adjust the package name if needed
 import com.example.dat068_tentamina.Login
 
 class MainActivity : ComponentActivity() {
