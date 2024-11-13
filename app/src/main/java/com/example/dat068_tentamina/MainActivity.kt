@@ -41,107 +41,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dat068_tentamina.ui.theme.DAT068TentaminaTheme
 import java.time.format.TextStyle
-
+import com.example.dat068_tentamina.Exam // Adjust the package name if needed
+import com.example.dat068_tentamina.Login
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            DAT068TentaminaTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    MainLayout( "20030923", modifier = Modifier )
-                }
-            }
+            Login("20241113", modifier = Modifier)
         }
     }
-}
-@Composable
-fun MainLayout(date : String, modifier: Modifier = Modifier) {
-
-    Column(
-        verticalArrangement = Arrangement.Center,
-        modifier = modifier
-            .background(Color.LightGray)
-            .fillMaxSize()
-    ) {
-        Text(
-            text = date,
-            fontSize = 25.sp,
-            lineHeight = 25.sp,
-            textAlign = TextAlign.Right,
-            modifier = Modifier
-                .padding(20.dp)
-                .align(alignment = Alignment.End)
-        )
-        Text(
-            text = "Please enter the following information and check in to the exam",
-            fontSize = 50.sp,
-            lineHeight = 80.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .padding(16.dp)
-                .align(alignment = Alignment.CenterHorizontally)
-        )
-        Row (
-
-            horizontalArrangement = Arrangement.Center,
-            modifier = modifier
-                .fillMaxWidth()
-            )
-        {
-
-                val examId = remember { mutableStateOf(TextFieldValue("")) }
-                val maxCharExamId = 6
-                OutlinedTextField(
-                    value = examId.value,
-                    onValueChange = { if (it.text.length <= maxCharExamId) examId.value = it },
-                    label = { Text("Exam id") },
-                    maxLines = 1,
-                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                    modifier = Modifier
-                        .padding(20.dp)
-                )
-                val anonymousCode = remember { mutableStateOf(TextFieldValue("")) }
-                val maxCharAnonymousCode = 6
-                OutlinedTextField(
-                    value = anonymousCode.value,
-                    onValueChange = {
-                        if (it.text.length <= maxCharAnonymousCode) anonymousCode.value = it
-                    },
-                    label = { Text("Anonymous Code") },
-                    maxLines = 1,
-                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                    modifier = Modifier
-                        .padding(20.dp)
-                )
-            }
-        ElevatedButton(
-            onClick = { ready() },
-            colors = ButtonColors(Color.DarkGray,Color.White,Color.LightGray, Color.LightGray),
-            modifier = Modifier
-                .align(alignment = Alignment.CenterHorizontally)
-                .padding(10.dp)
-                .requiredHeight(75.dp)
-                .requiredWidth(250.dp)
-
-        ) {
-            Text("Check in", fontSize = 25.sp)
-
-
-        }
-        Image(
-            painter = painterResource(id = R.drawable.chalmers_logo),
-            contentDescription = "The Chalmers logo",
-            modifier = Modifier
-                .padding(20.dp)
-                .fillMaxSize()
-                .align(alignment = Alignment.CenterHorizontally)
-        )
-    }
-}
-
-fun ready()
-{
-    println("Button pressed")
 }
