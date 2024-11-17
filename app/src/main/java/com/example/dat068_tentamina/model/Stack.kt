@@ -28,5 +28,9 @@ class Stack<T> {
     fun isNotEmpty() : Boolean {
         return size != 0
     }
+    fun clear() {
+        head = null
+        size = 0
+    }
 
 }

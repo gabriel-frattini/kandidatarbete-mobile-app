@@ -1,11 +1,13 @@
 package com.example.dat068_tentamina.ui
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntSize
@@ -16,6 +18,7 @@ import com.example.dat068_tentamina.viewmodel.TentaViewModel
 @Composable
 fun DrawingScreen(viewModel: TentaViewModel) {
     androidx.compose.foundation.Canvas(modifier = Modifier
+        .background(Color.White)
         .fillMaxSize()
         .pointerInput(Unit) {
             detectDragGestures(
@@ -30,13 +33,18 @@ fun DrawingScreen(viewModel: TentaViewModel) {
 
                     // Ensure that both start and end positions are within the Canvas bounds
                     if (isInBounds(startPosition, size) && isInBounds(endPosition, size)) {
-                        viewModel.addLine(
-                            Line(
+                        var newLine = Line(
                                 start = startPosition,
                                 end = endPosition,
-                                strokeWidth = 2.dp
+                                strokeWidth = 2.dp,
                             )
-                        )
+
+                        if (viewModel.eraser) {
+                            newLine.cap = StrokeCap.Square
+                            newLine.color = Color.White
+                            newLine.strokeWidth = 5.dp
+                        }
+                        viewModel.addLine(newLine)
                     }
                 }
             )
