@@ -8,13 +8,14 @@ import com.example.dat068_tentamina.model.Line
 class TentaViewModel {
     private val _lines = mutableStateListOf<Line>()
     private val history = Stack<List<Line>>()
+    public var eraser = false
     val lines : SnapshotStateList<Line> get() = _lines
 
     fun addLine(line : Line) {
         _lines.add(line)
     }
     fun pop() {
-        if (_lines.isNotEmpty() && history.isNotEmpty()) {
+        if (_lines.isNotEmpty()) {
             _lines.clear()
             val previousState = history.getCurrValue()
             if (previousState != null) {
@@ -27,5 +28,4 @@ class TentaViewModel {
         // toList to avoid it as a reference
         history.append(_lines.toList())
     }
-
 }
