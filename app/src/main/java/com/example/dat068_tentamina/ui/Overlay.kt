@@ -36,7 +36,11 @@ fun Overlay(viewModel: TentaViewModel) {
             },
             actions = {
                 IconButton(onClick = {
-                    viewModel.eraser = true
+                    viewModel.textMode.value = true
+                }) {
+                    Icon(painter = painterResource(id = R.drawable.text), contentDescription = "text", modifier = Modifier.size(25.dp))
+                }
+                IconButton(onClick = {
                 }) {
                     SizePicker(viewModel,"eraser")
                 }
