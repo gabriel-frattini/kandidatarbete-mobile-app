@@ -3,11 +3,14 @@ package com.example.dat068_tentamina.viewmodel
 import Stack
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.Line
 
 class TentaViewModel {
     private val _lines = mutableStateListOf<Line>()
     private val history = Stack<List<Line>>()
+    public var strokeWidth = 2.dp
+    public var eraserWidth = 6.dp
     public var eraser = false
     val lines : SnapshotStateList<Line> get() = _lines
 
