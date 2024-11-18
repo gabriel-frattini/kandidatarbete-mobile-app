@@ -38,12 +38,10 @@ fun Overlay(viewModel: TentaViewModel) {
                 IconButton(onClick = {
                     viewModel.eraser = true
                 }) {
-                    Icon(painter = painterResource(id = R.drawable.eraser), contentDescription = "eraser", modifier = Modifier.size(30.dp))
+                    SizePicker(viewModel,"eraser")
                 }
-                IconButton(onClick = {
-                    viewModel.eraser = false
-                }) {
-                    Icon(Icons.Filled.Edit, contentDescription = "erase")
+                IconButton(onClick = {}) {
+                    SizePicker(viewModel)
                 }
                 IconButton(onClick = {
                     viewModel.pop()

@@ -36,13 +36,13 @@ fun DrawingScreen(viewModel: TentaViewModel) {
                         var newLine = Line(
                                 start = startPosition,
                                 end = endPosition,
-                                strokeWidth = 2.dp,
+                                strokeWidth = viewModel.strokeWidth,
                             )
 
                         if (viewModel.eraser) {
                             newLine.cap = StrokeCap.Square
                             newLine.color = Color.White
-                            newLine.strokeWidth = 5.dp
+                            newLine.strokeWidth = viewModel.eraserWidth
                         }
                         viewModel.addLine(newLine)
                     }
