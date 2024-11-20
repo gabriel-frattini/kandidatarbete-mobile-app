@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -42,6 +43,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +61,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Overlay(viewModel: TentaViewModel) {
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     ModalNavigationDrawer(
@@ -66,7 +69,7 @@ fun Overlay(viewModel: TentaViewModel) {
         drawerContent = {
             ModalDrawerSheet {
                 //The content of the menu
-                MenuScreen(modifier = Modifier)
+                MenuScreen(modifier = Modifier,viewModel)
 
             }
         },
@@ -74,7 +77,7 @@ fun Overlay(viewModel: TentaViewModel) {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Simple TopAppBar") },
+                    title = { Text("Question ${viewModel.getCurrentQuestionNr()}") },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch {
                             drawerState.apply {
@@ -133,7 +136,7 @@ fun Overlay(viewModel: TentaViewModel) {
             }
         }
 @Composable
-fun MenuScreen(modifier: Modifier = Modifier){
+fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel){
 
     Column(
 
@@ -153,11 +156,10 @@ fun MenuScreen(modifier: Modifier = Modifier){
                 .align(alignment = Alignment.CenterHorizontally)
         ) {
                 IconButton(
-                    onClick = { println("Hejsan") },
+                    onClick = { println("Hejsan") /*TODO: An actual information page with user info and user guide???*/},
                     modifier = Modifier
                         .padding(10.dp)
-                        .requiredHeight(75.dp)
-                        .requiredWidth(250.dp)
+                        .fillMaxSize()
                         .align(alignment = Alignment.CenterHorizontally)
 
                 ) {
@@ -168,6 +170,40 @@ fun MenuScreen(modifier: Modifier = Modifier){
                             .align(alignment = Alignment.CenterHorizontally)
                     )
                 }
+        }
+        for((key,value ) in viewModel.questions )
+        {
+            Card (
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .requiredHeight(100.dp)
+                    .align(alignment = Alignment.CenterHorizontally)
+
+            ){
+                Button(
+                    onClick = {
+                        println("Bytte fråga till $key ")
+                        viewModel.changedQuestion(key)
+                              },
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .fillMaxSize()
+                        .align(alignment = Alignment.CenterHorizontally)
+
+                ) {
+                    Text(
+                        text = "Question $key",
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .align(alignment = Alignment.CenterVertically)
+                    )
+
+
+                }
+            }
         }
     }
 }
