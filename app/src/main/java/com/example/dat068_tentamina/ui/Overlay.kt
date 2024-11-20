@@ -1,6 +1,8 @@
 package com.example.dat068_tentamina.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.ScrollableState
+import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,8 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
@@ -137,13 +141,13 @@ fun Overlay(viewModel: TentaViewModel) {
         }
 @Composable
 fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel){
+    val scrollState = rememberScrollState()
 
-    Column(
-
+    Column (
         verticalArrangement = Arrangement.Top,
         modifier = Modifier
             .background(Color.LightGray)
-            .fillMaxHeight()
+            .fillMaxHeight().verticalScroll(scrollState)
             .requiredWidth(500.dp)
     ) {
         Card(

@@ -50,7 +50,7 @@ class TentaViewModel {
     fun addQuestions()
     {
         var i = 1
-        while(i<=5)
+        while(i<=10)
         {
             //just adding empty first
             questions.put(i, emptyList())
