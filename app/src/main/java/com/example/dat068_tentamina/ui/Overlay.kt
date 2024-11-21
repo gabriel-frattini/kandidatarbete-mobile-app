@@ -116,13 +116,13 @@ fun Overlay(viewModel: TentaViewModel) {
     }
 }
 @Composable
-        fun ExamScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel ) {
-            Column {
-                Box(modifier = Modifier.weight(1f).fillMaxSize()) {
-                    DrawingScreen(viewModel)
-                }
-            }
+fun ExamScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel ) {
+    Column {
+        Box(modifier = Modifier.weight(1f).fillMaxSize()) {
+            DrawingScreen(viewModel)
         }
+    }
+}
 @Composable
 fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel){
     val scrollState = rememberScrollState()
@@ -159,7 +159,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel){
                     )
                 }
         }
-        for((key,value ) in viewModel.questions )
+        for((key,value) in viewModel.questions)
         {
             Card (
                 colors = CardDefaults.cardColors(
