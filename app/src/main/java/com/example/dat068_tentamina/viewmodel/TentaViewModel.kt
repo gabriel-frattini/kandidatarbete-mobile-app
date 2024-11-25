@@ -50,11 +50,8 @@ class TentaViewModel {
     fun changeQuestion(qNr: Int) {
         currentQuestion.intValue = qNr
 
-        /* ska vi göra detta eller? osäker om vi ska börja jobba på att spara svaren o.s.v.
-         questions[currentQuestion.intValue] = _objects.toList()
-        _objects.clear()
-        val newObjects = questions[qNr] ?: emptyList()
-        _objects.addAll(newObjects)
-         */
+        var currentCanvasObject : List<CanvasObject>? = questions[currentQuestion.intValue];
+        println(currentCanvasObject)
+
     }
 }
