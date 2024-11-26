@@ -12,8 +12,7 @@ import com.example.dat068_tentamina.ui.DrawingScreen
 class TentaViewModel {
     private var _objects = mutableStateListOf<CanvasObject>()
     private val history = Stack<List<CanvasObject>>()
-   // private var ob: List<CanvasObject>? = emptyList()
-
+    private var historyMap = mutableMapOf<Int, Stack<List<CanvasObject>>>()
     var textMode = mutableStateOf(false)
     var strokeWidth = 2.dp
     var eraserWidth = 6.dp
@@ -49,13 +48,15 @@ class TentaViewModel {
     }
 
     fun changeQuestion(qNr: Int) {
-
+        //save the current question nr for usage across classes
         currentQuestion.intValue = qNr
-
         // Change the content on the DrawingScreen to the current question
         val currentObjects = questions[currentQuestion.intValue] ?: emptyList()
-
+        val currentHistory = historyMap[currentQuestion.intValue]?: emptyList()
         _objects.clear()
         _objects.addAll(currentObjects)
+
+        //history is cleared when changing to a new question
+        history.clear()
     }
 }
