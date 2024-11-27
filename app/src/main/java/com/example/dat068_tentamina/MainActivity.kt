@@ -12,6 +12,8 @@ import com.example.dat068_tentamina.ui.theme.DAT068TentaminaTheme
 import com.example.dat068_tentamina.ui.Overlay
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import com.example.dat068_tentamina.ui.Login
+import com.example.dat068_tentamina.viewmodel.ExamInfo
+import org.json.JSONObject
 
 
 sealed class Screen {
@@ -27,12 +29,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             DAT068TentaminaTheme {
                 val tentaViewModel = TentaViewModel()
+                val examInfo = ExamInfo()
                 tentaViewModel.addQuestions()
+                examInfo.createTestExamPeriodJSON()
             var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) } // Start with Login
 
             when (currentScreen) {
                 Screen.Overlay -> Overlay(tentaViewModel)
-                Screen.Login -> Login(onNavigateToExam = { currentScreen = Screen.Overlay })
+                Screen.Login -> Login(examInfo,onNavigateToExam = { currentScreen = Screen.Overlay })
             }
         }
     }

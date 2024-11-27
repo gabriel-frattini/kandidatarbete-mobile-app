@@ -27,10 +27,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dat068_tentamina.R
+import com.example.dat068_tentamina.viewmodel.ExamInfo
 import java.time.LocalDate
 
 @Composable
-fun Login(onNavigateToExam: () -> Unit) {
+fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
+    val examId = remember { mutableStateOf(TextFieldValue("")) }
+    val anonymousCode = remember { mutableStateOf(TextFieldValue("")) }
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -57,14 +60,11 @@ fun Login(onNavigateToExam: () -> Unit) {
                 .align(alignment = Alignment.CenterHorizontally)
         )
         Row (
-
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
         )
         {
-
-            val examId = remember { mutableStateOf(TextFieldValue("")) }
             val maxCharExamId = 6
             OutlinedTextField(
                 value = examId.value,
@@ -75,7 +75,6 @@ fun Login(onNavigateToExam: () -> Unit) {
                 modifier = Modifier
                     .padding(20.dp)
             )
-            val anonymousCode = remember { mutableStateOf(TextFieldValue("")) }
             val maxCharAnonymousCode = 6
             OutlinedTextField(
                 value = anonymousCode.value,
@@ -90,18 +89,15 @@ fun Login(onNavigateToExam: () -> Unit) {
             )
         }
         ElevatedButton(
-            onClick = { onNavigateToExam() },
+            onClick = { if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text)){onNavigateToExam()} },
             colors = ButtonColors(Color.DarkGray, Color.White, Color.LightGray, Color.LightGray),
             modifier = Modifier
                 .align(alignment = Alignment.CenterHorizontally)
                 .padding(10.dp)
                 .requiredHeight(75.dp)
                 .requiredWidth(250.dp)
-
         ) {
             Text("Check in", fontSize = 25.sp)
-
-
         }
         Image(
             painter = painterResource(id = R.drawable.chalmers_logo),
