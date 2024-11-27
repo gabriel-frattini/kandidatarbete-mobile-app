@@ -18,7 +18,9 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
@@ -44,6 +46,10 @@ import com.example.dat068_tentamina.R
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,22 +124,46 @@ fun Overlay(viewModel: TentaViewModel) {
 @Composable
 fun ExamScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel ) {
     Column {
-        Box(modifier = Modifier.weight(1f).fillMaxSize()) {
+        Box(modifier = Modifier
+            .weight(1f)
+            .fillMaxSize()) {
             DrawingScreen(viewModel)
         }
     }
 }
 @Composable
-fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel){
+fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel) {
     val scrollState = rememberScrollState()
+    var showDialog by remember { mutableStateOf(false)}
 
-    Column (
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Submit exam") },
+            text = { Text("Are you sure you want to submit the exam?") },
+            confirmButton = {
+                Button(onClick = {}) {
+                    Text("Confirm")
+                    // TODO: Actually submit the exam
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    Column(
         verticalArrangement = Arrangement.Top,
         modifier = Modifier
             .background(Color.LightGray)
-            .fillMaxHeight().verticalScroll(scrollState)
+            .fillMaxHeight()
+            .verticalScroll(scrollState)
             .requiredWidth(500.dp)
     ) {
+        // Information card
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -143,25 +173,25 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel){
                 .requiredHeight(100.dp)
                 .align(alignment = Alignment.CenterHorizontally)
         ) {
-                IconButton(
-                    onClick = { println("Hejsan") /*TODO: An actual information page with user info and user guide???*/},
+            IconButton(
+                onClick = { println("Hejsan") /*TODO: An actual information page with user info and user guide???*/ },
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxSize()
+                    .align(alignment = Alignment.CenterHorizontally)
+            ) {
+                Icon(
+                    Icons.Filled.Info, contentDescription = "Information",
                     modifier = Modifier
-                        .padding(10.dp)
-                        .fillMaxSize()
+                        .size(100.dp, 100.dp)
                         .align(alignment = Alignment.CenterHorizontally)
-
-                ) {
-                    Icon(
-                        Icons.Filled.Info, contentDescription = "Information",
-                        modifier = Modifier
-                            .size(100.dp,100.dp)
-                            .align(alignment = Alignment.CenterHorizontally)
-                    )
-                }
+                )
+            }
         }
-        for((key,value) in viewModel.questions)
-        {
-            Card (
+
+        // List of questions
+        for ((key, value) in viewModel.questions) {
+            Card(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 ),
@@ -169,18 +199,16 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel){
                     .fillMaxWidth()
                     .requiredHeight(100.dp)
                     .align(alignment = Alignment.CenterHorizontally)
-
-            ){
+            ) {
                 Button(
                     onClick = {
-                        println("Bytte fråga till $key ")
+                        println("Switched to question $key")
                         viewModel.changeQuestion(key)
-                              },
+                    },
                     modifier = Modifier
                         .padding(10.dp)
                         .fillMaxSize()
                         .align(alignment = Alignment.CenterHorizontally)
-
                 ) {
                     Text(
                         text = "Question $key",
@@ -188,9 +216,41 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel){
                             .padding(10.dp)
                             .align(alignment = Alignment.CenterVertically)
                     )
-
-
                 }
+            }
+        }
+
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFF4CAF50)
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .requiredHeight(100.dp)
+                .align(alignment = Alignment.CenterHorizontally)
+                .padding(top = 10.dp)
+
+        ) {
+            Button(
+                onClick = {
+                    showDialog = true
+                },
+
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF4CAF50)
+                ),
+
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxSize()
+                    .align(alignment = Alignment.CenterHorizontally)
+            ) {
+                Text(
+                    text = "Submit",
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.align(alignment = Alignment.CenterVertically)
+                )
             }
         }
     }
