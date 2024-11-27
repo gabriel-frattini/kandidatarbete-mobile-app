@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -44,6 +45,10 @@ import com.example.dat068_tentamina.R
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,7 +123,9 @@ fun Overlay(viewModel: TentaViewModel) {
 @Composable
 fun ExamScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel ) {
     Column {
-        Box(modifier = Modifier.weight(1f).fillMaxSize()) {
+        Box(modifier = Modifier
+            .weight(1f)
+            .fillMaxSize()) {
             DrawingScreen(viewModel)
         }
     }
@@ -126,12 +133,24 @@ fun ExamScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel ) {
 @Composable
 fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel){
     val scrollState = rememberScrollState()
+    var showInfoDialog by remember { mutableStateOf(false) }
+
+    if (showInfoDialog) {
+        AlertDialog(
+            onDismissRequest = { showInfoDialog = false },
+            title = { Text("Student information") },
+            text = {},
+            confirmButton = {},
+            dismissButton = {}
+        )
+    }
 
     Column (
         verticalArrangement = Arrangement.Top,
         modifier = Modifier
             .background(Color.LightGray)
-            .fillMaxHeight().verticalScroll(scrollState)
+            .fillMaxHeight()
+            .verticalScroll(scrollState)
             .requiredWidth(500.dp)
     ) {
         Card(
@@ -154,7 +173,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel){
                     Icon(
                         Icons.Filled.Info, contentDescription = "Information",
                         modifier = Modifier
-                            .size(100.dp,100.dp)
+                            .size(100.dp, 100.dp)
                             .align(alignment = Alignment.CenterHorizontally)
                     )
                 }
