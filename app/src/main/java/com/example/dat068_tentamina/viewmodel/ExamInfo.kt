@@ -7,7 +7,7 @@ class ExamInfo {
     var studentsObject = JSONObject()
     private var  anonymousCode = ""
     private var examID = ""
-    private var personalNumber = ""
+    var personalNumber = ""
 
     fun createTestExamPeriodJSON(){
 
@@ -52,6 +52,7 @@ class ExamInfo {
             if (student.getString("anonymousCode") == aCode) {
                 examID = exId
                 anonymousCode = aCode
+                personalNumber = examObj.optString("personalNumber") ?: ""
                 //personalNumber = student.getString(personalNumber)
                 return true // Found the anonymous code in the students list
             }

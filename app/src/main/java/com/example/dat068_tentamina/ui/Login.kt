@@ -89,7 +89,8 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
             )
         }
         ElevatedButton(
-            onClick = { if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text)){onNavigateToExam()} },
+            onClick = { if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text)){ onNavigateToExam() }
+                      },
             colors = ButtonColors(Color.DarkGray, Color.White, Color.LightGray, Color.LightGray),
             modifier = Modifier
                 .align(alignment = Alignment.CenterHorizontally)
