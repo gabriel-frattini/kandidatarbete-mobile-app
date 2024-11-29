@@ -29,13 +29,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             DAT068TentaminaTheme {
                 val tentaViewModel = TentaViewModel()
-                val examInfo = ExamInfo()
+                val examInfo = remember {ExamInfo()}
                 tentaViewModel.addQuestions()
                 examInfo.createTestExamPeriodJSON()
             var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) } // Start with Login
 
             when (currentScreen) {
-                Screen.Overlay -> Overlay(tentaViewModel)
+                Screen.Overlay -> Overlay(tentaViewModel,examInfo)
                 Screen.Login -> Login(examInfo,onNavigateToExam = { currentScreen = Screen.Overlay })
             }
         }

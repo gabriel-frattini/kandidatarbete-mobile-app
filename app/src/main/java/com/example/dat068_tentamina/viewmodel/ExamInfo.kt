@@ -1,24 +1,39 @@
 package com.example.dat068_tentamina.viewmodel
 
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 class ExamInfo {
     var examObject = JSONObject()
     var studentsObject = JSONObject()
-    private var  anonymousCode = ""
+    private var anonymousCode = ""
     private var examID = ""
-    var personalNumber = ""
+    private var personalNumber = ""
+    private var name = ""
 
-    fun createTestExamPeriodJSON(){
+    fun getAnonymousCode(): String {
+        return anonymousCode
+    }
+
+    fun getPersonalNumber(): String {
+        return personalNumber
+    }
+
+    fun getName(): String {
+        return name
+    }
+
+
+    fun createTestExamPeriodJSON() {
 
         studentsObject = JSONObject().apply {
             put("123ALI", JSONObject().apply {
                 put("personalNumber", "0309230000")
-                put("Name","Alice Emanuelsson")
+                put("name", "Alice Emanuelsson")
             })
             put("123CHE", JSONObject().apply {
                 put("personalNumber", "0204120000")
-                put("Name","Che Long Tran")
+                put("name", "Che Long Tran")
             })
         }
         examObject = JSONObject().apply {
@@ -39,22 +54,32 @@ class ExamInfo {
             })
         }
     }
-    fun loginCheck(aCode: String, exId : String) : Boolean {
 
+    fun loginCheck(aCode: String, exId: String): Boolean {
         val examObj = examObject.optJSONObject(exId) ?: return false
 
-        // Get the students array from the exam object
         val studentsArray = examObj.optJSONArray("students") ?: return false
 
-        // Iterate through the students array and check for the anonymous code
         for (i in 0 until studentsArray.length()) {
             val student = studentsArray.getJSONObject(i)
             if (student.getString("anonymousCode") == aCode) {
-                examID = exId
-                anonymousCode = aCode
-                personalNumber = examObj.optString("personalNumber") ?: ""
-                //personalNumber = student.getString(personalNumber)
-                return true // Found the anonymous code in the students list
+                Log.d("examinfo", exId)
+                Log.d("examinfo", aCode)
+
+                val studentInfo = student.optJSONObject("studentInfo")
+                if (studentInfo != null) {
+                    personalNumber = studentInfo.optString("personalNumber", "")
+                    name = studentInfo.optString("name", "")
+                    examID = exId
+                    anonymousCode = aCode
+
+                    Log.d("examinfo", name)
+                    Log.d("examinfo", anonymousCode)
+                    Log.d("examinfo", personalNumber)
+
+
+                    return true
+                }
             }
         }
         return false

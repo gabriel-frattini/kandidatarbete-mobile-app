@@ -1,5 +1,6 @@
 package com.example.dat068_tentamina.ui
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,10 +50,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.example.dat068_tentamina.viewmodel.ExamInfo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Overlay(viewModel: TentaViewModel) {
+fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo) {
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -62,7 +64,7 @@ fun Overlay(viewModel: TentaViewModel) {
         drawerContent = {
             ModalDrawerSheet {
                 //The content of the menu
-                MenuScreen(modifier = Modifier,viewModel)
+                MenuScreen(modifier = Modifier,viewModel,examInfo)
 
             }
         },
@@ -131,18 +133,19 @@ fun ExamScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel ) {
     }
 }
 @Composable
-fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel){
+fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, examInfo: ExamInfo){
     val scrollState = rememberScrollState()
     var showInfoDialog by remember { mutableStateOf(false) }
 
     if (showInfoDialog) {
         AlertDialog(
             onDismissRequest = { showInfoDialog = false },
-            title = { Text("Student information") },
-            text = {},
+            title = {Text("Student Information")},
+            text = {Text("${examInfo.getName()}\n${examInfo.getPersonalNumber()} \n${examInfo.getAnonymousCode()}")},
             confirmButton = {},
             dismissButton = {}
         )
+
     }
 
     Column (
@@ -163,7 +166,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel){
                 .align(alignment = Alignment.CenterHorizontally)
         ) {
                 IconButton(
-                    onClick = { println("Hejsan") /*TODO: An actual information page with user info and user guide???*/},
+                    onClick = { showInfoDialog = true /*TODO: An actual information page with user info and user guide???*/},
                     modifier = Modifier
                         .padding(10.dp)
                         .fillMaxSize()
