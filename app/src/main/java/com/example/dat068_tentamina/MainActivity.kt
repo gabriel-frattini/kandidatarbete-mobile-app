@@ -16,7 +16,7 @@ class MainActivity : ComponentActivity() {
             DAT068TentaminaTheme {
                 val tentaViewModel = TentaViewModel()
                 tentaViewModel.addQuestions()
-                Overlay(tentaViewModel)
+                Overlay(tentaViewModel, this)
             }
         }
     }
