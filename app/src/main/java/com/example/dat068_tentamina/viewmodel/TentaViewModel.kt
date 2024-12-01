@@ -12,18 +12,23 @@ class TentaViewModel {
     private val _objects = mutableStateListOf<CanvasObject>()
     private val history = Stack<List<CanvasObject>>()
     private var ob: List<CanvasObject>? = emptyList()
-
-    var textMode = mutableStateOf(false)
-    var strokeWidth = 2.dp
-    var eraserWidth = 6.dp
-    var eraser = false
-    var currentQuestion = mutableIntStateOf(1)
     val objects: SnapshotStateList<CanvasObject> get() = _objects
     val questions = mutableMapOf<Int, List<CanvasObject>>()
+    // Modes
+    var textMode = mutableStateOf(false)
+    var eraser = false
+    var currentQuestion = mutableIntStateOf(1)
+
+    var strokeWidth = 2.dp
+    var eraserWidth = 6.dp
 
     fun addObject(obj: CanvasObject) {
         objects.add(obj)
         questions[currentQuestion.intValue] = _objects.toList()
+    }
+
+    fun getAnswers(): MutableMap<Int, List<CanvasObject>> {
+        return questions
     }
 
     fun pop() {
