@@ -1,5 +1,8 @@
 package com.example.dat068_tentamina.ui
 
+import android.graphics.Bitmap
+import android.graphics.pdf.PdfDocument
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,10 +53,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.example.dat068_tentamina.model.CanvasObject
+import java.io.File
+
+import androidx.compose.ui.platform.LocalContext
+import PdfConverter
+import android.content.Context
+import androidx.core.content.ContentProviderCompat.requireContext
+import com.example.dat068_tentamina.MainActivity
+import com.example.dat068_tentamina.utilities.ServerHandler
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Overlay(viewModel: TentaViewModel) {
+fun Overlay(viewModel: TentaViewModel, activity: MainActivity) {
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -63,7 +75,7 @@ fun Overlay(viewModel: TentaViewModel) {
         drawerContent = {
             ModalDrawerSheet {
                 //The content of the menu
-                MenuScreen(modifier = Modifier,viewModel)
+                MenuScreen(modifier = Modifier,viewModel, activity)
 
             }
         },
@@ -132,7 +144,7 @@ fun ExamScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel ) {
     }
 }
 @Composable
-fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel) {
+fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activity: MainActivity) {
     val scrollState = rememberScrollState()
     var showDialog by remember { mutableStateOf(false)}
 
@@ -142,9 +154,13 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel) {
             title = { Text("Submit exam") },
             text = { Text("Are you sure you want to submit the exam?") },
             confirmButton = {
-                Button(onClick = {}) {
+                Button(onClick = {
+                    viewModel.saveHistory()
+                    val answers = viewModel.getAnswers()
+                    val pdfFile = PdfConverter.createPdfFromAnswers(answers, 1920, 1920, activity) // Adjust dimensions as needed
+                    ServerHandler.sendPdfToServer(pdfFile, "Math 101", "student_username")
+                }) {
                     Text("Confirm")
-                    // TODO: Actually submit the exam
                 }
             },
             dismissButton = {
@@ -254,4 +270,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel) {
             }
         }
     }
+
 }
+
+
