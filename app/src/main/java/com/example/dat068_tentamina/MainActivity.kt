@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
             var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) } // Start with Login
 
             when (currentScreen) {
-                Screen.Overlay -> Overlay(tentaViewModel)
+                Screen.Overlay -> Overlay(tentaViewModel,this)
                 Screen.Login -> Login(examInfo,onNavigateToExam = { currentScreen = Screen.Overlay })
             }
         }
