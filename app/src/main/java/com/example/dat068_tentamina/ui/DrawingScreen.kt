@@ -20,6 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +36,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -43,6 +45,7 @@ import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
 
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
+import kotlin.math.max
 import androidx.compose.material3.TextField as TextField1
 
 // Changed TextBox.kt. Currently only scrolling is possible. Zooming needs to be implemented. Lags on my pc idk if i impacted performance.
@@ -57,18 +60,28 @@ fun DrawingScreen(viewModel: TentaViewModel) {
     val verticalScrollState = rememberScrollState()
     val density = LocalDensity.current.density
 
+    var canvasHeight by remember {mutableStateOf(2400.dp)}
+
+    LaunchedEffect(viewModel.objects) {
+        val newHeight = calculateCanvasHeight(viewModel.objects, density)
+        Log.d("CanvasDebug", "Calculated New Height: $newHeight, Current Height: $canvasHeight")
+        if (newHeight > canvasHeight) {
+            canvasHeight = newHeight
+            Log.d("CanvasDebug", "Updated Canvas Height to: $canvasHeight")
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(verticalScrollState, enabled = isScrollMode) // Enables vertical scrolling
-                .height(9000.dp)
+                .height(canvasHeight)
                 .background(Color.White)
         ) {
             androidx.compose.foundation.Canvas(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(9000.dp)
+                    .fillMaxSize()
                     .pointerInput(isScrollMode) {
                         if (!isScrollMode) {
                             detectDragGestures(
@@ -95,6 +108,9 @@ fun DrawingScreen(viewModel: TentaViewModel) {
                                                 newLine.strokeWidth = viewModel.eraserWidth
                                             }
                                             viewModel.addObject(newLine)
+                                            expandCanvasIfNeeded(newLine, density, canvasHeight) {
+                                                canvasHeight = it
+                                            }
                                         }
                                     }
                                 }
@@ -143,15 +159,17 @@ fun DrawingScreen(viewModel: TentaViewModel) {
                 )
                 Button(
                     onClick = {
-                        viewModel.addObject(
-                            TextBox(
-                                position = Offset(
-                                    textOffset.x,
-                                    textOffset.y - verticalScrollState.value
-                                ),
-                                text = textMeasurer.measure(AnnotatedString(textValue))
-                            )
+                        val newTextBox = TextBox(
+                            position = Offset(
+                                textOffset.x,
+                                textOffset.y - verticalScrollState.value
+                            ),
+                            text = textMeasurer.measure(AnnotatedString(textValue))
                         )
+                        viewModel.addObject(newTextBox)
+                        expandCanvasIfNeeded(newTextBox, density, canvasHeight) {
+                            canvasHeight = it
+                        }
                         // Reset state
                         viewModel.textMode.value = false
                         viewModel.eraser = false
@@ -180,6 +198,43 @@ fun DrawingScreen(viewModel: TentaViewModel) {
         }
     }
 }
+
+
+private fun calculateCanvasHeight(objects: List<CanvasObject>, density: Float): Dp {
+    val maxY = objects.maxOfOrNull { obj ->
+        when (obj) {
+            is Line -> max(obj.start.y, obj.end.y)
+            is TextBox -> obj.position.y + obj.text.size.height
+            else -> 0f
+        }
+    } ?: 0f
+
+    // Convert the maximum Y position to dp and add a buffer space
+    return ((maxY / density) + 200).dp
+}
+
+private fun expandCanvasIfNeeded(
+    obj: CanvasObject,
+    density: Float,
+    currentHeight: Dp,
+    onHeightUpdate: (Dp) -> Unit
+) {
+    val thresholdPx = 400f // Expand if the object is within 400px of the bottom
+    val bottomY = when (obj) {
+        is Line -> max(obj.start.y, obj.end.y)
+        is TextBox -> obj.position.y + obj.text.size.height
+        else -> 0f
+    }
+    val currentHeightPx = currentHeight.value * density
+
+
+    // Expand canvas if the object is close to the current height
+    if (currentHeightPx - bottomY <= thresholdPx) {
+        val newHeight = (currentHeightPx / density).dp + 400.dp // Add buffer space
+        onHeightUpdate(newHeight)
+    }
+}
+
 
 private fun isInBounds(point: Offset, canvasSize: IntSize): Boolean {
     return point.x in 0f..canvasSize.width.toFloat() && point.y in 0f..canvasSize.height.toFloat()
