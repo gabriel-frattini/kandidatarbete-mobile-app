@@ -7,19 +7,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
+import com.example.dat068_tentamina.ui.DrawingScreen
 
 class TentaViewModel {
-    private val _objects = mutableStateListOf<CanvasObject>()
+    private var _objects = mutableStateListOf<CanvasObject>()
     private val history = Stack<List<CanvasObject>>()
-    private var ob: List<CanvasObject>? = emptyList()
-
+    //private var historyMap = mutableMapOf<Int, Stack<List<CanvasObject>>>()
     var textMode = mutableStateOf(false)
     var strokeWidth = 2.dp
     var eraserWidth = 6.dp
     var eraser = false
     var currentQuestion = mutableIntStateOf(1)
     val objects: SnapshotStateList<CanvasObject> get() = _objects
-    val questions = mutableMapOf<Int, List<CanvasObject>>()
+    var questions = mutableMapOf<Int, List<CanvasObject>>()
 
     fun addObject(obj: CanvasObject) {
         objects.add(obj)
@@ -48,13 +48,14 @@ class TentaViewModel {
     }
 
     fun changeQuestion(qNr: Int) {
+        //save the current question nr for usage across classes
         currentQuestion.intValue = qNr
-
-        /* ska vi göra detta eller? osäker om vi ska börja jobba på att spara svaren o.s.v.
-         questions[currentQuestion.intValue] = _objects.toList()
+        // Change the content on the DrawingScreen to the current question
+        val currentObjects = questions[currentQuestion.intValue] ?: emptyList()
         _objects.clear()
-        val newObjects = questions[qNr] ?: emptyList()
-        _objects.addAll(newObjects)
-         */
+        _objects.addAll(currentObjects)
+
+        //history is cleared when changing to a new question
+        history.clear()
     }
 }
