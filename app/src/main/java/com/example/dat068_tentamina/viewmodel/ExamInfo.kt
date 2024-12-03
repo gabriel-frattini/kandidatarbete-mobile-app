@@ -35,6 +35,10 @@ class ExamInfo {
                 put("personalNumber", "0204120000")
                 put("name", "Che Long Tran")
             })
+            put("123OME", JSONObject().apply {
+                put("personalNumber", "0203060000")
+                put("name", "Ömer Gundogdu")
+            })
         }
         examObject = JSONObject().apply {
             put("testID", JSONObject().apply {
