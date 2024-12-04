@@ -58,20 +58,7 @@ class ExternalStorageManager {
         return stringBuilder
     }
     fun createNewFile(context: Context){
-        for(i in 0..100)
-        {
-            val createdFile = createFile(context,i.toString())
-            if(createdFile)
-            {
-                Toast.makeText(context,"FileCreated", Toast.LENGTH_SHORT).show()
-                val file : File? = getFile(context,i.toString())
 
-                write(file,"Hejsan detta är min data jag sparat!")
-            }
-            else{
-                Toast.makeText(context,"Failed in creating files",Toast.LENGTH_LONG).show()
-            }
-            /*
         val createdFile = createFile(context,"ExamBackup")
         if(createdFile)
         {
@@ -89,7 +76,5 @@ class ExternalStorageManager {
             Toast.makeText(context,"FailedInCreatingFile", Toast.LENGTH_SHORT).show()
         }
 
-             */
-        }
     }
 }
