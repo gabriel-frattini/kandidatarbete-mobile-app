@@ -155,9 +155,8 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
             text = { Text("Are you sure you want to submit the exam?") },
             confirmButton = {
                 Button(onClick = {
-                    viewModel.saveHistory()
                     val answers = viewModel.getAnswers()
-                    val pdfFile = PdfConverter.createPdfFromAnswers(answers, 1920, 1920, activity) // Adjust dimensions as needed
+                    val pdfFile = PdfConverter.createPdfFromAnswers(answers, 2560, 1700, activity) // Adjust dimensions as needed
                     ServerHandler.sendPdfToServer(pdfFile, "Math 101", "student_username")
                 }) {
                     Text("Confirm")
