@@ -1,5 +1,6 @@
 package com.example.dat068_tentamina.ui
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dat068_tentamina.R
+import com.example.dat068_tentamina.utilities.ServerHandler
 import com.example.dat068_tentamina.viewmodel.ExamInfo
 import java.time.LocalDate
 
@@ -89,8 +91,18 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
             )
         }
         ElevatedButton(
-            onClick = { if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text)){ onNavigateToExam() }
-                      },
+            onClick = {
+                ServerHandler.getExam(course = examId.component1().text, anonymousCode = anonymousCode.component1().text) { json ->
+                    if (json != null) {
+                        Log.d("ExamData", "ExamID: " + json.get("examID").asString)
+                        Log.d("ExamData", "AnonymousCode: " + json.get("anonymousCode").asString)
+                        Log.d("ExamData", "Questions: " + json.get("questions").asString)
+                        onNavigateToExam()
+                    } else {
+                        Log.e("ExamData", "Failed to fetch exam")
+                    }
+                }
+            },
             colors = ButtonColors(Color.DarkGray, Color.White, Color.LightGray, Color.LightGray),
             modifier = Modifier
                 .align(alignment = Alignment.CenterHorizontally)
