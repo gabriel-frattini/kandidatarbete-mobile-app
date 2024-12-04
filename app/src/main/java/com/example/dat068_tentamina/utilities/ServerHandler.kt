@@ -1,51 +1,110 @@
 package com.example.dat068_tentamina.utilities
 
-import android.telecom.Call
 import android.util.Log
-import androidx.tracing.perfetto.handshake.protocol.Response
-import okhttp3.Callback
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.RequestBody.Companion.asRequestBody
-
 import java.io.File
 import java.io.IOException
 
-
 class ServerHandler {
     companion object {
-        fun sendPdfToServer(pdfFile: File, course: String, username: String) {
-            val client = OkHttpClient()
+        private const val SCHEME = "http"
+        private const val HOST = "10.0.2.2"
+        private const val PORT = 3000
+        private val client = OkHttpClient()
 
+        fun sendPdfToServer(pdfFile: File, course: String, username: String) {
             // Create the multipart body
             val requestBody = MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("course", course)
                 .addFormDataPart("username", username)
-                .addFormDataPart("file", pdfFile.name, pdfFile.asRequestBody("application/pdf".toMediaType()))
+                .addFormDataPart(
+                    "file",
+                    pdfFile.name,
+                    pdfFile.asRequestBody("application/pdf".toMediaType())
+                )
+                .build()
+
+            // Construct the URL
+            val url = HttpUrl.Builder()
+                .scheme(SCHEME)
+                .host(HOST)
+                .port(PORT)
+                .addPathSegment("submit")
                 .build()
 
             // Create the HTTP request
             val request = Request.Builder()
-                .url("http://10.0.2.2:3000/submit")
+                .url(url)
                 .post(requestBody)
                 .build()
 
             // Enqueue the request
             client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: okhttp3.Call, e: IOException) {
+                override fun onFailure(call: Call, e: IOException) {
                     Log.e("SubmitExam", "Failed to send PDF", e)
                 }
 
-                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+                override fun onResponse(call: Call, response: Response) {
                     if (response.isSuccessful) {
                         Log.d("SubmitExam", "PDF submitted successfully")
                     } else {
                         Log.e("SubmitExam", "Server returned an error: ${response.message}")
                     }
                 }
+            })
+        }
+
+        fun getExam(course: String, anonymousCode: String, callback: (JsonObject?) -> Unit) {
+            // Construct the URL
+            val url = HttpUrl.Builder()
+                .scheme(SCHEME)
+                .host(HOST)
+                .port(PORT)
+                .addPathSegment("getExam")
+                .addQueryParameter("course", course)
+                .addQueryParameter("anonymousCode", anonymousCode)
+                .build()
+
+            // Build the GET request
+            val request = Request.Builder()
+                .url(url)
+                .get()
+                .build()
+
+            // Execute the request asynchronously
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    Log.e("GetExam", "Failed to fetch exam", e)
+                    callback(null) // Return null in case of failure
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    if (response.isSuccessful) {
+                        response.body?.string()?.let { responseBody ->
+                            try {
+                                val json = JsonParser.parseString(responseBody).asJsonObject
+                                // Post callback to main thread
+                                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                    callback(json)
+                                }
+                            } catch (e: Exception) {
+                                Log.e("GetExam", "Failed to parse JSON", e)
+                                callback(null)
+                            }
+                        } ?: run {
+                            callback(null)
+                        }
+                    } else {
+                        Log.e("GetExam", "Server returned an error: ${response.message}")
+                        callback(null)
+                    }
+                }
+
             })
         }
     }

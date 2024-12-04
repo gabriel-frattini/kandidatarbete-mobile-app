@@ -21,9 +21,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
 
@@ -102,9 +104,15 @@ fun DrawingScreen(viewModel: TentaViewModel) {
             label = { Text("Enter text") }
             )
             Button(onClick = {
+                val fSize = 20.sp
                 viewModel.addObject(TextBox(
                     position = textOffset,
-                    text = textMeasurer.measure(AnnotatedString(textValue))
+                    layoutRes = textMeasurer.measure(
+                        text = AnnotatedString(textValue),
+                        style = TextStyle(fontSize = fSize)
+                    ),
+                    text = textValue,
+                    fontSize = fSize
                 ))
                 viewModel.textMode.value = false
                 viewModel.eraser = false
