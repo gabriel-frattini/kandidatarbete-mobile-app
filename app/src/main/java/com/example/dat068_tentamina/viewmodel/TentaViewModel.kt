@@ -58,4 +58,8 @@ class TentaViewModel {
         //history is cleared when changing to a new question
         history.clear()
     }
+
+    fun getAnswers():Map<Int, List<CanvasObject>>{
+        return questions
+    }
 }

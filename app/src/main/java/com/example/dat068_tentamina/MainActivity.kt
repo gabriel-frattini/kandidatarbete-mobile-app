@@ -17,6 +17,7 @@ import android.content.Intent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
+import com.example.dat068_tentamina.ui.externalStorage
 
 
 sealed class Screen {
@@ -32,11 +33,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             DAT068TentaminaTheme {
                 val tentaViewModel = TentaViewModel()
-                val examInfo = remember {ExamInfo()}
                 val externalStorageManager = ExternalStorageManager()
+                val examInfo = remember {ExamInfo(tentaViewModel, externalStorageManager, this)}
+
                 tentaViewModel.addQuestions()
                 examInfo.createTestExamPeriodJSON()
-                externalStorageManager.createNewFile(this)
 
                 var currentScreen by remember { mutableStateOf<Screen>(Screen.Login)} // Start with Login
 

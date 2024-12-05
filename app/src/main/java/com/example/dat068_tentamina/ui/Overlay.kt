@@ -32,6 +32,7 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -138,6 +139,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, examInf
     var showInfoDialog by remember { mutableStateOf(false) }
 
     if (showInfoDialog) {
+        //TODO: Add a userguide as well???
         AlertDialog(
             onDismissRequest = { showInfoDialog = false },
             title = {Text("Student Information")},
@@ -145,7 +147,6 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, examInf
             confirmButton = {},
             dismissButton = {}
         )
-
     }
 
     Column (
@@ -166,7 +167,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, examInf
                 .align(alignment = Alignment.CenterHorizontally)
         ) {
                 IconButton(
-                    onClick = { showInfoDialog = true /*TODO: An actual information page with user info and user guide???*/},
+                    onClick = { showInfoDialog = true},
                     modifier = Modifier
                         .padding(10.dp)
                         .fillMaxSize()
