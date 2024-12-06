@@ -23,6 +23,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -32,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
-
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import androidx.compose.material3.TextField as TextField1
 
@@ -41,6 +41,8 @@ import androidx.compose.material3.TextField as TextField1
 fun DrawingScreen(viewModel: TentaViewModel) {
     var textValue by remember { mutableStateOf("") }
     var textOffset by remember { mutableStateOf(Offset(0f, 0f)) }
+    var editingTextBox by remember { mutableStateOf<TextBox?>(null) }
+    val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
 
     androidx.compose.foundation.Canvas(modifier = Modifier
@@ -51,7 +53,6 @@ fun DrawingScreen(viewModel: TentaViewModel) {
             onDragStart = { startPosition ->
                 if (!viewModel.textMode.value)
                     viewModel.saveHistory()
-
             },
             onDrag = { change, dragAmount ->
                 if (!viewModel.textMode.value) {
@@ -85,11 +86,57 @@ fun DrawingScreen(viewModel: TentaViewModel) {
                     // Handle the press event here, if needed
                 },
                 onTap = { offset ->
+                    Log.d("DrawingScreen", "onTap triggered at offset: $offset")
+                    Log.d("DrawingScreen", "Text mode is: ${viewModel.textMode.value}")
+                    // Convert the raw offset (in pixels) to dp
+                    val tappedDpOffset = with(density) {
+                        Offset(offset.x.toDp().value, offset.y.toDp().value)
+                    }
+
                     if (viewModel.textMode.value) {
                         viewModel.saveHistory()
-                        textOffset = Offset(offset.x / density, offset.y / density)
+                        Log.d("DrawingScreen", "Saved history in text mode")
+
+                        // Store the text offset in dp as well
+                        textOffset = tappedDpOffset
+                        Log.d("DrawingScreen", "Text offset set to: $textOffset")
+                    } else {
+                        Log.d("DrawingScreen", "Looking for a TextBox at the tapped location")
+
+                        // When checking if the tap hits a TextBox, we assume the TextBoxes are also stored in dp
+                        val tappedTextBox = viewModel.objects
+                            .filterIsInstance<TextBox>()
+                            .find { textBox ->
+                                Log.d("DrawingScreen", "Checking TextBox at position: ${textBox.position}")
+
+                                // TextBox.position and text measurements are assumed to be in dp
+                                val topLeft = textBox.position
+                                val size = Offset(
+                                    textBox.text.size.width.toFloat(),
+                                    textBox.text.size.height.toFloat()
+                                )
+                                val bottomRight = Offset(topLeft.x + size.x, topLeft.y + size.y)
+
+                                val isWithinBounds = tappedDpOffset.x in topLeft.x..bottomRight.x &&
+                                        tappedDpOffset.y in topLeft.y..bottomRight.y
+
+                                Log.d("DrawingScreen", "TextBox bounds: $topLeft to $bottomRight, Tapped inside: $isWithinBounds")
+                                isWithinBounds
+                            }
+
+                        if (tappedTextBox != null) {
+                            Log.d("DrawingScreen", "Tapped TextBox found: $tappedTextBox")
+                            editingTextBox = tappedTextBox
+                            textValue = tappedTextBox.text.layoutInput.text.text
+                            Log.d("DrawingScreen", "Editing TextBox with text: $textValue")
+                            textOffset = tappedTextBox.position
+                            Log.d("DrawingScreen", "TextBox offset set to: $textOffset")
+                        } else {
+                            Log.d("DrawingScreen", "No TextBox found at the tapped location")
+                        }
                     }
                 }
+
             )
         }
     ) {
@@ -98,6 +145,44 @@ fun DrawingScreen(viewModel: TentaViewModel) {
 
         }
     }
+
+    editingTextBox?.let { editing ->
+        // The measured size of the TextBox in pixels
+        val textBoxWidth = editing.text.size.width
+        val textBoxHeight = editing.text.size.height
+
+        // Convert from pixels to dp using the current density
+        val offsetX = with(density) { textBoxWidth.toDp() }
+        val offsetY = with(density) { textBoxHeight.toDp() }
+
+        // Position the editing UI at the bottom-right of the TextBox
+        Row(
+            modifier = Modifier.absoluteOffset(
+                x = (editing.position.x.dp + offsetX),
+                y = (editing.position.y.dp + offsetY)
+            )
+        ) {
+            OutlinedTextField(
+                value = textValue,
+                onValueChange = { textValue = it },
+                label = { Text("Edit text") }
+            )
+            Button(onClick = {
+                // Update the TextBox with new text
+                val updatedTextBox = editing.copy(
+                    text = textMeasurer.measure(AnnotatedString(textValue))
+                )
+                viewModel.replaceObject(editing, updatedTextBox)
+                editingTextBox = null
+                textValue = ""
+                textOffset = Offset(0f, 0f)
+            }) {
+                Text("OK")
+            }
+        }
+    }
+
+
     if (viewModel.textMode.value) {
         Row (modifier = Modifier.absoluteOffset(
             x = textOffset.x.dp,

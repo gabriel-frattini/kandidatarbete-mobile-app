@@ -58,4 +58,15 @@ class TentaViewModel {
         //history is cleared when changing to a new question
         history.clear()
     }
+
+    fun replaceObject(oldObject: CanvasObject, newObject: CanvasObject) {
+        val index = _objects.indexOf(oldObject)
+        if (index != -1) {
+            _objects[index] = newObject
+            questions[currentQuestion.intValue] = _objects.toList()
+        }
+    }
+
+
 }
+
