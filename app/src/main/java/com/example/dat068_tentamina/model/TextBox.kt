@@ -30,10 +30,7 @@ data class TextBox(
     override fun draw(drawScope: DrawScope) {
         drawScope.drawText(
             textLayoutResult = text,
-            topLeft = Offset(
-                x = position.x * 2,
-                y = position.y * 2
-            )
+            topLeft = position
         )
     }
 

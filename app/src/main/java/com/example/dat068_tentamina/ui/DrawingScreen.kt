@@ -85,52 +85,32 @@ fun DrawingScreen(viewModel: TentaViewModel) {
                 onPress = { offset ->
                     // Handle the press event here, if needed
                 },
+                // In onTap, do NOT convert to dp:
                 onTap = { offset ->
                     Log.d("DrawingScreen", "onTap triggered at offset: $offset")
                     Log.d("DrawingScreen", "Text mode is: ${viewModel.textMode.value}")
-                    // Convert the raw offset (in pixels) to dp
-                    val tappedDpOffset = with(density) {
-                        Offset(offset.x.toDp().value, offset.y.toDp().value)
-                    }
 
+                    // offset is in pixels, store it as pixels
                     if (viewModel.textMode.value) {
                         viewModel.saveHistory()
-                        Log.d("DrawingScreen", "Saved history in text mode")
-
-                        // Store the text offset in dp as well
-                        textOffset = tappedDpOffset
-                        Log.d("DrawingScreen", "Text offset set to: $textOffset")
+                        textOffset = offset // Store directly as pixels
                     } else {
-                        Log.d("DrawingScreen", "Looking for a TextBox at the tapped location")
-
-                        // When checking if the tap hits a TextBox, we assume the TextBoxes are also stored in dp
+                        // Find the tapped TextBox in pixels
                         val tappedTextBox = viewModel.objects
                             .filterIsInstance<TextBox>()
                             .find { textBox ->
-                                Log.d("DrawingScreen", "Checking TextBox at position: ${textBox.position}")
+                                val topLeft = textBox.position // Stored in pixels
+                                val sizePx = textBox.text.size // text.size is in pixels by default
+                                val bottomRight = Offset(topLeft.x + sizePx.width, topLeft.y + sizePx.height)
 
-                                // TextBox.position and text measurements are assumed to be in dp
-                                val topLeft = textBox.position
-                                val size = Offset(
-                                    textBox.text.size.width.toFloat(),
-                                    textBox.text.size.height.toFloat()
-                                )
-                                val bottomRight = Offset(topLeft.x + size.x, topLeft.y + size.y)
-
-                                val isWithinBounds = tappedDpOffset.x in topLeft.x..bottomRight.x &&
-                                        tappedDpOffset.y in topLeft.y..bottomRight.y
-
-                                Log.d("DrawingScreen", "TextBox bounds: $topLeft to $bottomRight, Tapped inside: $isWithinBounds")
-                                isWithinBounds
+                                offset.x in topLeft.x..bottomRight.x &&
+                                        offset.y in topLeft.y..bottomRight.y
                             }
 
                         if (tappedTextBox != null) {
-                            Log.d("DrawingScreen", "Tapped TextBox found: $tappedTextBox")
                             editingTextBox = tappedTextBox
                             textValue = tappedTextBox.text.layoutInput.text.text
-                            Log.d("DrawingScreen", "Editing TextBox with text: $textValue")
-                            textOffset = tappedTextBox.position
-                            Log.d("DrawingScreen", "TextBox offset set to: $textOffset")
+                            textOffset = tappedTextBox.position // Still in pixels
                         } else {
                             Log.d("DrawingScreen", "No TextBox found at the tapped location")
                         }
@@ -147,18 +127,20 @@ fun DrawingScreen(viewModel: TentaViewModel) {
     }
 
     editingTextBox?.let { editing ->
-        // Convert text size (in pixels) to dp
-        val textBoxWidthDp = with(density) { editing.text.size.width.toDp() }
-        val textBoxHeightDp = with(density) { editing.text.size.height.toDp() }
+        // editing.position is in pixels, text.size is in pixels
+        val textBoxWidthPx = editing.text.size.width
+        val textBoxHeightPx = editing.text.size.height
 
-        // editing.position should already be in dp units
-        val textBoxPositionXDp = editing.position.x.dp
-        val textBoxPositionYDp = editing.position.y.dp
+        // Convert pixels to dp at the very last moment when applying to layout
+        val posX = with(density) { editing.position.x.toDp() }
+        val posY = with(density) { editing.position.y.toDp() }
+        val widthDp = with(density) { textBoxWidthPx.toDp() }
+        val heightDp = with(density) { textBoxHeightPx.toDp() }
 
         Row(
             modifier = Modifier.absoluteOffset(
-                x = textBoxPositionXDp + textBoxWidthDp,
-                y = textBoxPositionYDp + textBoxHeightDp
+                x = posX + widthDp,
+                y = posY + heightDp
             )
         ) {
             OutlinedTextField(
@@ -182,29 +164,35 @@ fun DrawingScreen(viewModel: TentaViewModel) {
 
 
 
+
+
     if (viewModel.textMode.value) {
-        Row (modifier = Modifier.absoluteOffset(
-            x = textOffset.x.dp,
-            y = textOffset.y.dp
-        )) {
+        // textOffset is in pixels; convert at layout time only
+        val offsetX = with(density) { textOffset.x.toDp() }
+        val offsetY = with(density) { textOffset.y.toDp() }
+
+        Row(modifier = Modifier.absoluteOffset(x = offsetX, y = offsetY)) {
             OutlinedTextField(
-            value = textValue,
-            onValueChange = { textValue = it },
-            label = { Text("Enter text") }
+                value = textValue,
+                onValueChange = { textValue = it },
+                label = { Text("Enter text") }
             )
             Button(onClick = {
+                // Store new TextBox with position in pixels
                 viewModel.addObject(TextBox(
-                    position = textOffset,
+                    position = textOffset, // Still pixels
                     text = textMeasurer.measure(AnnotatedString(textValue))
                 ))
                 viewModel.textMode.value = false
                 viewModel.eraser = false
                 textValue = ""
                 textOffset = Offset(0f, 0f)
-            }) { Text("OK") }
+            }) {
+                Text("OK")
+            }
         }
-
     }
+
 
 }
 
