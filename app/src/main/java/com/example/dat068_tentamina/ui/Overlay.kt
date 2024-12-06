@@ -35,7 +35,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.R
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -196,7 +194,11 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, examInf
                 Button(
                     onClick = {
                         println("Bytte fråga till $key ")
-                        viewModel.changeQuestion(key)
+                        viewModel.changeQuestion(
+                            qNr = key,
+                            newObjects = viewModel.objects.toList(),
+                            canvasHeight = viewModel.currentCanvasHeight.value
+                        )
                               },
                     modifier = Modifier
                         .padding(10.dp)

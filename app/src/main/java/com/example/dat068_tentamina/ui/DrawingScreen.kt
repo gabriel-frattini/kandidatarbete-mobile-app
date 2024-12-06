@@ -60,14 +60,17 @@ fun DrawingScreen(viewModel: TentaViewModel) {
     val verticalScrollState = rememberScrollState()
     val density = LocalDensity.current.density
 
-    var canvasHeight by remember {mutableStateOf(2400.dp)}
+    var canvasHeight by remember { mutableStateOf(viewModel.currentCanvasHeight.value) }
 
+    LaunchedEffect(viewModel.currentQuestion.intValue) {
+        canvasHeight = viewModel.currentCanvasHeight.value
+    }
     LaunchedEffect(viewModel.objects) {
         val newHeight = calculateCanvasHeight(viewModel.objects, density)
         Log.d("CanvasDebug", "Calculated New Height: $newHeight, Current Height: $canvasHeight")
         if (newHeight > canvasHeight) {
             canvasHeight = newHeight
-            Log.d("CanvasDebug", "Updated Canvas Height to: $canvasHeight")
+            viewModel.updateCanvasHeight(newHeight)
         }
     }
 
@@ -230,7 +233,7 @@ private fun expandCanvasIfNeeded(
 
     // Expand canvas if the object is close to the current height
     if (currentHeightPx - bottomY <= thresholdPx) {
-        val newHeight = (currentHeightPx / density).dp + 400.dp // Add buffer space
+        val newHeight = (currentHeightPx / density).dp + 600.dp // Add buffer space
         onHeightUpdate(newHeight)
     }
 }
