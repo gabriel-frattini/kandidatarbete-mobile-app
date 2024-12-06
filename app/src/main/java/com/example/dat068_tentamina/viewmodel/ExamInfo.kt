@@ -2,8 +2,10 @@ package com.example.dat068_tentamina.viewmodel
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.Composable
 import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
 import com.example.dat068_tentamina.model.CanvasObject
+import com.example.dat068_tentamina.ui.continueOldExamPopUp
 import org.json.JSONArray
 import org.json.JSONObject
 class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: Context) {
@@ -108,7 +110,7 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
     }
 // checks if the anonymousCode and examID entered is valid
 // (+ temporarily does the creation of a studentObject and storageObject, this will not be here later on)
-    fun loginCheck(aCode: String, exId: String): Boolean {
+fun loginCheck(aCode: String, exId: String): Boolean {
         val examObj = examObject.optJSONObject(exId) ?: return false
 
         val studentsArray = examObj.optJSONArray("students") ?: return false
@@ -132,6 +134,7 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
 
                     createStudentObject()
                     createStorageJSON()
+                    externalStorageManager.writeToBackUp(context,storageObject)
                     return true
                 }
             }

@@ -17,7 +17,7 @@ fun continueOldExamPopUp(examInfo: ExamInfo){
             confirmButton = {
                 TextButton(
                     onClick = {
-                        examInfo.continueAlreadyStartedExam()
+                        //examInfo.continueAlreadyStartedExam()
                         //TODO: Remove popup
                     }
                 ) {
@@ -27,7 +27,7 @@ fun continueOldExamPopUp(examInfo: ExamInfo){
             dismissButton = {
                 TextButton(
                     onClick = {
-                        // TODO: overwrite the exam (whcih should be done atomatically at next save of current to SD)?????
+                        // TODO: overwrite the exam (which should be done automatically at next save of current to SD)?????
                         //TODO: remove popUp
                     }
                 ) {

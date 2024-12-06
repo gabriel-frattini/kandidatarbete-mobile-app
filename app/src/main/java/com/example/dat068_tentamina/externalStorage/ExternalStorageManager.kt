@@ -15,20 +15,28 @@ import java.io.IOException
 class ExternalStorageManager {
     // checks if we can read and write to externalStorage, we should be able to do so as the tablet should handle this.
     val isExternalStorageWritable : Boolean get() = Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
-    private val backUpFileName = "ExamBackUp.txt"
+    val backUpFileName = "ExamBackUp.txt"
 
-    fun getExternalStoragePath(context: Context): File {
+    fun getExternalStorageVolumes(context: Context): File {
         val externalStorageVolumes = ContextCompat.getExternalFilesDirs(context, null)
         return externalStorageVolumes[0]
     }
-    //create file to store
+    //create file to store, if able to store it will return true otherwise false
     private fun createFile(context: Context, fileName: String?) :Boolean
     {
-        val appSpecificExternalDir = fileName?.let { File(context.getExternalFilesDir(fileName),it) }
-        return appSpecificExternalDir!=null
+        //val appSpecificExternalDir = fileName?.let { File(context.getExternalFilesDir(fileName),it) }
+        //return appSpecificExternalDir!=null
+        if (fileName.isNullOrEmpty()) return false
+
+        val appSpecificExternalDir = context.getExternalFilesDir(null) ?: return false
+
+        val file = File(appSpecificExternalDir, fileName)
+        return true
     }
-    private fun getFile(context: Context, fileName: String?): File? {
-        return fileName?.let { File(context.getExternalFilesDir(fileName),it) }
+    fun getFile(context: Context, fileName: String?): File? {
+        return fileName?.let {
+            File(context.getExternalFilesDir(null), it)
+        }
     }
     private fun write(file: File?, data: String?)
     {
@@ -41,7 +49,7 @@ class ExternalStorageManager {
             e.printStackTrace()
         }
     }
-    private fun read(file: File?): StringBuilder{
+    fun read(file: File?): StringBuilder{
         var line: String?
         val stringBuilder = StringBuilder()
         try{
@@ -66,7 +74,7 @@ class ExternalStorageManager {
             val file : File? = getFile(context,"ExamBackUp")
 
             write(file,data.toString())
-            Toast.makeText(context,"BAckUp Written To File",Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,"BackUp Written To File",Toast.LENGTH_SHORT).show()
 
             val stringBuilder = read(file)
             Toast.makeText(context, stringBuilder.toString(),Toast.LENGTH_LONG).show()
