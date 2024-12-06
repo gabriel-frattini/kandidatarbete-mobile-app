@@ -147,19 +147,18 @@ fun DrawingScreen(viewModel: TentaViewModel) {
     }
 
     editingTextBox?.let { editing ->
-        // The measured size of the TextBox in pixels
-        val textBoxWidth = editing.text.size.width
-        val textBoxHeight = editing.text.size.height
+        // Convert text size (in pixels) to dp
+        val textBoxWidthDp = with(density) { editing.text.size.width.toDp() }
+        val textBoxHeightDp = with(density) { editing.text.size.height.toDp() }
 
-        // Convert from pixels to dp using the current density
-        val offsetX = with(density) { textBoxWidth.toDp() }
-        val offsetY = with(density) { textBoxHeight.toDp() }
+        // editing.position should already be in dp units
+        val textBoxPositionXDp = editing.position.x.dp
+        val textBoxPositionYDp = editing.position.y.dp
 
-        // Position the editing UI at the bottom-right of the TextBox
         Row(
             modifier = Modifier.absoluteOffset(
-                x = (editing.position.x.dp + offsetX),
-                y = (editing.position.y.dp + offsetY)
+                x = textBoxPositionXDp + textBoxWidthDp,
+                y = textBoxPositionYDp + textBoxHeightDp
             )
         ) {
             OutlinedTextField(
@@ -168,7 +167,6 @@ fun DrawingScreen(viewModel: TentaViewModel) {
                 label = { Text("Edit text") }
             )
             Button(onClick = {
-                // Update the TextBox with new text
                 val updatedTextBox = editing.copy(
                     text = textMeasurer.measure(AnnotatedString(textValue))
                 )
@@ -181,6 +179,7 @@ fun DrawingScreen(viewModel: TentaViewModel) {
             }
         }
     }
+
 
 
     if (viewModel.textMode.value) {
