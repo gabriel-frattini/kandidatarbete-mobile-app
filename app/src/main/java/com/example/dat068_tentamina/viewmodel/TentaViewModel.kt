@@ -67,6 +67,11 @@ class TentaViewModel {
         }
     }
 
+    fun removeObject(obj: CanvasObject) {
+        _objects.remove(obj)
+        questions[currentQuestion.intValue] = _objects.toList()
+    }
+
 
 }
 
