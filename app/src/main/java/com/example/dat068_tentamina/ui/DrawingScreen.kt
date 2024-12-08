@@ -35,11 +35,8 @@ import com.example.dat068_tentamina.viewmodel.TentaViewModel
 fun DrawingScreen(viewModel: TentaViewModel) {
     var textValue by remember { mutableStateOf("") }
     var textOffset by remember { mutableStateOf(Offset.Zero) }
-
-    val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
 
-    // Canvas for drawing and detecting taps
     androidx.compose.foundation.Canvas(
         modifier = Modifier
             .background(Color.White)
@@ -73,37 +70,25 @@ fun DrawingScreen(viewModel: TentaViewModel) {
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = { offset ->
-                        Log.d("DrawingScreen", "onTap triggered at offset: $offset")
-                        Log.d("DrawingScreen", "Text mode is: ${viewModel.textMode.value}")
-
                         if (viewModel.textMode.value) {
-                            // In text mode, we are either creating a new text box or finalizing one.
                             if (textValue.isEmpty()) {
-                                // Place the text field at this position if no text yet
                                 viewModel.saveHistory()
                                 textOffset = offset
                             } else {
-                                // If textValue isn't empty, finalize the text box
                                 createTextBox(viewModel, textValue, textOffset, textMeasurer)
-                                // Reset states
                                 textValue = ""
                                 textOffset = Offset.Zero
                                 viewModel.textMode.value = false
                                 viewModel.eraser = false
                             }
                         } else {
-                            // Not in text mode, check if tapped on an existing text box
                             val tappedTextBox = findTappedTextBox(viewModel, offset)
                             if (tappedTextBox != null) {
-                                // Remove the old TextBox
                                 viewModel.removeObject(tappedTextBox)
-                                // Set text mode to true to "edit" by creating a new one
                                 viewModel.saveHistory()
                                 textOffset = tappedTextBox.position
                                 textValue = tappedTextBox.text.layoutInput.text.text
                                 viewModel.textMode.value = true
-                            } else {
-                                Log.d("DrawingScreen", "No TextBox found at the tapped location")
                             }
                         }
                     }
@@ -115,7 +100,6 @@ fun DrawingScreen(viewModel: TentaViewModel) {
         }
     }
 
-    // If we are in text mode and have a position, show the editable text field
     if (viewModel.textMode.value && textOffset != Offset.Zero) {
         EditableTextField(
             initialText = textValue,
@@ -123,11 +107,9 @@ fun DrawingScreen(viewModel: TentaViewModel) {
             label = "Enter text",
             onTextChange = { textValue = it },
             onFocusLost = {
-                // On focus lost, if there's text, finalize the text box
                 if (textValue.isNotEmpty()) {
                     createTextBox(viewModel, textValue, textOffset, textMeasurer)
                 }
-                // Reset states
                 textValue = ""
                 textOffset = Offset.Zero
                 viewModel.textMode.value = false
@@ -172,7 +154,6 @@ private fun EditableTextField(
                 .focusRequester(focusRequester)
                 .onFocusChanged { focusState ->
                     if (!focusState.isFocused && hasBeenFocused) {
-                        // Focus lost after being focused at least once
                         onFocusLost()
                     }
                     if (focusState.isFocused) {
