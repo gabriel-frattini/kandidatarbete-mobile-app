@@ -87,24 +87,21 @@ class ServerHandler {
                     if (response.isSuccessful) {
                         response.body?.string()?.let { responseBody ->
                             try {
+                                // Parse the JSON response
                                 val json = JsonParser.parseString(responseBody).asJsonObject
-                                // Post callback to main thread
-                                android.os.Handler(android.os.Looper.getMainLooper()).post {
-                                    callback(json)
-                                }
+                                callback(json) // Return the parsed JSON
                             } catch (e: Exception) {
                                 Log.e("GetExam", "Failed to parse JSON", e)
                                 callback(null)
                             }
                         } ?: run {
-                            callback(null)
+                            callback(null) // No response body
                         }
                     } else {
                         Log.e("GetExam", "Server returned an error: ${response.message}")
                         callback(null)
                     }
                 }
-
             })
         }
     }
