@@ -16,7 +16,7 @@ class ExternalStorageManager {
     val isExternalStorageWritable : Boolean get() = Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
     val backUpFileName = "ExamBackUp.txt"
 
-    fun getExternalStorageVolumes(context: Context): File {
+    private fun getExternalStorageVolumes(context: Context): File {
         val externalStorageVolumes = ContextCompat.getExternalFilesDirs(context, null)
         return externalStorageVolumes[0]
     }
@@ -42,7 +42,7 @@ class ExternalStorageManager {
         }
     }
     // this one works.
-    fun getFile(context: Context, fileName: String?): File? {
+    private fun getFile(context: Context, fileName: String?): File? {
         return fileName?.let {
             File(context.getExternalFilesDir(null), it)
         }
@@ -60,7 +60,7 @@ class ExternalStorageManager {
         }
     }
     //this one works
-    fun read(file: File?): StringBuilder{
+    private fun read(file: File?): StringBuilder{
         var line: String?
         val stringBuilder = StringBuilder()
         try{
@@ -85,6 +85,7 @@ class ExternalStorageManager {
             Toast.makeText(context,"BackUp Created", Toast.LENGTH_SHORT).show()
             val file : File? = getFile(context,backUpFileName)
 
+            //TODO: Remove the prints as they are debugging tools
             write(file,data.toString())
             Toast.makeText(context,"BackUp Written To File",Toast.LENGTH_SHORT).show()
 
@@ -93,7 +94,7 @@ class ExternalStorageManager {
 
         }
         else{
-            Toast.makeText(context,"Failed in making external backup", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,"Failed in making external backup!", Toast.LENGTH_SHORT).show()
         }
     }
 //works

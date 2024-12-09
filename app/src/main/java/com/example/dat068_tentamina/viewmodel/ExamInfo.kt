@@ -87,23 +87,21 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
         return externalStorageManager.readFromBackUp(context)
 
     }
-    fun testReadFromBackUp(): JSONObject?{
-        return externalStorageManager.readFromBackUp(context)
-    }
 
-
-//Doe s not work at the moment. Do not call this function. The app will likely crash - alice
+    // check if there is a recoverable exam on external storage for said examID and anonymousCode
     fun alreadyStartedExamExist() : Boolean{
         if(externalStorageManager.backUpExists(context) )
         {
-            //fel hantering krävs, för den kan ju innehålla ngt annat
 
-            val storedObject  = getStorageObjectFromExternal()
+            val storedObject: JSONObject = getStorageObjectFromExternal()?:return false
 
-            if (storedObject == null){return false}
+            val storedAnonymousCode: String =
+                storedObject.optJSONObject("studentInfo")?.optString("anonymousCode","") ?: return false
 
-            val storedAnonymousCode = storedObject.get("anonymousCode")
-            val storedExamID = storedObject.get("examID")
+
+            val storedExamID: String = storedObject.optString("examID","")
+
+            //val storedExamID: String? = storedObject.get("examID") as? String
 
             return storedExamID == examID && storedAnonymousCode == anonymousCode
         }
@@ -113,6 +111,9 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
     fun continueAlreadyStartedExam(){
 
         tentaViewModel.questions = getStorageObjectFromExternal()?.get("answers") as MutableMap<Int, List<CanvasObject>>
+    }
+    fun startBackUp(){
+         externalStorageManager.writeToBackUp(context,storageObject)
     }
 // checks if the anonymousCode and examID entered is valid
 // (+ temporarily does the creation of a studentObject and storageObject, this will not be here later on)
@@ -124,8 +125,6 @@ fun loginCheck(aCode: String, exId: String): Boolean {
         for (i in 0 until studentsArray.length()) {
             val student = studentsArray.getJSONObject(i)
             if (student.getString("anonymousCode") == aCode) {
-                Log.d("examinfo", exId)
-                Log.d("examinfo", aCode)
 
                 val studentInfo = student.optJSONObject("studentInfo")
                 if (studentInfo != null) {
@@ -134,15 +133,9 @@ fun loginCheck(aCode: String, exId: String): Boolean {
                     examID = exId
                     anonymousCode = aCode
 
-                    Log.d("examinfo", name)
-                    Log.d("examinfo", anonymousCode)
-                    Log.d("examinfo", personalNumber)
 
                     createStudentObject()
                     createStorageJSON()
-                    externalStorageManager.writeToBackUp(context,storageObject)
-
-
                     return true
                 }
             }

@@ -92,6 +92,7 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
         }
         ElevatedButton(
             onClick = { if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text)){
+                examInfo.startBackUp()
                 onNavigateToExam()
             } },
             colors = ButtonColors(Color.DarkGray, Color.White, Color.LightGray, Color.LightGray),
@@ -105,14 +106,16 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
         }
         ElevatedButton(
             onClick = {
-                //if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text )) {
-                   // if (examInfo.alreadyStartedExamExist()) {
-                       // println("There is a recoverable exam")
-                   // }
-                //}
-                println(examInfo.testReadFromBackUp())
-                println("No recoverable exam, you will be starting a new one")
-                onNavigateToExam()
+                if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text ))
+                {
+                    if (examInfo.alreadyStartedExamExist()) {
+                        println("There is a recoverable exam")
+                       // examInfo.continueAlreadyStartedExam()
+                        onNavigateToExam()
+                    }
+                    println("No recoverable exam, you will be starting a new one")
+                }
+
             } ,
             colors = ButtonColors(Color.LightGray, Color.White, Color.LightGray, Color.LightGray),
             modifier = Modifier
