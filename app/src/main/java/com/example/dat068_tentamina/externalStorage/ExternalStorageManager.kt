@@ -82,19 +82,19 @@ class ExternalStorageManager {
         val createdFile = createFile(context,backUpFileName)
         if(createdFile)
         {
-            Toast.makeText(context,"BackUp Created", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(context,"BackUp Created", Toast.LENGTH_SHORT).show()
             val file : File? = getFile(context,backUpFileName)
 
-            //TODO: Remove the prints as they are debugging tools
+
             write(file,data.toString())
-            Toast.makeText(context,"BackUp Written To File",Toast.LENGTH_SHORT).show()
+            //Toast.makeText(context,"BackUp Written To File",Toast.LENGTH_SHORT).show()
 
             val stringBuilder = read(file)
-            Toast.makeText(context, stringBuilder.toString(),Toast.LENGTH_LONG).show()
+            //Toast.makeText(context, stringBuilder.toString(),Toast.LENGTH_LONG).show()
 
         }
         else{
-            Toast.makeText(context,"Failed in making external backup!", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(context,"Failed in making external backup!", Toast.LENGTH_SHORT).show()
         }
     }
 //works

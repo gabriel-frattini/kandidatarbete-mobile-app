@@ -106,11 +106,13 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
         }
         ElevatedButton(
             onClick = {
+                // this should be moved out of the login ui
                 if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text ))
                 {
                     if (examInfo.alreadyStartedExamExist()) {
                         println("There is a recoverable exam")
-                       // examInfo.continueAlreadyStartedExam()
+                        examInfo.continueAlreadyStartedExam()
+                        examInfo.startBackUp()
                         onNavigateToExam()
                     }
                     println("No recoverable exam, you will be starting a new one")

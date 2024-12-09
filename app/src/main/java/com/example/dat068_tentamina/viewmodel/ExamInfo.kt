@@ -6,8 +6,18 @@ import androidx.compose.runtime.Composable
 import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.ui.continueOldExamPopUp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Timer
+import java.util.TimerTask
+import java.util.concurrent.Executors
+
 class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: Context) {
     var examObject = JSONObject()
     var studentsObject = JSONObject()
@@ -20,6 +30,8 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
     private var tentaViewModel: TentaViewModel = tV
     private var externalStorageManager : ExternalStorageManager = exManager
     private var context : Context = context
+    val job = Job()
+    val scope = CoroutineScope(Dispatchers.Default + job)
 
 
     fun getAnonymousCode(): String {
@@ -82,7 +94,7 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
             put("answers",tentaViewModel.getAnswers() )
         }
     }
-    private fun getStorageObjectFromExternal():JSONObject?{
+    private fun getStorageObjectFromExternal(): JSONObject? {
         //fel hantering behövs, vad om det ej finns en fil
         return externalStorageManager.readFromBackUp(context)
 
@@ -95,26 +107,68 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
 
             val storedObject: JSONObject = getStorageObjectFromExternal()?:return false
 
-            val storedAnonymousCode: String =
-                storedObject.optJSONObject("studentInfo")?.optString("anonymousCode","") ?: return false
+            val storedAnonymousCode: String = storedObject.optJSONObject("studentInfo")?.optString("anonymousCode","") ?: return false
 
 
             val storedExamID: String = storedObject.optString("examID","")
-
-            //val storedExamID: String? = storedObject.get("examID") as? String
 
             return storedExamID == examID && storedAnonymousCode == anonymousCode
         }
       return false
     }
 
-    fun continueAlreadyStartedExam(){
+    // Recovers exam answers. Hae a boolean for checking if everything went correctly
+    fun continueAlreadyStartedExam(): Boolean{
 
-        tentaViewModel.questions = getStorageObjectFromExternal()?.get("answers") as MutableMap<Int, List<CanvasObject>>
+        val storedObject = getStorageObjectFromExternal()
+
+        tentaViewModel.questions = if (storedObject != null) {
+            val answers = storedObject.opt("answers")
+            if (answers is Map<*, *>) {
+                try {
+                    //@Suppress("UNCHECKED_CAST")
+                    answers as MutableMap<Int, List<CanvasObject>>
+                    return true
+
+                } catch (e: ClassCastException) {
+                    e.printStackTrace()
+                    Log.e("ExamError", "Invalid type, start new exam?")
+                    mutableMapOf() // Fallback to an empty map
+                }
+            } else {
+
+                mutableMapOf() // Fallback to an empty map
+            }
+        } else {
+            Log.e("ExamError", "No stored object available from external storage. Using empty map.")
+            mutableMapOf() // Fallback to an empty map
+        }
+        return false
+
     }
+
     fun startBackUp(){
          externalStorageManager.writeToBackUp(context,storageObject)
+         startPerodicallyUpdatingExternalStorage(scope)
     }
+    private fun startPerodicallyUpdatingExternalStorage(scope: CoroutineScope) {
+        scope.launch {
+            while (isActive) { // Ensures the coroutine can be canceled
+                updateStorageObject()
+                delay(30 * 1000L) // 30 second delay
+            }
+        }
+    }
+
+    private fun updateStorageObject(){
+
+        storageObject.put("answers",tentaViewModel.getAnswers())
+
+        externalStorageManager.writeToBackUp(context,storageObject)
+    }
+
+
+
 // checks if the anonymousCode and examID entered is valid
 // (+ temporarily does the creation of a studentObject and storageObject, this will not be here later on)
 fun loginCheck(aCode: String, exId: String): Boolean {

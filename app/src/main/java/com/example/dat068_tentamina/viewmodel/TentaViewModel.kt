@@ -8,6 +8,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.ui.DrawingScreen
+import kotlin.math.log
 
 class TentaViewModel {
     private var _objects = mutableStateListOf<CanvasObject>()
