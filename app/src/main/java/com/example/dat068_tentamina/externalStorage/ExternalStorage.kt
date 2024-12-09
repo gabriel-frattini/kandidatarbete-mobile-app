@@ -7,7 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.provider.Settings
-import com.example.dat068_tentamina.ui.externalStorage
+//import com.example.dat068_tentamina.ui.externalStorage
 
 class ExternalStorage {
     fun checkPermission():Boolean{

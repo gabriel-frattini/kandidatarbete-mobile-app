@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Environment
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import com.example.dat068_tentamina.ui.externalStorage
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.File
@@ -31,13 +30,24 @@ class ExternalStorageManager {
         val appSpecificExternalDir = context.getExternalFilesDir(null) ?: return false
 
         val file = File(appSpecificExternalDir, fileName)
-        return true
+        return try {
+            // Attempt to create the file
+            if (!file.exists()) {
+                file.createNewFile() // Create the file on disk
+            }
+            true // Return true if file was successfully created or already exists
+        } catch (e: IOException) {
+            e.printStackTrace()
+            false // Return false if an error occurred
+        }
     }
+    // this one works.
     fun getFile(context: Context, fileName: String?): File? {
         return fileName?.let {
             File(context.getExternalFilesDir(null), it)
         }
     }
+    // this one works
     private fun write(file: File?, data: String?)
     {
         try{
@@ -49,6 +59,7 @@ class ExternalStorageManager {
             e.printStackTrace()
         }
     }
+    //this one works
     fun read(file: File?): StringBuilder{
         var line: String?
         val stringBuilder = StringBuilder()
@@ -65,13 +76,14 @@ class ExternalStorageManager {
         }
         return stringBuilder
     }
+    // this one works
     fun writeToBackUp(context: Context, data: JSONObject){
 
         val createdFile = createFile(context,backUpFileName)
         if(createdFile)
         {
             Toast.makeText(context,"BackUp Created", Toast.LENGTH_SHORT).show()
-            val file : File? = getFile(context,"ExamBackUp")
+            val file : File? = getFile(context,backUpFileName)
 
             write(file,data.toString())
             Toast.makeText(context,"BackUp Written To File",Toast.LENGTH_SHORT).show()
@@ -84,17 +96,22 @@ class ExternalStorageManager {
             Toast.makeText(context,"Failed in making external backup", Toast.LENGTH_SHORT).show()
         }
     }
-
+//works
     fun readFromBackUp(context: Context): JSONObject?{
         val file = getFile(context, backUpFileName)
-        if(file!=null)
+        if(backUpExists(context))
         {
             val stringBuilder = read(file)
             return JSONObject(stringBuilder.toString())
         }
         return null
     }
+    // works
     fun backUpExists(context: Context): Boolean {
-        return getFile(context, backUpFileName) != null
+        val appSpecificExternalDir = context.getExternalFilesDir(null) ?: return false
+        val file = File(appSpecificExternalDir,backUpFileName)
+        return file.exists()
     }
+
+
 }

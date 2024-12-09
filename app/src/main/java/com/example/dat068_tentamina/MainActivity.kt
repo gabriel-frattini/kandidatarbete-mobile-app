@@ -17,7 +17,7 @@ import android.content.Intent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
-import com.example.dat068_tentamina.ui.externalStorage
+//import com.example.dat068_tentamina.ui.externalStorage
 
 
 sealed class Screen {

@@ -36,6 +36,7 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
 
 
     fun createTestExamPeriodJSON() {
+        //should be able to remove this test as soon as it is merged with submit...
 
         studentsObject = JSONObject().apply {
             put("123ALI", JSONObject().apply {
@@ -86,15 +87,20 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
         return externalStorageManager.readFromBackUp(context)
 
     }
+    fun testReadFromBackUp(): JSONObject?{
+        return externalStorageManager.readFromBackUp(context)
+    }
 
-    fun alreadyStartedExam() : Boolean{
-        if(externalStorageManager.backUpExists(context))
+
+//Doe s not work at the moment. Do not call this function. The app will likely crash - alice
+    fun alreadyStartedExamExist() : Boolean{
+        if(externalStorageManager.backUpExists(context) )
         {
             //fel hantering krävs, för den kan ju innehålla ngt annat
 
             val storedObject  = getStorageObjectFromExternal()
 
-            if (storedObject== null){return false}
+            if (storedObject == null){return false}
 
             val storedAnonymousCode = storedObject.get("anonymousCode")
             val storedExamID = storedObject.get("examID")
@@ -135,6 +141,8 @@ fun loginCheck(aCode: String, exId: String): Boolean {
                     createStudentObject()
                     createStorageJSON()
                     externalStorageManager.writeToBackUp(context,storageObject)
+
+
                     return true
                 }
             }

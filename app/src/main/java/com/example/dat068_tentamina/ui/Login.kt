@@ -29,9 +29,8 @@ import androidx.compose.ui.unit.sp
 import com.example.dat068_tentamina.R
 import com.example.dat068_tentamina.viewmodel.ExamInfo
 import com.example.dat068_tentamina.externalStorage.ExternalStorage
+import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
 import java.time.LocalDate
-
-val externalStorage = ExternalStorage()
 
 @Composable
 fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
@@ -103,6 +102,26 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 .requiredWidth(250.dp)
         ) {
             Text("Check in", fontSize = 25.sp)
+        }
+        ElevatedButton(
+            onClick = {
+                //if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text )) {
+                   // if (examInfo.alreadyStartedExamExist()) {
+                       // println("There is a recoverable exam")
+                   // }
+                //}
+                println(examInfo.testReadFromBackUp())
+                println("No recoverable exam, you will be starting a new one")
+                onNavigateToExam()
+            } ,
+            colors = ButtonColors(Color.LightGray, Color.White, Color.LightGray, Color.LightGray),
+            modifier = Modifier
+                .align(alignment = Alignment.CenterHorizontally)
+                .padding(10.dp)
+                .requiredHeight(75.dp)
+                .requiredWidth(250.dp)
+        ) {
+            Text("Recover exam", fontSize = 25.sp)
         }
         Image(
             painter = painterResource(id = R.drawable.chalmers_logo),
