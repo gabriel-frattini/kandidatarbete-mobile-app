@@ -1,5 +1,6 @@
 package com.example.dat068_tentamina
 
+import ExamInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,7 +13,6 @@ import com.example.dat068_tentamina.ui.theme.DAT068TentaminaTheme
 import com.example.dat068_tentamina.ui.Overlay
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import com.example.dat068_tentamina.ui.Login
-import com.example.dat068_tentamina.viewmodel.ExamInfo
 import org.json.JSONObject
 
 
@@ -31,11 +31,10 @@ class MainActivity : ComponentActivity() {
                 val tentaViewModel = TentaViewModel()
                 val examInfo = ExamInfo()
                 tentaViewModel.addQuestions()
-                examInfo.createTestExamPeriodJSON()
             var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) } // Start with Login
 
             when (currentScreen) {
-                Screen.Overlay -> Overlay(tentaViewModel,this)
+                Screen.Overlay -> Overlay(tentaViewModel,this, examInfo)
                 Screen.Login -> Login(examInfo,onNavigateToExam = { currentScreen = Screen.Overlay })
             }
         }
