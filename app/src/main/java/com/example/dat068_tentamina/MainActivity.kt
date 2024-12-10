@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DAT068TentaminaTheme {
-                val tentaViewModel = TentaViewModel()
+                val tentaViewModel = remember{TentaViewModel()}
                 val externalStorageManager = ExternalStorageManager()
                 val examInfo = remember {ExamInfo(tentaViewModel, externalStorageManager, this)}
 

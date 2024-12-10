@@ -3,11 +3,15 @@ package com.example.dat068_tentamina.viewmodel
 import Stack
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.ui.DrawingScreen
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.log
 
 class TentaViewModel {
@@ -20,11 +24,13 @@ class TentaViewModel {
     var eraser = false
     var currentQuestion = mutableIntStateOf(1)
     val objects: SnapshotStateList<CanvasObject> get() = _objects
-    var questions = mutableMapOf<Int, List<CanvasObject>>()
+    var questions = mutableStateMapOf<Int, List<CanvasObject>>()
 
+    @Synchronized
     fun addObject(obj: CanvasObject) {
-        objects.add(obj)
-        questions[currentQuestion.intValue] = _objects.toList()
+            objects.add(obj)
+            questions[currentQuestion.intValue] = _objects.toList()
+
     }
 
     fun pop() {
@@ -60,7 +66,8 @@ class TentaViewModel {
         history.clear()
     }
 
-    fun getAnswers():Map<Int, List<CanvasObject>>{
-        return questions
+    @Synchronized
+     fun getAnswers(): Map<Int, List<CanvasObject>> {
+             return questions.toMap()
     }
 }
