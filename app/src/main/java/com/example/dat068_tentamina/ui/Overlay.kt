@@ -1,5 +1,6 @@
 package com.example.dat068_tentamina.ui
 
+import ExamInfo
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfDocument
 import android.util.Log
@@ -65,7 +66,7 @@ import com.example.dat068_tentamina.utilities.ServerHandler
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Overlay(viewModel: TentaViewModel, activity: MainActivity) {
+fun Overlay(viewModel: TentaViewModel, activity: MainActivity, examInfo: ExamInfo) {
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -75,7 +76,7 @@ fun Overlay(viewModel: TentaViewModel, activity: MainActivity) {
         drawerContent = {
             ModalDrawerSheet {
                 //The content of the menu
-                MenuScreen(modifier = Modifier,viewModel, activity)
+                MenuScreen(modifier = Modifier,viewModel, activity, examInfo)
 
             }
         },
@@ -144,7 +145,7 @@ fun ExamScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel ) {
     }
 }
 @Composable
-fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activity: MainActivity) {
+fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activity: MainActivity, examInfo: ExamInfo) {
     val scrollState = rememberScrollState()
     var showDialog by remember { mutableStateOf(false)}
 
@@ -157,7 +158,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
                 Button(onClick = {
                     val answers = viewModel.getAnswers()
                     val pdfFile = PdfConverter.createPdfFromAnswers(answers, 2560, 1700, activity) // Adjust dimensions as needed
-                    ServerHandler.sendPdfToServer(pdfFile, "Math 101", "student_username")
+                    examInfo.sendPdf(pdfFile, "Math 101", "student_username")
                 }) {
                     Text("Confirm")
                 }
