@@ -1,6 +1,7 @@
 package com.example.dat068_tentamina.viewmodel
 
 import Stack
+import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,10 +46,12 @@ class TentaViewModel {
         history.append(_objects.toList())
     }
 
-    fun addQuestions() {
-        for (i in 1..5) {
+    fun addQuestions(size : Int) {
+        for (i in 1..size) {
             questions[i] = emptyList()
+
         }
+
     }
 
     fun changeQuestion(qNr: Int) {

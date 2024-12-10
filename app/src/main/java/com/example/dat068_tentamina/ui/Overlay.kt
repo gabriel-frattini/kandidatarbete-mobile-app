@@ -207,6 +207,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
 
         // List of questions
         for ((key, value) in viewModel.questions) {
+            println(key)
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
