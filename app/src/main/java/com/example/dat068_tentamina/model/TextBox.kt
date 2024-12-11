@@ -6,26 +6,21 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 data class TextBox(
     var position: Offset,
-    var layoutRes: TextLayoutResult,
-    var text : String,
+    var text: TextLayoutResult,
     var color: Color = Color.Black,
-    var fontSize: TextUnit = 30.sp
+    var fontSize: Dp = 16.dp
 ) : CanvasObject {
     override fun draw(drawScope: DrawScope) {
         drawScope.drawText(
-            textLayoutResult = layoutRes,
-            topLeft = Offset(
-                x = position.x * 2,
-                y = position.y * 2
-            )
+            textLayoutResult = text,
+            topLeft = position // Use position directly without scaling
         )
     }
+
 
 }
 

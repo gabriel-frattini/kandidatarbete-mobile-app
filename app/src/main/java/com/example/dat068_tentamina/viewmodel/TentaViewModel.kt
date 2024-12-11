@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.ui.DrawingScreen
@@ -19,8 +20,17 @@ class TentaViewModel {
     var eraserWidth = 6.dp
     var eraser = false
     var currentQuestion = mutableIntStateOf(1)
+    var currentCanvasHeight = mutableStateOf(2400.dp)
     val objects: SnapshotStateList<CanvasObject> get() = _objects
     var questions = mutableMapOf<Int, List<CanvasObject>>()
+    var height = mutableMapOf<Int, Dp>().apply {
+        // Initialize default heights for each question (e.g., 2400.dp)
+        for (i in 1..questions.size) {
+            this[i] = 2600.dp
+        }
+    }
+
+
 
     fun addObject(obj: CanvasObject) {
         objects.add(obj)
@@ -54,15 +64,21 @@ class TentaViewModel {
 
     }
 
-    fun changeQuestion(qNr: Int) {
-        //save the current question nr for usage across classes
+    fun changeQuestion(qNr: Int, newObjects: List<CanvasObject>, canvasHeight: Dp) {
+        height[currentQuestion.intValue] = canvasHeight
         currentQuestion.intValue = qNr
         // Change the content on the DrawingScreen to the current question
         val currentObjects = questions[currentQuestion.intValue] ?: emptyList()
         _objects.clear()
         _objects.addAll(currentObjects)
+        currentCanvasHeight.value = height[currentQuestion.intValue] ?: 2400.dp
 
         //history is cleared when changing to a new question
         history.clear()
     }
+    fun updateCanvasHeight(newHeight: Dp) {
+        currentCanvasHeight.value = newHeight
+        height[currentQuestion.intValue] = newHeight
+    }
+
 }
