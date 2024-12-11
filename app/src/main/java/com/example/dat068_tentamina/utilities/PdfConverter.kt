@@ -6,7 +6,6 @@ import android.graphics.pdf.PdfDocument
 import android.util.Log
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.toArgb
-import com.example.dat068_tentamina.MainActivity
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
@@ -25,22 +24,31 @@ class PdfConverter {
             val pdfDocument = PdfDocument()
             var questionNumber = 1
             var pageNumber = 1
+
             answers.forEach { (_, drawingObjects) ->
-                // Create a new page
-                val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create()
+                val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNumber).create()
                 val page = pdfDocument.startPage(pageInfo)
                 val canvas = page.canvas
 
-                // Create a bitmap for the page
-                val bitmap = createBitmapFromCanvasObject(drawingObjects, pageWidth, pageHeight, context, questionNumber, pageNumber)
+                // Create a bitmap at the same scale as the PDF page
+                val bitmap = createBitmapFromCanvasObject(
+                    drawingObjects = drawingObjects,
+                    width = pageWidth,
+                    height = pageHeight,
+                    context = context,
+                    questionNum = questionNumber,
+                    pageNum = pageNumber,
+                    scrollOffset = 0f // No scroll offset for PDF rendering
+                )
+                // Draw the bitmap on the PDF canvas
                 canvas.drawBitmap(bitmap, 0f, 0f, null)
-
                 pdfDocument.finishPage(page)
+
                 questionNumber++
                 pageNumber++
             }
 
-            // Save the PDF to the cache directory
+            // Save the PDF file
             val file = File(context.cacheDir, "exam_submission.pdf")
             pdfDocument.writeTo(file.outputStream())
             pdfDocument.close()
@@ -54,65 +62,71 @@ class PdfConverter {
             height: Int,
             context: Context,
             questionNum: Int,
-            pageNum: Int
+            pageNum: Int,
+            scrollOffset: Float // Pass the verticalScrollState's value here
         ): Bitmap {
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             val canvas = android.graphics.Canvas(bitmap)
-            val paint = android.graphics.Paint()
 
-            // Reserve space for metadata (e.g., 100px at the top)
-            val metaHeightPx = 100f
+            // Reserve space for metadata
+            val metaHeightPx = 50f
 
-            // Draw Metadata
+            // Draw metadata
             val metadataPaint = Paint().apply {
                 color = android.graphics.Color.BLACK
-                textSize = 40f // Metadata font size
+                textSize = 40f
                 isAntiAlias = true
                 textAlign = Paint.Align.LEFT
             }
             canvas.drawText("Question: $questionNum", 20f, metaHeightPx / 2, metadataPaint)
             canvas.drawText("Page: $pageNum", width - 200f, metaHeightPx / 2, metadataPaint)
 
-            // Adjust drawing objects' offsets to account for metadata
+            // Adjust drawing objects for metadata and scroll
             val density = context.resources.displayMetrics.density
             drawingObjects.forEach { obj ->
                 when (obj) {
                     is Line -> {
-                        val adjustedStart = obj.start.copy(y = obj.start.y + metaHeightPx)
-                        val adjustedEnd = obj.end.copy(y = obj.end.y + metaHeightPx)
+                        // Adjust Line coordinates for metadata and scroll offset
+                        val adjustedStart = obj.start.copy(y = obj.start.y + metaHeightPx - scrollOffset)
+                        val adjustedEnd = obj.end.copy(y = obj.end.y + metaHeightPx - scrollOffset)
 
-                        paint.color = obj.color.toArgb()
-                        paint.strokeWidth = obj.strokeWidth.value * density
-                        paint.strokeCap = when (obj.cap) {
-                            StrokeCap.Round -> Paint.Cap.ROUND
-                            StrokeCap.Square -> Paint.Cap.SQUARE
-                            else -> Paint.Cap.BUTT
+                        val paint = Paint().apply {
+                            color = obj.color.toArgb()
+                            strokeWidth = obj.strokeWidth.value * density
+                            strokeCap = when (obj.cap) {
+                                StrokeCap.Round -> Paint.Cap.ROUND
+                                StrokeCap.Square -> Paint.Cap.SQUARE
+                                else -> Paint.Cap.BUTT
+                            }
                         }
                         canvas.drawLine(adjustedStart.x, adjustedStart.y, adjustedEnd.x, adjustedEnd.y, paint)
                     }
-                    is TextBox -> {
-                        val scaledDensity = context.resources.displayMetrics.scaledDensity
-                        val posX = obj.position.x * density
-                        val posY = obj.position.y * density + metaHeightPx // Adjust position for metadata
 
-                        val textSizeInPx = obj.fontSize.value * scaledDensity
+                    is TextBox -> {
+                        // Adjust TextBox position for metadata and scroll offset
+                        val adjustedX = obj.position.x
+                        val adjustedY = obj.position.y + metaHeightPx - scrollOffset
 
                         val textPaint = Paint().apply {
                             color = obj.color.toArgb()
-                            textSize = textSizeInPx
+                            textSize = obj.fontSize.value * density
                             isAntiAlias = true
                             typeface = Typeface.DEFAULT
                             textAlign = Paint.Align.LEFT
                         }
 
+                        // Correct baseline adjustment using FontMetrics
                         val metrics = textPaint.fontMetrics
-                        val baselineAdjustment = metrics.ascent
-                        canvas.drawText(obj.text, posX, posY - baselineAdjustment, textPaint)
+                        val baselineAdjustment = -metrics.top
+
+                        canvas.drawText(obj.text, adjustedX, adjustedY + baselineAdjustment, textPaint)
                     }
                 }
             }
+
             return bitmap
         }
+
 
     }
 

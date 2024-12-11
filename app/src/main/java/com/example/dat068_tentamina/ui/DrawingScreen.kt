@@ -167,7 +167,8 @@ fun DrawingScreen(viewModel: TentaViewModel) {
                                 textOffset.x,
                                 textOffset.y - verticalScrollState.value
                             ),
-                            text = textMeasurer.measure(AnnotatedString(textValue))
+                            textLayout = textMeasurer.measure(AnnotatedString(textValue)),
+                            text = textValue
                         )
                         viewModel.addObject(newTextBox)
                         expandCanvasIfNeeded(newTextBox, density, canvasHeight) {
@@ -207,7 +208,7 @@ private fun calculateCanvasHeight(objects: List<CanvasObject>, density: Float): 
     val maxY = objects.maxOfOrNull { obj ->
         when (obj) {
             is Line -> max(obj.start.y, obj.end.y)
-            is TextBox -> obj.position.y + obj.text.size.height
+            is TextBox -> obj.position.y + obj.textLayout.size.height
             else -> 0f
         }
     } ?: 0f
@@ -225,7 +226,7 @@ private fun expandCanvasIfNeeded(
     val thresholdPx = 400f // Expand if the object is within 400px of the bottom
     val bottomY = when (obj) {
         is Line -> max(obj.start.y, obj.end.y)
-        is TextBox -> obj.position.y + obj.text.size.height
+        is TextBox -> obj.position.y + obj.textLayout.size.height
         else -> 0f
     }
     val currentHeightPx = currentHeight.value * density

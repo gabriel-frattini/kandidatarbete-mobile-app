@@ -31,7 +31,6 @@ class TentaViewModel {
     }
 
 
-
     fun addObject(obj: CanvasObject) {
         objects.add(obj)
         questions[currentQuestion.intValue] = _objects.toList()

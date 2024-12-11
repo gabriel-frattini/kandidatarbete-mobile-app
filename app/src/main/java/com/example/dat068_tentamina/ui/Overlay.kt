@@ -220,7 +220,11 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
                 Button(
                     onClick = {
                         println("Switched to question $key")
-                        viewModel.changeQuestion(key)
+                        viewModel.changeQuestion(
+                            qNr = key,
+                            newObjects = viewModel.objects.toList(),
+                            canvasHeight = viewModel.currentCanvasHeight.value
+                        )
                     },
                     modifier = Modifier
                         .padding(10.dp)
