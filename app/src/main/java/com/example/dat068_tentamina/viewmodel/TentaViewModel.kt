@@ -11,6 +11,8 @@ import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.ui.DrawingScreen
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.json.JSONArray
+import org.json.JSONObject
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.log
 
@@ -30,7 +32,6 @@ class TentaViewModel {
     fun addObject(obj: CanvasObject) {
             objects.add(obj)
             questions[currentQuestion.intValue] = _objects.toList()
-
     }
 
     fun pop() {
@@ -67,7 +68,21 @@ class TentaViewModel {
     }
 
     @Synchronized
-     fun getAnswers(): Map<Int, List<CanvasObject>> {
+     fun getAnswers(): Map<Int, List<CanvasObject>>{
              return questions.toMap()
+    }
+    fun testGetAnswerJSON(): JSONArray{
+
+        val canvasArray = JSONArray()
+
+        for ((key, canvasList) in questions) {
+            val canvasObject = JSONObject().apply {
+                put(key.toString(),canvasList)
+            }
+            canvasArray.put(key,canvasObject)
+        }
+        println(canvasArray)
+        return canvasArray
+
     }
 }

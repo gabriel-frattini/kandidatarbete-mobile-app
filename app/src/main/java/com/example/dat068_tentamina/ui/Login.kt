@@ -111,11 +111,11 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 {
                     if (examInfo.alreadyStartedExamExist()) {
                         println("There is a recoverable exam")
+                        examInfo.testContinue()
                         examInfo.continueAlreadyStartedExam()
                         examInfo.startBackUp()
                         onNavigateToExam()
                     }
-                    println("No recoverable exam, you will be starting a new one")
                 }
 
             } ,

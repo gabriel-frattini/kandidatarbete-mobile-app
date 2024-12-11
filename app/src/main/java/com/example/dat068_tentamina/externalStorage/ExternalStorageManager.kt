@@ -2,6 +2,7 @@ package com.example.dat068_tentamina.externalStorage
 
 import android.content.Context
 import android.os.Environment
+import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import org.json.JSONObject
@@ -14,7 +15,7 @@ import java.io.IOException
 class ExternalStorageManager {
     // checks if we can read and write to externalStorage, we should be able to do so as the tablet should handle this.
     val isExternalStorageWritable : Boolean get() = Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
-    val backUpFileName = "ExamBackUp.txt"
+    private val backUpFileName = "ExamBackUp.txt"
 
     private fun getExternalStorageVolumes(context: Context): File {
         val externalStorageVolumes = ContextCompat.getExternalFilesDirs(context, null)
@@ -82,18 +83,12 @@ class ExternalStorageManager {
         val createdFile = createFile(context,backUpFileName)
         if(createdFile)
         {
-            //Toast.makeText(context,"BackUp Created", Toast.LENGTH_SHORT).show()
             val file : File? = getFile(context,backUpFileName)
-
-
             write(file,data.toString())
-            //Toast.makeText(context,"BackUp Written To File",Toast.LENGTH_SHORT).show()
-
-            val stringBuilder = read(file)
-            //Toast.makeText(context, stringBuilder.toString(),Toast.LENGTH_LONG).show()
-
         }
         else{
+            println("Failed in making external Backup")
+            // TODO: Make sure it calls on something here to notify or something
             //Toast.makeText(context,"Failed in making external backup!", Toast.LENGTH_SHORT).show()
         }
     }
@@ -113,6 +108,4 @@ class ExternalStorageManager {
         val file = File(appSpecificExternalDir,backUpFileName)
         return file.exists()
     }
-
-
 }

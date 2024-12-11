@@ -2,27 +2,19 @@ package com.example.dat068_tentamina.viewmodel
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
 import com.example.dat068_tentamina.model.CanvasObject
-import com.example.dat068_tentamina.ui.continueOldExamPopUp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.Timer
-import java.util.TimerTask
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
-import java.util.concurrent.Executors
 
 class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: Context) {
     var examObject = JSONObject()
@@ -97,24 +89,21 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
         storageObject = JSONObject().apply {
             put("examID",examID)
             put("studentInfo", studentObject)
-            put("answers",tentaViewModel.getAnswers() )
+            put("answers",tentaViewModel.getAnswers())
         }
     }
     private fun getStorageObjectFromExternal(): JSONObject? {
         //fel hantering behövs, vad om det ej finns en fil
         return externalStorageManager.readFromBackUp(context)
-
     }
 
     // check if there is a recoverable exam on external storage for said examID and anonymousCode
     fun alreadyStartedExamExist() : Boolean{
         if(externalStorageManager.backUpExists(context) )
         {
-
             val storedObject: JSONObject = getStorageObjectFromExternal()?:return false
 
             val storedAnonymousCode: String = storedObject.optJSONObject("studentInfo")?.optString("anonymousCode","") ?: return false
-
 
             val storedExamID: String = storedObject.optString("examID","")
 
@@ -129,9 +118,9 @@ fun continueAlreadyStartedExam(): Boolean {
 
     tentaViewModel.questions = if (storedObject != null) {
         val answers = storedObject.opt("answers")
+
         if (answers is Map<*, *>) {
             try {
-                // Validate and convert to the correct type
                 val validatedAnswers = answers.mapNotNull { (key, value) ->
                     if (key is Int && value is List<*>) {
                         @Suppress("UNCHECKED_CAST")
@@ -164,16 +153,24 @@ fun continueAlreadyStartedExam(): Boolean {
 
     // Return true if questions are successfully loaded
     return tentaViewModel.questions.isNotEmpty()
-}
+
+
+    }
+    fun testContinue() {
+        val storedObject = getStorageObjectFromExternal()
+        storedObject as JSONObject
+
+
+
+    }
 
     fun startBackUp(){
-
             externalStorageManager.writeToBackUp(context,storageObject)
             startPerodicallyUpdatingExternalStorage(scope)
     }
+
     private fun startPerodicallyUpdatingExternalStorage(scope: CoroutineScope) {
         scope.launch {
-
             while (isActive) { // Ensures the coroutine can be canceled
                 updateStorageObject()
                 delay(30 * 1000L) // 30 second delay
@@ -183,11 +180,8 @@ fun continueAlreadyStartedExam(): Boolean {
 
     private fun updateStorageObject(){
         storageObject.put("answers",tentaViewModel.getAnswers())
-
         externalStorageManager.writeToBackUp(context,storageObject)
     }
-
-
 
 // checks if the anonymousCode and examID entered is valid
 // (+ temporarily does the creation of a studentObject and storageObject, this will not be here later on)
@@ -206,7 +200,6 @@ fun continueAlreadyStartedExam(): Boolean {
                     name = studentInfo.optString("name", "")
                     examID = exId
                     anonymousCode = aCode
-
 
                     createStudentObject()
                     createStorageJSON()

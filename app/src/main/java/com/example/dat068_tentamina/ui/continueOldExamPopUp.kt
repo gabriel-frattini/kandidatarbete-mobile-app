@@ -8,7 +8,7 @@ import com.example.dat068_tentamina.viewmodel.ExamInfo
 
 @Composable
 fun continueOldExamPopUp(examInfo: ExamInfo){
-    if (true) // Should be examInfo.alreadyStartedExam() later when it works. Now it would crash the app
+    if (true)
     {
         AlertDialog(
             onDismissRequest = {  },
