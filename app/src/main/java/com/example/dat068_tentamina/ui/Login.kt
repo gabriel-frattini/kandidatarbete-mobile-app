@@ -1,5 +1,6 @@
 package com.example.dat068_tentamina.ui
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -110,7 +111,6 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text ))
                 {
                     if (examInfo.alreadyStartedExamExist()) {
-                        println("There is a recoverable exam")
                         examInfo.testContinue()
                         examInfo.continueAlreadyStartedExam()
                         examInfo.startBackUp()

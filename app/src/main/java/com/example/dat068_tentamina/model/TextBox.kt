@@ -20,7 +20,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-
 data class TextBox(
     var position: Offset,
     var text: TextLayoutResult,
@@ -36,7 +35,6 @@ data class TextBox(
             )
         )
     }
-
 }
 
 

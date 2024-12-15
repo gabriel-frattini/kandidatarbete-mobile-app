@@ -67,10 +67,11 @@ class TentaViewModel {
         history.clear()
     }
 
-    @Synchronized
-     fun getAnswers(): Map<Int, List<CanvasObject>>{
-             return questions.toMap()
+    fun getAnswers(): Map<Int, List<CanvasObject>>{
+        return questions.toMap()
     }
+
+
     fun testGetAnswerJSON(): JSONArray{
 
         val canvasArray = JSONArray()

@@ -2,11 +2,16 @@ package com.example.dat068_tentamina.viewmodel
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
 import com.example.dat068_tentamina.model.CanvasObject
+import com.example.dat068_tentamina.model.TextBox
+import com.example.dat068_tentamina.model.Line
+import com.example.dat068_tentamina.model.serializable.Answer
+import com.example.dat068_tentamina.model.serializable.StudentInfo
+import com.example.dat068_tentamina.model.serializable.SerializableTextbox
+import com.example.dat068_tentamina.model.serializable.SerializableLine
+import com.example.dat068_tentamina.utils.CanvasObjectSerializationUtils.toSerializable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -15,12 +20,12 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import toSerializable
 
 class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: Context) {
     var examObject = JSONObject()
     var studentsObject = JSONObject()
     var storageObject = JSONObject()
-    var studentObject = JSONObject()
     private var anonymousCode = ""
     private var examID = ""
     private var personalNumber = ""
@@ -77,21 +82,19 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
         }
     }
 
-    private fun createStudentObject(){
-        studentObject = JSONObject().apply {
-            put("anonymousCode",anonymousCode)
-            put("name", name)
-            put("personalNumber",personalNumber )
+    fun createSerialization(): List<Answer> {
+        return tentaViewModel.getAnswers().map { (questionId, canvasObjects) ->
+            Answer(
+                questionId = questionId,
+                canvasObjects = canvasObjects.map { canvasObject ->
+                    canvasObject.toSerializable() // Use a helper extension to serialize CanvasObjects
+                }
+            )
         }
+    }
 
-    }
-    private fun createStorageJSON(){
-        storageObject = JSONObject().apply {
-            put("examID",examID)
-            put("studentInfo", studentObject)
-            put("answers",tentaViewModel.getAnswers())
-        }
-    }
+
+
     private fun getStorageObjectFromExternal(): JSONObject? {
         //fel hantering behövs, vad om det ej finns en fil
         return externalStorageManager.readFromBackUp(context)
@@ -112,8 +115,8 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
       return false
     }
     //saves the answers already made to the question map. Returns true if all was successful otherwise false.
-fun continueAlreadyStartedExam(): Boolean {
 
+fun continueAlreadyStartedExam(): Boolean {
     val storedObject = getStorageObjectFromExternal()
 
     tentaViewModel.questions = if (storedObject != null) {
@@ -123,6 +126,7 @@ fun continueAlreadyStartedExam(): Boolean {
             try {
                 val validatedAnswers = answers.mapNotNull { (key, value) ->
                     if (key is Int && value is List<*>) {
+                        Log.d("ExamInfo", "Key: $key, Value: $value")
                         @Suppress("UNCHECKED_CAST")
                         key to (value as List<CanvasObject>)
                     } else {
@@ -159,9 +163,7 @@ fun continueAlreadyStartedExam(): Boolean {
     fun testContinue() {
         val storedObject = getStorageObjectFromExternal()
         storedObject as JSONObject
-
-
-
+        Log.d("ExamInfo", "$storedObject")
     }
 
     fun startBackUp(){
@@ -201,8 +203,8 @@ fun continueAlreadyStartedExam(): Boolean {
                     examID = exId
                     anonymousCode = aCode
 
-                    createStudentObject()
-                    createStorageJSON()
+                    createSerialization()
+
                     return true
                 }
             }
