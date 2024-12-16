@@ -3,6 +3,11 @@ package com.example.dat068_tentamina.viewmodel
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.TextBox
@@ -11,6 +16,7 @@ import com.example.dat068_tentamina.model.serializable.Answer
 import com.example.dat068_tentamina.model.serializable.StudentInfo
 import com.example.dat068_tentamina.model.serializable.SerializableTextbox
 import com.example.dat068_tentamina.model.serializable.SerializableLine
+import com.example.dat068_tentamina.utils.CanvasObjectSerializationUtils.toOffset
 import com.example.dat068_tentamina.utils.CanvasObjectSerializationUtils.toSerializable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,9 +24,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
 import org.json.JSONArray
 import org.json.JSONObject
-import toSerializable
 
 class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: Context) {
     var examObject = JSONObject()
@@ -86,9 +95,7 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
         return tentaViewModel.getAnswers().map { (questionId, canvasObjects) ->
             Answer(
                 questionId = questionId,
-                canvasObjects = canvasObjects.map { canvasObject ->
-                    canvasObject.toSerializable() // Use a helper extension to serialize CanvasObjects
-                }
+                canvasObjects = canvasObjects.map { it.toSerializable() }
             )
         }
     }
@@ -115,55 +122,91 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
       return false
     }
     //saves the answers already made to the question map. Returns true if all was successful otherwise false.
+    fun continueAlreadyStartedExam(textMeasurer: TextMeasurer): Boolean {
+        Log.d("Backup", "Starting recovery process...")
 
-fun continueAlreadyStartedExam(): Boolean {
-    val storedObject = getStorageObjectFromExternal()
-
-    tentaViewModel.questions = if (storedObject != null) {
-        val answers = storedObject.opt("answers")
-
-        if (answers is Map<*, *>) {
-            try {
-                val validatedAnswers = answers.mapNotNull { (key, value) ->
-                    if (key is Int && value is List<*>) {
-                        Log.d("ExamInfo", "Key: $key, Value: $value")
-                        @Suppress("UNCHECKED_CAST")
-                        key to (value as List<CanvasObject>)
-                    } else {
-                        Log.e("ExamError", "Invalid entry in answers: $key -> $value")
-                        null
-                    }
-                }.toMap()
-
-                // Convert validated map to mutableStateMapOf
-                val mapAnswers = mutableStateMapOf<Int, List<CanvasObject>>()
-                mapAnswers.putAll(validatedAnswers)
-
-                // Assign validated map to ViewModel
-                mapAnswers
-            } catch (e: ClassCastException) {
-                e.printStackTrace()
-                Log.e("ExamError", "Invalid type in answers. Starting new exam.")
-                mutableStateMapOf() // Fallback to an empty map
-            }
+        val storedObject = getStorageObjectFromExternal()
+        if (storedObject == null) {
+            Log.e("Backup", "No stored object found in external storage.")
+            return false
         } else {
-            Log.e("ExamError", "Answers is not a valid map. Using empty map.")
-            mutableStateMapOf() // Fallback to an empty map
+            Log.d("Backup", "Stored object retrieved successfully: $storedObject")
         }
-    } else {
-        Log.e("ExamError", "No stored object available from external storage. Using empty map.")
-        mutableStateMapOf() // Fallback to an empty map
+
+        // Extract "answers" as a JSON array string
+        val answersJsonArray = storedObject.optJSONArray("answers")?.toString()
+        if (answersJsonArray == null) {
+            Log.e("Backup", "No 'answers' found in stored object.")
+            return false
+        } else {
+            Log.d("Backup", "Answers JSON Array: $answersJsonArray")
+        }
+
+        return try {
+            // Deserialize the JSON string back into a List<Answer>
+            Log.d("Backup", "Deserializing answers JSON...")
+            val deserializedAnswers: List<Answer> = Json.decodeFromString(answersJsonArray)
+            Log.d("Backup", "Deserialization successful. Total answers: ${deserializedAnswers.size}")
+
+            // Convert the deserialized Answers into TentaViewModel's questions map
+            val questionsMap = deserializedAnswers.associate { answer ->
+                Log.d("Backup", "Processing questionId: ${answer.questionId}")
+                val canvasObjects: List<CanvasObject> = answer.canvasObjects.map { serializedObject ->
+                    when (serializedObject) {
+                        is SerializableLine -> {
+                            Log.d(
+                                "Backup",
+                                "Restoring SerializableLine: start=${serializedObject.start}, end=${serializedObject.end}"
+                            )
+                            Line(
+                                start = serializedObject.start.toOffset(),
+                                end = serializedObject.end.toOffset(),
+                                color = Color.Black, // Default color or extract from serialized data
+                                strokeWidth = serializedObject.strokeWidth.dp
+                            )
+                        }
+                        is SerializableTextbox -> {
+                            Log.d(
+                                "Backup",
+                                "Restoring SerializableTextbox: position=${serializedObject.position}, text=${serializedObject.text}"
+                            )
+                            val measuredText = textMeasurer.measure(
+                                text = AnnotatedString(serializedObject.text)
+                            )
+                            Log.d("Backup", "Measured TextLayoutResult created for text=${serializedObject.text}")
+                            TextBox(
+                                position = serializedObject.position.toOffset(),
+                                text = measuredText
+                            )
+                        }
+                        else -> {
+                            Log.e("Backup", "Unknown SerializableCanvasObject type: $serializedObject")
+                            throw IllegalArgumentException("Unknown SerializableCanvasObject type")
+                        }
+                    }
+                }
+                Log.d("Backup", "Restored ${canvasObjects.size} objects for questionId=${answer.questionId}")
+                answer.questionId to canvasObjects
+            }
+
+            // Assign to TentaViewModel's questions
+            tentaViewModel.questions = mutableStateMapOf<Int, List<CanvasObject>>().apply {
+                putAll(questionsMap)
+            }
+            Log.d("Backup", "Recovery process completed. Total questions restored: ${tentaViewModel.questions.size}")
+
+            true // Successfully recovered
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e("Backup", "Failed to deserialize exam data: ${e.message}")
+            false
+        }
     }
 
-    // Return true if questions are successfully loaded
-    return tentaViewModel.questions.isNotEmpty()
 
-
-    }
     fun testContinue() {
         val storedObject = getStorageObjectFromExternal()
         storedObject as JSONObject
-        Log.d("ExamInfo", "$storedObject")
     }
 
     fun startBackUp(){
@@ -180,9 +223,29 @@ fun continueAlreadyStartedExam(): Boolean {
         }
     }
 
-    private fun updateStorageObject(){
-        storageObject.put("answers",tentaViewModel.getAnswers())
-        externalStorageManager.writeToBackUp(context,storageObject)
+    private fun updateStorageObject() {
+        try {
+            // Get the serialized answers as a list of Answer objects
+            val serializedAnswers = createSerialization()
+
+            // Convert the serialized answers to JSON format
+            val answersJsonString = Json.encodeToString(ListSerializer(Answer.serializer()), serializedAnswers)
+
+            // Update the storageObject with the serialized data
+            storageObject = JSONObject().apply {
+                put("examID", examID)
+                put("anonymousCode", anonymousCode)
+                put("answers", JSONArray(answersJsonString)) // Convert the JSON string into a JSONArray
+            }
+
+            // Write the updated storageObject to external storage
+            externalStorageManager.writeToBackUp(context, storageObject)
+
+            Log.d("ExamInfo", "Backup successfully updated!")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e("ExamError", "Failed to update backup: ${e.message}")
+        }
     }
 
 // checks if the anonymousCode and examID entered is valid

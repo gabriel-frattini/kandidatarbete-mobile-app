@@ -9,6 +9,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.ui.DrawingScreen
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.json.JSONArray
@@ -19,14 +21,26 @@ import kotlin.math.log
 class TentaViewModel {
     private var _objects = mutableStateListOf<CanvasObject>()
     private val history = Stack<List<CanvasObject>>()
+    private val _recoveryMode = MutableStateFlow(false)
     //private var historyMap = mutableMapOf<Int, Stack<List<CanvasObject>>>()
     var textMode = mutableStateOf(false)
+    val recoveryMode: StateFlow<Boolean> get() = _recoveryMode
     var strokeWidth = 2.dp
     var eraserWidth = 6.dp
     var eraser = false
     var currentQuestion = mutableIntStateOf(1)
     val objects: SnapshotStateList<CanvasObject> get() = _objects
     var questions = mutableStateMapOf<Int, List<CanvasObject>>()
+
+    // Recovery mode state
+
+    fun enableRecoveryMode() {
+        _recoveryMode.value = true
+    }
+
+    fun disableRecoveryMode() {
+        _recoveryMode.value = false
+    }
 
     @Synchronized
     fun addObject(obj: CanvasObject) {

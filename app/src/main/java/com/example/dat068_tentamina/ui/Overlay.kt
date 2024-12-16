@@ -55,7 +55,7 @@ import com.example.dat068_tentamina.viewmodel.ExamInfo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo) {
+fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolean) {
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -66,7 +66,6 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo) {
             ModalDrawerSheet {
                 //The content of the menu
                 MenuScreen(modifier = Modifier,viewModel,examInfo)
-
             }
         },
     ) {
@@ -119,17 +118,17 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo) {
             },
         )
         { contentPadding ->
-            ExamScreen(modifier = Modifier.padding(contentPadding), viewModel)
+            ExamScreen(modifier = Modifier.padding(contentPadding), examInfo, viewModel, recoveryMode)
         }
     }
 }
 @Composable
-fun ExamScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel ) {
+fun ExamScreen(modifier: Modifier = Modifier, examInfo: ExamInfo, viewModel: TentaViewModel, recoveryMode: Boolean ) {
     Column {
         Box(modifier = Modifier
             .weight(1f)
             .fillMaxSize()) {
-            DrawingScreen(viewModel)
+            DrawingScreen(viewModel, examInfo , recoveryMode )
         }
     }
 }

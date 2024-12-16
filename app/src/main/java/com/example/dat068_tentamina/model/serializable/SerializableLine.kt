@@ -6,10 +6,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SerializableLine (
-    val start: Offset,
-    val end: Offset,
-    var color: String = Color.Black.toString(),
+data class SerializableLine(
+    val start: SerializableOffset,
+    val end: SerializableOffset,
+    var color: String = "Black",
     var strokeWidth: Float = 1f,
-    var cap: String = StrokeCap.Round.toString()
+    var cap: String = "Round"
 ) : SerializableCanvasObject()

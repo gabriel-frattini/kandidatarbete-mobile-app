@@ -4,8 +4,8 @@ import androidx.compose.ui.geometry.Offset
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SerializableTextbox (
-    var position: Offset,
+data class SerializableTextbox(
+    var position: SerializableOffset,
     var text: String,
     var color: String,
     var fontSize: Float

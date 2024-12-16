@@ -32,16 +32,22 @@ import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
+import com.example.dat068_tentamina.viewmodel.ExamInfo
 
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import androidx.compose.material3.TextField as TextField1
 
 @SuppressLint("RememberReturnType")
 @Composable
-fun DrawingScreen(viewModel: TentaViewModel) {
+fun DrawingScreen(viewModel: TentaViewModel,examInfo: ExamInfo, recoveryMode: Boolean) {
     var textValue by remember { mutableStateOf("") }
     var textOffset by remember { mutableStateOf(Offset(0f, 0f)) }
     val textMeasurer = rememberTextMeasurer()
+    Log.d("Backup","$recoveryMode")
+
+    if (recoveryMode) {
+        examInfo.continueAlreadyStartedExam(textMeasurer)
+    }
 
     androidx.compose.foundation.Canvas(modifier = Modifier
         .background(Color.White)

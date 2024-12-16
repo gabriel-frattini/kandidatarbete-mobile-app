@@ -31,10 +31,11 @@ import com.example.dat068_tentamina.R
 import com.example.dat068_tentamina.viewmodel.ExamInfo
 import com.example.dat068_tentamina.externalStorage.ExternalStorage
 import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
+import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import java.time.LocalDate
 
 @Composable
-fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
+fun Login(viewModel : TentaViewModel ,examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
     val examId = remember { mutableStateOf(TextFieldValue("")) }
     val anonymousCode = remember { mutableStateOf(TextFieldValue("")) }
 
@@ -110,12 +111,9 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 // this should be moved out of the login ui
                 if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text ))
                 {
-                    if (examInfo.alreadyStartedExamExist()) {
-                        examInfo.testContinue()
-                        examInfo.continueAlreadyStartedExam()
-                        examInfo.startBackUp()
-                        onNavigateToExam()
-                    }
+                    examInfo.startBackUp()
+                    viewModel.enableRecoveryMode()
+                    onNavigateToExam()
                 }
 
             } ,
