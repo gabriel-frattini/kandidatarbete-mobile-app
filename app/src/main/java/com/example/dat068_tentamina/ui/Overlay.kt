@@ -1,9 +1,6 @@
 package com.example.dat068_tentamina.ui
 
 import ExamInfo
-import android.graphics.Bitmap
-import android.graphics.pdf.PdfDocument
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,20 +45,13 @@ import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.R
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.example.dat068_tentamina.model.CanvasObject
-import java.io.File
 
-import androidx.compose.ui.platform.LocalContext
 import PdfConverter
-import android.content.Context
-import androidx.core.content.ContentProviderCompat.requireContext
 import com.example.dat068_tentamina.MainActivity
-import com.example.dat068_tentamina.utilities.ServerHandler
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -223,7 +212,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
                         viewModel.changeQuestion(
                             qNr = key,
                             newObjects = viewModel.objects.toList(),
-                            canvasHeight = viewModel.currentCanvasHeight.value
+                            canvasHeight = 2400.dp
                         )
                     },
                     modifier = Modifier
