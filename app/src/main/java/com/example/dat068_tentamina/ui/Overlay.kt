@@ -136,11 +136,27 @@ fun ExamScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel ) {
 @Composable
 fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activity: MainActivity, examInfo: ExamInfo) {
     val scrollState = rememberScrollState()
-    var showDialog by remember { mutableStateOf(false)}
+    var submitDialog by remember { mutableStateOf(false)}
+    var showInfoDialog by remember { mutableStateOf(false) }
 
-    if (showDialog) {
+    if (showInfoDialog) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = { showInfoDialog = false },
+            title = {Text("Student Information")},
+            text = {Text("Course: ${examInfo.course}\nAnonymous Code: ${examInfo.user} \nPersonal ID: ${examInfo.personalID}")},
+            confirmButton = {},
+            dismissButton = {
+                Button(onClick = { showInfoDialog = false }) {
+                    Text("Back")
+                }
+            }
+        )
+
+    }
+
+    if (submitDialog) {
+        AlertDialog(
+            onDismissRequest = { submitDialog = false },
             title = { Text("Submit exam") },
             text = { Text("Are you sure you want to submit the exam?") },
             confirmButton = {
@@ -153,7 +169,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
                 }
             },
             dismissButton = {
-                Button(onClick = { showDialog = false }) {
+                Button(onClick = { submitDialog = false }) {
                     Text("Cancel")
                 }
             }
@@ -179,7 +195,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
                 .align(alignment = Alignment.CenterHorizontally)
         ) {
             IconButton(
-                onClick = { println("Hejsan") /*TODO: An actual information page with user info and user guide???*/ },
+                onClick = { showInfoDialog = true/*TODO: An actual information page with user info and user guide???*/ },
                 modifier = Modifier
                     .padding(10.dp)
                     .fillMaxSize()
@@ -243,7 +259,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
         ) {
             Button(
                 onClick = {
-                    showDialog = true
+                    submitDialog = true
                 },
 
                 colors = ButtonDefaults.buttonColors(

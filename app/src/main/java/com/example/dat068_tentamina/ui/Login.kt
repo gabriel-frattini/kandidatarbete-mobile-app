@@ -92,7 +92,7 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
         }
         ElevatedButton(
             onClick = {
-                println(examInfo.fetchData(courseCode = examId.component1().text, anonymousCode = anonymousCode.component1().text))
+                examInfo.fetchData(courseCode = examId.component1().text, anonymousCode = anonymousCode.component1().text)
                 onNavigateToExam()
             },
             colors = ButtonColors(Color.DarkGray, Color.White, Color.LightGray, Color.LightGray),

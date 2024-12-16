@@ -12,6 +12,9 @@ class ExamInfo() : ViewModel() {
     private val questions = mutableListOf<String>()
     private lateinit var tentaViewModel: TentaViewModel
     private var onDataFetched: (() -> Unit)? = null
+    var user = ""
+    var personalID = ""
+    var course = ""
 
     fun setOnDataFetched(callback: () -> Unit) {
         onDataFetched = callback
@@ -22,7 +25,11 @@ class ExamInfo() : ViewModel() {
             try {
                 val result = apiHelper.getExam(courseCode, anonymousCode)
                 result?.let {
-                    println("JSON: $it")
+                    Log.d("GET Request", "JSON: $it")
+                    course = it.getString("examID")
+                    val info = it.getJSONObject("anonymousCode")
+                    user = info.getString("anonymousCode")
+                    personalID = info.getString("birthYear")
                     if (it.has("Error")) {
                         println("Error in response: ${it.getString("Error")}")
                         return@let
