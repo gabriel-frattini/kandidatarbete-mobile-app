@@ -29,7 +29,7 @@ class ExamInfo() : ViewModel() {
                     course = it.getString("examID")
                     val info = it.getJSONObject("anonymousCode")
                     user = info.getString("anonymousCode")
-                    personalID = info.getString("birthYear")
+                    personalID = info.getString("birthID")
                     if (it.has("Error")) {
                         println("Error in response: ${it.getString("Error")}")
                         return@let

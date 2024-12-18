@@ -143,7 +143,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
         AlertDialog(
             onDismissRequest = { showInfoDialog = false },
             title = {Text("Student Information")},
-            text = {Text("Course: ${examInfo.course}\nAnonymous Code: ${examInfo.user} \nPersonal ID: ${examInfo.personalID}")},
+            text = {Text("Course: ${examInfo.course}\nAnonymous Code: ${examInfo.user} \nBirth ID: ${examInfo.personalID}")},
             confirmButton = {},
             dismissButton = {
                 Button(onClick = { showInfoDialog = false }) {
