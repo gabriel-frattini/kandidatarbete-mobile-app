@@ -111,7 +111,6 @@ fun Login(viewModel : TentaViewModel ,examInfo: ExamInfo,onNavigateToExam: () ->
                 // this should be moved out of the login ui
                 if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text ))
                 {
-                    examInfo.startBackUp()
                     viewModel.enableRecoveryMode()
                     onNavigateToExam()
                 }

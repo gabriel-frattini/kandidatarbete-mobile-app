@@ -43,10 +43,11 @@ fun DrawingScreen(viewModel: TentaViewModel,examInfo: ExamInfo, recoveryMode: Bo
     var textValue by remember { mutableStateOf("") }
     var textOffset by remember { mutableStateOf(Offset(0f, 0f)) }
     val textMeasurer = rememberTextMeasurer()
-    Log.d("Backup","$recoveryMode")
 
     if (recoveryMode) {
         examInfo.continueAlreadyStartedExam(textMeasurer)
+        viewModel.changeQuestion(1)
+        viewModel.disableRecoveryMode()
     }
 
     androidx.compose.foundation.Canvas(modifier = Modifier

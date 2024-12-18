@@ -123,41 +123,23 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
     }
     //saves the answers already made to the question map. Returns true if all was successful otherwise false.
     fun continueAlreadyStartedExam(textMeasurer: TextMeasurer): Boolean {
-        Log.d("Backup", "Starting recovery process...")
-
         val storedObject = getStorageObjectFromExternal()
         if (storedObject == null) {
-            Log.e("Backup", "No stored object found in external storage.")
             return false
-        } else {
-            Log.d("Backup", "Stored object retrieved successfully: $storedObject")
         }
 
         // Extract "answers" as a JSON array string
         val answersJsonArray = storedObject.optJSONArray("answers")?.toString()
         if (answersJsonArray == null) {
-            Log.e("Backup", "No 'answers' found in stored object.")
             return false
-        } else {
-            Log.d("Backup", "Answers JSON Array: $answersJsonArray")
         }
 
         return try {
-            // Deserialize the JSON string back into a List<Answer>
-            Log.d("Backup", "Deserializing answers JSON...")
             val deserializedAnswers: List<Answer> = Json.decodeFromString(answersJsonArray)
-            Log.d("Backup", "Deserialization successful. Total answers: ${deserializedAnswers.size}")
-
-            // Convert the deserialized Answers into TentaViewModel's questions map
             val questionsMap = deserializedAnswers.associate { answer ->
-                Log.d("Backup", "Processing questionId: ${answer.questionId}")
                 val canvasObjects: List<CanvasObject> = answer.canvasObjects.map { serializedObject ->
                     when (serializedObject) {
                         is SerializableLine -> {
-                            Log.d(
-                                "Backup",
-                                "Restoring SerializableLine: start=${serializedObject.start}, end=${serializedObject.end}"
-                            )
                             Line(
                                 start = serializedObject.start.toOffset(),
                                 end = serializedObject.end.toOffset(),
@@ -166,26 +148,19 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
                             )
                         }
                         is SerializableTextbox -> {
-                            Log.d(
-                                "Backup",
-                                "Restoring SerializableTextbox: position=${serializedObject.position}, text=${serializedObject.text}"
-                            )
                             val measuredText = textMeasurer.measure(
                                 text = AnnotatedString(serializedObject.text)
                             )
-                            Log.d("Backup", "Measured TextLayoutResult created for text=${serializedObject.text}")
                             TextBox(
                                 position = serializedObject.position.toOffset(),
                                 text = measuredText
                             )
                         }
                         else -> {
-                            Log.e("Backup", "Unknown SerializableCanvasObject type: $serializedObject")
                             throw IllegalArgumentException("Unknown SerializableCanvasObject type")
                         }
                     }
                 }
-                Log.d("Backup", "Restored ${canvasObjects.size} objects for questionId=${answer.questionId}")
                 answer.questionId to canvasObjects
             }
 
@@ -193,7 +168,6 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
             tentaViewModel.questions = mutableStateMapOf<Int, List<CanvasObject>>().apply {
                 putAll(questionsMap)
             }
-            Log.d("Backup", "Recovery process completed. Total questions restored: ${tentaViewModel.questions.size}")
 
             true // Successfully recovered
         } catch (e: Exception) {
