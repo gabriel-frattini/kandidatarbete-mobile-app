@@ -106,19 +106,6 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
     }
 
     // check if there is a recoverable exam on external storage for said examID and anonymousCode
-    fun alreadyStartedExamExist() : Boolean{
-        if(externalStorageManager.backUpExists(context) )
-        {
-            val storedObject: JSONObject = getStorageObjectFromExternal()?:return false
-
-            val storedAnonymousCode: String = storedObject.optJSONObject("studentInfo")?.optString("anonymousCode","") ?: return false
-
-            val storedExamID: String = storedObject.optString("examID","")
-
-            return storedExamID == examID && storedAnonymousCode == anonymousCode
-        }
-      return false
-    }
     fun continueAlreadyStartedExam(textMeasurer: TextMeasurer): Boolean {
         Log.d("Backup", "Attempting to continue an already started exam")
 
