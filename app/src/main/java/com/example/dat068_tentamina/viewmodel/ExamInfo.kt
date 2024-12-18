@@ -1,87 +1,68 @@
-package com.example.dat068_tentamina.viewmodel
-
 import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope // Import viewModelScope
+import com.example.dat068_tentamina.utilities.ServerHandler
+import com.example.dat068_tentamina.viewmodel.TentaViewModel
+import kotlinx.coroutines.launch // Import launch
 import org.json.JSONArray
-import org.json.JSONObject
-class ExamInfo {
-    var examObject = JSONObject()
-    var studentsObject = JSONObject()
-    private var anonymousCode = ""
-    private var examID = ""
-    private var personalNumber = ""
-    private var name = ""
+import java.io.File
 
-    fun getAnonymousCode(): String {
-        return anonymousCode
+class ExamInfo() : ViewModel() {
+    private val apiHelper = ServerHandler()
+    private val questions = mutableListOf<String>()
+    private lateinit var tentaViewModel: TentaViewModel
+    private var onDataFetched: (() -> Unit)? = null
+    var user = ""
+    var personalID = ""
+    var course = ""
+
+    fun setOnDataFetched(callback: () -> Unit) {
+        onDataFetched = callback
     }
 
-    fun getPersonalNumber(): String {
-        return personalNumber
-    }
-
-    fun getName(): String {
-        return name
-    }
-
-
-    fun createTestExamPeriodJSON() {
-
-        studentsObject = JSONObject().apply {
-            put("123ALI", JSONObject().apply {
-                put("personalNumber", "0309230000")
-                put("name", "Alice Emanuelsson")
-            })
-            put("123CHE", JSONObject().apply {
-                put("personalNumber", "0204120000")
-                put("name", "Che Long Tran")
-            })
-        }
-        examObject = JSONObject().apply {
-            put("testID", JSONObject().apply {
-                put("examId", "testID")
-                put("date", "2003-09-23")
-                put("time(h)", 7)
-                put("examiner", "C")
-                // Add students to the exam as a JSONArray
-                put("students", JSONArray().apply {
-                    studentsObject.keys().forEach { key ->
-                        put(JSONObject().apply {
-                            put("anonymousCode", key)
-                            put("studentInfo", studentsObject.getJSONObject(key))
-                        })
+    fun fetchData(courseCode: String, anonymousCode: String) {
+        viewModelScope.launch {
+            try {
+                val result = apiHelper.getExam(courseCode, anonymousCode)
+                result?.let {
+                    Log.d("GET Request", "JSON: $it")
+                    course = it.getString("examID")
+                    val info = it.getJSONObject("anonymousCode")
+                    user = info.getString("anonymousCode")
+                    personalID = info.getString("birthID")
+                    if (it.has("Error")) {
+                        println("Error in response: ${it.getString("Error")}")
+                        return@let
                     }
-                })
-            })
-        }
-    }
+                    var questionLength = 1
+                    // Check if "questions" exists and is an array
+                    if (it.has("questions") && it.get("questions") is JSONArray) {
+                        val json = it.getJSONArray("questions")
+                        questions.clear() // Ensure previous data is removed
 
-    fun loginCheck(aCode: String, exId: String): Boolean {
-        val examObj = examObject.optJSONObject(exId) ?: return false
-
-        val studentsArray = examObj.optJSONArray("students") ?: return false
-
-        for (i in 0 until studentsArray.length()) {
-            val student = studentsArray.getJSONObject(i)
-            if (student.getString("anonymousCode") == aCode) {
-                Log.d("examinfo", exId)
-                Log.d("examinfo", aCode)
-
-                val studentInfo = student.optJSONObject("studentInfo")
-                if (studentInfo != null) {
-                    personalNumber = studentInfo.optString("personalNumber", "")
-                    name = studentInfo.optString("name", "")
-                    examID = exId
-                    anonymousCode = aCode
-
-                    Log.d("examinfo", name)
-                    Log.d("examinfo", anonymousCode)
-                    Log.d("examinfo", personalNumber)
-
-
-                    return true
-                }
+                        for (i in 0 until json.length()) {
+                            questions.add(json.getString(i))
+                        }
+                        questionLength = questions.size
+                    }
+                    tentaViewModel = TentaViewModel().apply {
+                        addQuestions(questionLength)
+                    }
+                    // Notify data fetched
+                    onDataFetched?.invoke()
+                } ?: Log.d("GET Request", "Failed to fetch exam")
+            } catch (e: Exception) {
+                println("Error during GET request: ${e.message}")
             }
         }
-        return false
+    }
+
+
+    fun sendPdf(pdfFile: File, course: String, username: String) {
+        apiHelper.sendPdfToServer(pdfFile, "Math 101", "student_username")
+    }
+
+    fun getTentaModel() : TentaViewModel{
+        return tentaViewModel
     }
 }
