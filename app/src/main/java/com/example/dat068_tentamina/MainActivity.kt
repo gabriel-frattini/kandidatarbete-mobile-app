@@ -28,8 +28,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DAT068TentaminaTheme {
-                val tentaViewModel = remember { TentaViewModel() }
                 val externalStorageManager = ExternalStorageManager()
+                val tentaViewModel = remember { TentaViewModel() }
                 val examInfo = remember { ExamInfo(tentaViewModel, externalStorageManager, this) }
 
                 // Observe recovery mode

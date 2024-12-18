@@ -100,8 +100,6 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
         }
     }
 
-
-
     private fun getStorageObjectFromExternal(): JSONObject? {
         //fel hantering behövs, vad om det ej finns en fil
         return externalStorageManager.readFromBackUp(context)
@@ -121,33 +119,59 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
         }
       return false
     }
-    //saves the answers already made to the question map. Returns true if all was successful otherwise false.
     fun continueAlreadyStartedExam(textMeasurer: TextMeasurer): Boolean {
+        Log.d("Backup", "Attempting to continue an already started exam")
+
         val storedObject = getStorageObjectFromExternal()
         if (storedObject == null) {
+            Log.d("Backup", "No stored object found")
             return false
         }
 
-        // Extract "answers" as a JSON array string
+        Log.d("Backup", "Stored object retrieved: $storedObject")
+
         val answersJsonArray = storedObject.optJSONArray("answers")?.toString()
         if (answersJsonArray == null) {
+            Log.d("Backup", "No answers JSON array found in stored object")
             return false
         }
+
+        Log.d("Backup", "Answers JSON array extracted: $answersJsonArray")
 
         return try {
             val deserializedAnswers: List<Answer> = Json.decodeFromString(answersJsonArray)
-            val questionsMap = deserializedAnswers.associate { answer ->
+            Log.d("Backup", "Deserialized answers: $deserializedAnswers")
+
+            // Step 1: Determine the range of questions dynamically
+            val allQuestionIds = deserializedAnswers.map { it.questionId }
+            val maxQuestionId = allQuestionIds.maxOrNull() ?: 0
+            val questionRange = 1..maxQuestionId
+
+            // Step 2: Initialize all questions dynamically as empty lists
+            tentaViewModel.questions.clear()
+            questionRange.forEach { questionId ->
+                tentaViewModel.questions[questionId] = emptyList()
+            }
+            Log.d("Backup", "Initialized questions dynamically: ${tentaViewModel.questions}")
+
+            // Step 3: Populate questions with recovered objects
+            deserializedAnswers.forEach { answer ->
+                Log.d("Backup", "Processing answer: $answer")
+
                 val canvasObjects: List<CanvasObject> = answer.canvasObjects.map { serializedObject ->
+                    Log.d("Backup", "Processing canvas object: $serializedObject")
                     when (serializedObject) {
                         is SerializableLine -> {
+                            Log.d("Backup", "SerializableLine detected: $serializedObject")
                             Line(
                                 start = serializedObject.start.toOffset(),
                                 end = serializedObject.end.toOffset(),
-                                color = Color.Black, // Default color or extract from serialized data
+                                color = Color.Black,
                                 strokeWidth = serializedObject.strokeWidth.dp
                             )
                         }
                         is SerializableTextbox -> {
+                            Log.d("Backup", "SerializableTextbox detected: $serializedObject")
                             val measuredText = textMeasurer.measure(
                                 text = AnnotatedString(serializedObject.text)
                             )
@@ -157,30 +181,23 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
                             )
                         }
                         else -> {
+                            Log.e("Backup", "Unknown SerializableCanvasObject type: $serializedObject")
                             throw IllegalArgumentException("Unknown SerializableCanvasObject type")
                         }
                     }
                 }
-                answer.questionId to canvasObjects
+
+                tentaViewModel.questions[answer.questionId] = canvasObjects
+                Log.d("Backup", "Objects for question ${answer.questionId} added successfully")
             }
 
-            // Assign to TentaViewModel's questions
-            tentaViewModel.questions = mutableStateMapOf<Int, List<CanvasObject>>().apply {
-                putAll(questionsMap)
-            }
-
+            Log.d("Backup", "Recovery process completed. Questions: ${tentaViewModel.questions}")
             true // Successfully recovered
         } catch (e: Exception) {
             e.printStackTrace()
             Log.e("Backup", "Failed to deserialize exam data: ${e.message}")
             false
         }
-    }
-
-
-    fun testContinue() {
-        val storedObject = getStorageObjectFromExternal()
-        storedObject as JSONObject
     }
 
     fun startBackUp(){
@@ -193,6 +210,7 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
             while (isActive) { // Ensures the coroutine can be canceled
                 updateStorageObject()
                 delay(30 * 1000L) // 30 second delay
+                Log.d("ExamInfo", "{${tentaViewModel.getAnswers()}}")
             }
         }
     }
@@ -222,7 +240,37 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
         }
     }
 
-// checks if the anonymousCode and examID entered is valid
+    fun verifyBackupCredentials(aCode: String, exId: String): Boolean {
+        Log.d("Backup", "Verifying backup credentials for anonymousCode: $aCode and examID: $exId")
+
+        // Step 1: Check if a backup file exists
+        if (!externalStorageManager.backUpExists(context)) {
+            Log.d("Backup", "No backup file exists")
+            return false
+        }
+
+        // Step 2: Retrieve the stored backup object
+        val storedObject = getStorageObjectFromExternal() ?: return false
+        Log.d("Backup", "Retrieved stored object: $storedObject")
+
+        // Step 3: Extract and verify credentials
+        val storedExamID: String = storedObject.optString("examID", "")
+        val storedAnonymousCode: String = storedObject.optString("anonymousCode", "")
+
+        Log.d("Backup", "Stored examID: $storedExamID, Stored anonymousCode: $storedAnonymousCode")
+
+        val credentialsMatch = storedExamID == exId && storedAnonymousCode == aCode
+        if (credentialsMatch) {
+            Log.d("Backup", "Credentials match!")
+        } else {
+            Log.d("Backup", "Credentials do not match")
+        }
+
+        return credentialsMatch
+    }
+
+
+    // checks if the anonymousCode and examID entered is valid
 // (+ temporarily does the creation of a studentObject and storageObject, this will not be here later on)
  fun loginCheck(aCode: String, exId: String): Boolean {
         val examObj = examObject.optJSONObject(exId) ?: return false

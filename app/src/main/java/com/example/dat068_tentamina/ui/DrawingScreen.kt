@@ -13,6 +13,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -44,10 +45,17 @@ fun DrawingScreen(viewModel: TentaViewModel,examInfo: ExamInfo, recoveryMode: Bo
     var textOffset by remember { mutableStateOf(Offset(0f, 0f)) }
     val textMeasurer = rememberTextMeasurer()
 
-    if (recoveryMode) {
-        examInfo.continueAlreadyStartedExam(textMeasurer)
-        viewModel.changeQuestion(1)
-        viewModel.disableRecoveryMode()
+    // Trigger recovery mode only once
+    LaunchedEffect(recoveryMode) {
+        if (recoveryMode) {
+            Log.d("Backup", "Starting recovery mode...")
+            val success = examInfo.continueAlreadyStartedExam(textMeasurer)
+            Log.d("Backup", "Recovery mode status: $success")
+            if (success) {
+                examInfo.startBackUp()
+                viewModel.changeQuestion(1)
+            }
+        }
     }
 
     androidx.compose.foundation.Canvas(modifier = Modifier

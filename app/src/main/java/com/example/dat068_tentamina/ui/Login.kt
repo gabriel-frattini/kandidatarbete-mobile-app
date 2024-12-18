@@ -93,7 +93,7 @@ fun Login(viewModel : TentaViewModel ,examInfo: ExamInfo,onNavigateToExam: () ->
             )
         }
         ElevatedButton(
-            onClick = { if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text)){
+            onClick = { if (examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text)) {
                 examInfo.startBackUp()
                 onNavigateToExam()
             } },
@@ -109,7 +109,7 @@ fun Login(viewModel : TentaViewModel ,examInfo: ExamInfo,onNavigateToExam: () ->
         ElevatedButton(
             onClick = {
                 // this should be moved out of the login ui
-                if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text ))
+                if((examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text)) && (examInfo.verifyBackupCredentials(exId = examId.component1().text, aCode = anonymousCode.component1().text)))
                 {
                     viewModel.enableRecoveryMode()
                     onNavigateToExam()

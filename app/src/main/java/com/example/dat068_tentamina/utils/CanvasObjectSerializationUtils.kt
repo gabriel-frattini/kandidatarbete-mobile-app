@@ -7,7 +7,19 @@ import com.example.dat068_tentamina.model.serializable.SerializableCanvasObject
 import com.example.dat068_tentamina.model.serializable.SerializableTextbox
 import com.example.dat068_tentamina.model.serializable.SerializableLine
 import com.example.dat068_tentamina.model.serializable.SerializableOffset
+import androidx.compose.ui.text.TextLayoutResult
 
+
+data class SerializableTextLayoutResult(
+    val text: String // Extract only the text part, or other relevant fields
+)
+
+// Extension function to serialize TextLayoutResult
+fun TextLayoutResult.toSerializable(): SerializableTextLayoutResult {
+    return SerializableTextLayoutResult(
+        text = this.layoutInput.text.toString() // Assuming layoutInput contains the original text
+    )
+}
 
 object CanvasObjectSerializationUtils {
     // Converts CanvasObject to SerializableCanvasObject
@@ -15,7 +27,7 @@ object CanvasObjectSerializationUtils {
         return when (this) {
             is TextBox -> SerializableTextbox(
                 position = this.position.toSerializable(), // Convert Offset
-                text = this.text.toString(),
+                text = this.text.toSerializable().text,
                 color = this.color.toString(),
                 fontSize = this.fontSize.value
             )
