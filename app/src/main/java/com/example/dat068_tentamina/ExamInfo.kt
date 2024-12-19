@@ -1,37 +1,31 @@
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope // Import viewModelScope
 import com.example.dat068_tentamina.utilities.ServerHandler
-import com.example.dat068_tentamina.viewmodel.TentaViewModel
+import com.example.dat068_tentamina.TentaViewModel
 import kotlinx.coroutines.launch // Import launch
 import org.json.JSONArray
 import java.io.File
-import android.content.Context
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.TextBox
 import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.serializable.Answer
-import com.example.dat068_tentamina.model.serializable.StudentInfo
 import com.example.dat068_tentamina.model.serializable.SerializableTextbox
 import com.example.dat068_tentamina.model.serializable.SerializableLine
-import com.example.dat068_tentamina.utils.CanvasObjectSerializationUtils.toOffset
-import com.example.dat068_tentamina.utils.CanvasObjectSerializationUtils.toSerializable
+import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toOffset
+import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toSerializable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import org.json.JSONObject
 
@@ -39,11 +33,15 @@ import org.json.JSONObject
 class ExamInfo() : ViewModel() {
     private val apiHelper = ServerHandler()
     private val questions = mutableListOf<String>()
+    private val externalStorageManager = ExternalStorageManager()
     private lateinit var tentaViewModel: TentaViewModel
     private var onDataFetched: (() -> Unit)? = null
     var user = ""
     var personalID = ""
     var course = ""
+    var storageObject = JSONObject()
+    val job = Job()
+    val scope = CoroutineScope(Dispatchers.Default + job)
 
     fun createSerialization(): List<Answer> {
         return tentaViewModel.getAnswers().map { (questionId, canvasObjects) ->
@@ -54,7 +52,7 @@ class ExamInfo() : ViewModel() {
         }
     }
 
-    private fun getStorageObjectFromExternal(): JSONObject? {
+    private fun getStorageObjectFromExternal(context : Context): JSONObject? {
         //fel hantering behövs, vad om det ej finns en fil
         return externalStorageManager.readFromBackUp(context)
     }
@@ -113,12 +111,10 @@ class ExamInfo() : ViewModel() {
                         }
                         is SerializableTextbox -> {
                             Log.d("Backup", "SerializableTextbox detected: $serializedObject")
-                            val measuredText = textMeasurer.measure(
-                                text = AnnotatedString(serializedObject.text)
-                            )
                             TextBox(
                                 position = serializedObject.position.toOffset(),
-                                text = measuredText
+                                textLayout = textMeasurer.measure(AnnotatedString(serializedObject.text)),
+                                text = serializedObject.text
                             )
                         }
                         else -> {
@@ -141,7 +137,7 @@ class ExamInfo() : ViewModel() {
         }
     }
 
-    fun startBackUp(){
+    fun startBackUp(context : Context ){
         externalStorageManager.writeToBackUp(context,storageObject)
         startPerodicallyUpdatingExternalStorage(scope)
     }
@@ -166,8 +162,8 @@ class ExamInfo() : ViewModel() {
 
             // Update the storageObject with the serialized data
             storageObject = JSONObject().apply {
-                put("examID", examID)
-                put("anonymousCode", anonymousCode)
+                put("examID", course)
+                put("anonymousCode", user)
                 put("answers", JSONArray(answersJsonString)) // Convert the JSON string into a JSONArray
             }
 

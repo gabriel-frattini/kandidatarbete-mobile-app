@@ -18,11 +18,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,24 +31,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
-import com.example.dat068_tentamina.ui.calculateCanvasHeight
-import com.example.dat068_tentamina.ui.expandCanvasIfNeeded
-import com.example.dat068_tentamina.ui.isInBounds
-import com.example.dat068_tentamina.viewmodel.ExamInfo
 
-import com.example.dat068_tentamina.viewmodel.TentaViewModel
+import com.example.dat068_tentamina.TentaViewModel
 import kotlin.math.max
-import androidx.compose.material3.TextField as TextField1
 
 @SuppressLint("RememberReturnType")
 @Composable
@@ -92,7 +82,10 @@ fun DrawingScreen(viewModel: TentaViewModel,examInfo: ExamInfo, recoveryMode: Bo
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(verticalScrollState, enabled = isScrollMode) // Enables vertical scrolling
+                .verticalScroll(
+                    verticalScrollState,
+                    enabled = isScrollMode
+                ) // Enables vertical scrolling
                 .height(canvasHeight)
                 .background(Color.White)
         ) {
@@ -101,56 +94,61 @@ fun DrawingScreen(viewModel: TentaViewModel,examInfo: ExamInfo, recoveryMode: Bo
                 .fillMaxSize()
                 .pointerInput(isScrollMode) {
                     if (!isScrollMode) {
-                    detectDragGestures(
-                        onDragStart = { startPosition ->
-                            if (!viewModel.textMode.value)
-                                viewModel.saveHistory()
+                        detectDragGestures(
+                            onDragStart = { startPosition ->
+                                if (!viewModel.textMode.value)
+                                    viewModel.saveHistory()
 
-                        },
-                        onDrag = { change, dragAmount ->
-                            if (!viewModel.textMode.value) {
-                                change.consume()
-                                val startPosition = change.position - dragAmount
-                                val endPosition = change.position
+                            },
+                            onDrag = { change, dragAmount ->
+                                if (!viewModel.textMode.value) {
+                                    change.consume()
+                                    val startPosition = change.position - dragAmount
+                                    val endPosition = change.position
 
-                                // Ensure that both start and end positions are within the Canvas bounds
-                                if (isInBounds(startPosition, size) && isInBounds(endPosition, size)) {
-                                    var newLine = Line(
-                                        start = startPosition,
-                                        end = endPosition,
-                                        strokeWidth = viewModel.strokeWidth,
-                                    )
+                                    // Ensure that both start and end positions are within the Canvas bounds
+                                    if (isInBounds(startPosition, size) && isInBounds(
+                                            endPosition,
+                                            size
+                                        )
+                                    ) {
+                                        var newLine = Line(
+                                            start = startPosition,
+                                            end = endPosition,
+                                            strokeWidth = viewModel.strokeWidth,
+                                        )
 
 
-                                    if (viewModel.eraser) {
-                                        newLine.cap = StrokeCap.Square
-                                        newLine.color = Color.White
-                                        newLine.strokeWidth = viewModel.eraserWidth
-                                    }
-                                    viewModel.addObject(newLine)
-                                    expandCanvasIfNeeded(newLine, density, canvasHeight) {
-                                        canvasHeight = it
+                                        if (viewModel.eraser) {
+                                            newLine.cap = StrokeCap.Square
+                                            newLine.color = Color.White
+                                            newLine.strokeWidth = viewModel.eraserWidth
+                                        }
+                                        viewModel.addObject(newLine)
+                                        expandCanvasIfNeeded(newLine, density, canvasHeight) {
+                                            canvasHeight = it
+                                        }
                                     }
                                 }
-                            }
 
-                        }
-                    )
+                            }
+                        )
                     }
                 }
                 .pointerInput(isScrollMode) {
                     if (!isScrollMode) {
-                    detectTapGestures(
-                        onTap = { offset ->
-                            if (viewModel.textMode.value) {
-                                viewModel.saveHistory()
-                                textOffset = Offset(
-                                    offset.x,
-                                    offset.y + verticalScrollState.value
-                                )
+                        detectTapGestures(
+                            onTap = { offset ->
+                                if (viewModel.textMode.value) {
+                                    viewModel.saveHistory()
+                                    textOffset = Offset(
+                                        offset.x,
+                                        offset.y + verticalScrollState.value
+                                    )
+                                }
                             }
-                        }
-                    )}
+                        )
+                    }
                 }
             ) {
                 viewModel.objects.forEach { obj ->
@@ -168,7 +166,8 @@ fun DrawingScreen(viewModel: TentaViewModel,examInfo: ExamInfo, recoveryMode: Bo
                     modifier = Modifier.absoluteOffset(
                         x = textOffsetDp.x.dp,
                         y = textOffsetDp.y.dp - (verticalScrollState.value.dp)
-                    )) {
+                    )
+                ) {
                     OutlinedTextField(
                         value = textValue,
                         onValueChange = { textValue = it },

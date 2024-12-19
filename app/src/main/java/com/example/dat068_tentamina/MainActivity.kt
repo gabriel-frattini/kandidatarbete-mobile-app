@@ -7,12 +7,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Canvas
 import com.example.dat068_tentamina.ui.theme.DAT068TentaminaTheme
 import com.example.dat068_tentamina.ui.Overlay
 import com.example.dat068_tentamina.ui.Login
-import com.example.dat068_tentamina.viewmodel.TentaViewModel
-import com.example.dat068_tentamina.viewmodel.ExamInfo
 import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
 
 sealed class Screen {

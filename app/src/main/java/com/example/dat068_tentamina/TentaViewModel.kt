@@ -1,24 +1,15 @@
-package com.example.dat068_tentamina.viewmodel
+package com.example.dat068_tentamina
 
 import Stack
-import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
-import com.example.dat068_tentamina.ui.DrawingScreen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import org.json.JSONArray
-import org.json.JSONObject
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.math.log
 
 class TentaViewModel {
     private var _objects = mutableStateListOf<CanvasObject>()

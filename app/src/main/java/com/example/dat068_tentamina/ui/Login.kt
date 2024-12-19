@@ -1,6 +1,5 @@
 package com.example.dat068_tentamina.ui
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,11 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dat068_tentamina.R
-import com.example.dat068_tentamina.viewmodel.ExamInfo
-import com.example.dat068_tentamina.externalStorage.ExternalStorage
-import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
-import com.example.dat068_tentamina.viewmodel.TentaViewModel
-import com.example.dat068_tentamina.utilities.ServerHandler
+import com.example.dat068_tentamina.TentaViewModel
 import java.time.LocalDate
 import ExamInfo
 

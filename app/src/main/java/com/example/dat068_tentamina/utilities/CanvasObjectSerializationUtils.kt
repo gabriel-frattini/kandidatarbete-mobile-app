@@ -1,5 +1,6 @@
-package com.example.dat068_tentamina.utils
+package com.example.dat068_tentamina.utilities
 
+import androidx.compose.ui.geometry.Offset
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.TextBox
 import com.example.dat068_tentamina.model.Line
@@ -44,13 +45,13 @@ object CanvasObjectSerializationUtils {
 
 
     // Extension function to convert Offset to SerializableOffset
-    fun androidx.compose.ui.geometry.Offset.toSerializable(): SerializableOffset {
+    fun Offset.toSerializable(): SerializableOffset {
         return SerializableOffset(x = this.x, y = this.y)
     }
 
     // Extension function to convert SerializableOffset back to Offset
-    fun SerializableOffset.toOffset(): androidx.compose.ui.geometry.Offset {
-        return androidx.compose.ui.geometry.Offset(x, y)
+    fun SerializableOffset.toOffset(): Offset {
+        return Offset(x, y)
     }
 
 }
