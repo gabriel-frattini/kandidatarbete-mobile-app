@@ -1,7 +1,12 @@
-package com.example.dat068_tentamina.viewmodel
-
-import android.content.Context
 import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope // Import viewModelScope
+import com.example.dat068_tentamina.utilities.ServerHandler
+import com.example.dat068_tentamina.viewmodel.TentaViewModel
+import kotlinx.coroutines.launch // Import launch
+import org.json.JSONArray
+import java.io.File
+import android.content.Context
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -28,68 +33,17 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
-import org.json.JSONArray
 import org.json.JSONObject
 
-class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: Context) {
-    var examObject = JSONObject()
-    var studentsObject = JSONObject()
-    var storageObject = JSONObject()
-    private var anonymousCode = ""
-    private var examID = ""
-    private var personalNumber = ""
-    private var name = ""
-    private var tentaViewModel: TentaViewModel = tV
-    private var externalStorageManager : ExternalStorageManager = exManager
-    private var context : Context = context
-    val job = Job()
-    val scope = CoroutineScope(Dispatchers.Default + job)
 
-
-    fun getAnonymousCode(): String {
-        return anonymousCode
-    }
-
-    fun getPersonalNumber(): String {
-        return personalNumber
-    }
-
-    fun getName(): String {
-        return name
-    }
-
-
-    fun createTestExamPeriodJSON() {
-        //should be able to remove this test as soon as it is merged with submit...
-
-        studentsObject = JSONObject().apply {
-            put("123ALI", JSONObject().apply {
-                put("personalNumber", "0309230000")
-                put("name", "Alice Emanuelsson")
-            })
-            put("123CHE", JSONObject().apply {
-                put("personalNumber", "0204120000")
-                put("name", "Che Long Tran")
-            })
-        }
-        examObject = JSONObject().apply {
-            put("testID", JSONObject().apply {
-                put("examId", "testID")
-                put("date", "2003-09-23")
-                put("time(h)", 7)
-                put("examiner", "C")
-                // Add students to the exam as a JSONArray
-                put("students", JSONArray().apply {
-                    studentsObject.keys().forEach { key ->
-                        put(JSONObject().apply {
-                            put("anonymousCode", key)
-                            put("studentInfo", studentsObject.getJSONObject(key))
-                        })
-                    }
-                })
-            })
-        }
-    }
+class ExamInfo() : ViewModel() {
+    private val apiHelper = ServerHandler()
+    private val questions = mutableListOf<String>()
+    private lateinit var tentaViewModel: TentaViewModel
+    private var onDataFetched: (() -> Unit)? = null
+    var user = ""
+    var personalID = ""
+    var course = ""
 
     fun createSerialization(): List<Answer> {
         return tentaViewModel.getAnswers().map { (questionId, canvasObjects) ->
@@ -188,8 +142,8 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
     }
 
     fun startBackUp(){
-            externalStorageManager.writeToBackUp(context,storageObject)
-            startPerodicallyUpdatingExternalStorage(scope)
+        externalStorageManager.writeToBackUp(context,storageObject)
+        startPerodicallyUpdatingExternalStorage(scope)
     }
 
     private fun startPerodicallyUpdatingExternalStorage(scope: CoroutineScope) {
@@ -256,31 +210,54 @@ class ExamInfo(tV: TentaViewModel, exManager : ExternalStorageManager, context: 
         return credentialsMatch
     }
 
+    fun setOnDataFetched(callback: () -> Unit) {
+        onDataFetched = callback
+    }
 
-    // checks if the anonymousCode and examID entered is valid
-// (+ temporarily does the creation of a studentObject and storageObject, this will not be here later on)
- fun loginCheck(aCode: String, exId: String): Boolean {
-        val examObj = examObject.optJSONObject(exId) ?: return false
+    fun fetchData(courseCode: String, anonymousCode: String) {
+        viewModelScope.launch {
+            try {
+                val result = apiHelper.getExam(courseCode, anonymousCode)
+                result?.let {
+                    Log.d("GET Request", "JSON: $it")
+                    course = it.getString("examID")
+                    val info = it.getJSONObject("anonymousCode")
+                    user = info.getString("anonymousCode")
+                    personalID = info.getString("birthID")
+                    if (it.has("Error")) {
+                        println("Error in response: ${it.getString("Error")}")
+                        return@let
+                    }
+                    var questionLength = 1
+                    // Check if "questions" exists and is an array
+                    if (it.has("questions") && it.get("questions") is JSONArray) {
+                        val json = it.getJSONArray("questions")
+                        questions.clear() // Ensure previous data is removed
 
-        val studentsArray = examObj.optJSONArray("students") ?: return false
-
-        for (i in 0 until studentsArray.length()) {
-            val student = studentsArray.getJSONObject(i)
-            if (student.getString("anonymousCode") == aCode) {
-
-                val studentInfo = student.optJSONObject("studentInfo")
-                if (studentInfo != null) {
-                    personalNumber = studentInfo.optString("personalNumber", "")
-                    name = studentInfo.optString("name", "")
-                    examID = exId
-                    anonymousCode = aCode
-
-                    createSerialization()
-
-                    return true
-                }
+                        for (i in 0 until json.length()) {
+                            questions.add(json.getString(i))
+                        }
+                        questionLength = questions.size
+                    }
+                    tentaViewModel = TentaViewModel().apply {
+                        addQuestions(questionLength)
+                    }
+                    // Notify data fetched
+                    onDataFetched?.invoke()
+                } ?: Log.d("GET Request", "Failed to fetch exam")
+            } catch (e: Exception) {
+                println("Error during GET request: ${e.message}")
             }
         }
-        return false
+    }
+
+
+    fun sendPdf(pdfFile: File, course: String, username: String) {
+        apiHelper.sendPdfToServer(pdfFile, "Math 101", "student_username")
+    }
+
+    fun getTentaModel() : TentaViewModel{
+        return tentaViewModel
     }
 }
+

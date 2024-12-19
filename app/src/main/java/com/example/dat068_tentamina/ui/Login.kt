@@ -32,7 +32,9 @@ import com.example.dat068_tentamina.viewmodel.ExamInfo
 import com.example.dat068_tentamina.externalStorage.ExternalStorage
 import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
+import com.example.dat068_tentamina.utilities.ServerHandler
 import java.time.LocalDate
+import ExamInfo
 
 @Composable
 fun Login(viewModel : TentaViewModel ,examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
@@ -93,10 +95,10 @@ fun Login(viewModel : TentaViewModel ,examInfo: ExamInfo,onNavigateToExam: () ->
             )
         }
         ElevatedButton(
-            onClick = { if (examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text)) {
-                examInfo.startBackUp()
+            onClick = {
+                examInfo.fetchData(courseCode = examId.component1().text, anonymousCode = anonymousCode.component1().text)
                 onNavigateToExam()
-            } },
+            },
             colors = ButtonColors(Color.DarkGray, Color.White, Color.LightGray, Color.LightGray),
             modifier = Modifier
                 .align(alignment = Alignment.CenterHorizontally)
@@ -108,8 +110,8 @@ fun Login(viewModel : TentaViewModel ,examInfo: ExamInfo,onNavigateToExam: () ->
         }
         ElevatedButton(
             onClick = {
-                // this should be moved out of the login ui
-                if((examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text)) && (examInfo.verifyBackupCredentials(exId = examId.component1().text, aCode = anonymousCode.component1().text)))
+                examInfo.fetchData(courseCode = examId.component1().text, anonymousCode = anonymousCode.component1().text)
+                if((examInfo.verifyBackupCredentials(exId = examId.component1().text, aCode = anonymousCode.component1().text)))
                 {
                     viewModel.enableRecoveryMode()
                     onNavigateToExam()

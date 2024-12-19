@@ -1,5 +1,6 @@
 package com.example.dat068_tentamina.model
 
+import android.graphics.Canvas
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
