@@ -30,6 +30,7 @@ import com.example.dat068_tentamina.R
 import com.example.dat068_tentamina.TentaViewModel
 import java.time.LocalDate
 import ExamInfo
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun Login(viewModel : TentaViewModel ,examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
@@ -103,10 +104,11 @@ fun Login(viewModel : TentaViewModel ,examInfo: ExamInfo,onNavigateToExam: () ->
         ) {
             Text("Check in", fontSize = 25.sp)
         }
+        var context = LocalContext.current
         ElevatedButton(
             onClick = {
                 examInfo.fetchData(courseCode = examId.component1().text, anonymousCode = anonymousCode.component1().text)
-                if((examInfo.verifyBackupCredentials(exId = examId.component1().text, aCode = anonymousCode.component1().text)))
+                if((examInfo.verifyBackupCredentials(exId = examId.component1().text, aCode = anonymousCode.component1().text , context = context)))
                 {
                     viewModel.enableRecoveryMode()
                     onNavigateToExam()

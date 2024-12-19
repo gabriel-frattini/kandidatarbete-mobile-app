@@ -30,6 +30,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
@@ -51,6 +52,7 @@ fun DrawingScreen(viewModel: TentaViewModel,examInfo: ExamInfo, recoveryMode: Bo
     val textMeasurer = rememberTextMeasurer()
     val verticalScrollState = rememberScrollState()
     val density = LocalDensity.current.density
+    var context = LocalContext.current
 
     var canvasHeight by remember { mutableStateOf(viewModel.currentCanvasHeight.value) }
 
@@ -58,12 +60,15 @@ fun DrawingScreen(viewModel: TentaViewModel,examInfo: ExamInfo, recoveryMode: Bo
     LaunchedEffect(recoveryMode) {
         if (recoveryMode) {
             Log.d("Backup", "Starting recovery mode...")
-            val success = examInfo.continueAlreadyStartedExam(textMeasurer)
+            val success = examInfo.continueAlreadyStartedExam(textMeasurer,context)
             Log.d("Backup", "Recovery mode status: $success")
             if (success) {
-                examInfo.startBackUp()
-                viewModel.changeQuestion(1)
-            }
+                examInfo.startBackUp(context)
+                viewModel.changeQuestion(
+                    qNr = 1,
+                    newObjects = viewModel.objects.toList(),
+                    canvasHeight = 2400.dp
+                )}
         }
     }
 

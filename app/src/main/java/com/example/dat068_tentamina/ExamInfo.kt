@@ -58,10 +58,10 @@ class ExamInfo() : ViewModel() {
     }
 
     // check if there is a recoverable exam on external storage for said examID and anonymousCode
-    fun continueAlreadyStartedExam(textMeasurer: TextMeasurer): Boolean {
+    fun continueAlreadyStartedExam(textMeasurer: TextMeasurer, context : Context): Boolean {
         Log.d("Backup", "Attempting to continue an already started exam")
 
-        val storedObject = getStorageObjectFromExternal()
+        val storedObject = getStorageObjectFromExternal(context)
         if (storedObject == null) {
             Log.d("Backup", "No stored object found")
             return false
@@ -139,20 +139,20 @@ class ExamInfo() : ViewModel() {
 
     fun startBackUp(context : Context ){
         externalStorageManager.writeToBackUp(context,storageObject)
-        startPerodicallyUpdatingExternalStorage(scope)
+        startPerodicallyUpdatingExternalStorage(scope, context)
     }
 
-    private fun startPerodicallyUpdatingExternalStorage(scope: CoroutineScope) {
+    private fun startPerodicallyUpdatingExternalStorage(scope: CoroutineScope, context : Context) {
         scope.launch {
             while (isActive) { // Ensures the coroutine can be canceled
-                updateStorageObject()
+                updateStorageObject(context)
                 delay(30 * 1000L) // 30 second delay
                 Log.d("ExamInfo", "{${tentaViewModel.getAnswers()}}")
             }
         }
     }
 
-    private fun updateStorageObject() {
+    private fun updateStorageObject(context : Context) {
         try {
             // Get the serialized answers as a list of Answer objects
             val serializedAnswers = createSerialization()
@@ -177,7 +177,7 @@ class ExamInfo() : ViewModel() {
         }
     }
 
-    fun verifyBackupCredentials(aCode: String, exId: String): Boolean {
+    fun verifyBackupCredentials(aCode: String, exId: String, context : Context): Boolean {
         Log.d("Backup", "Verifying backup credentials for anonymousCode: $aCode and examID: $exId")
 
         // Step 1: Check if a backup file exists
@@ -187,7 +187,7 @@ class ExamInfo() : ViewModel() {
         }
 
         // Step 2: Retrieve the stored backup object
-        val storedObject = getStorageObjectFromExternal() ?: return false
+        val storedObject = getStorageObjectFromExternal(context) ?: return false
         Log.d("Backup", "Retrieved stored object: $storedObject")
 
         // Step 3: Extract and verify credentials
