@@ -3,7 +3,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope // Import viewModelScope
 import com.example.dat068_tentamina.utilities.ServerHandler
-import com.example.dat068_tentamina.TentaViewModel
+import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlinx.coroutines.launch // Import launch
 import org.json.JSONArray
 import java.io.File
@@ -24,6 +24,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
@@ -34,6 +36,7 @@ class ExamInfo() : ViewModel() {
     private val apiHelper = ServerHandler()
     private val questions = mutableListOf<String>()
     private val externalStorageManager = ExternalStorageManager()
+    private val _recoveryMode = MutableStateFlow(false)
     private lateinit var tentaViewModel: TentaViewModel
     private var onDataFetched: (() -> Unit)? = null
     var user = ""
@@ -42,6 +45,17 @@ class ExamInfo() : ViewModel() {
     var storageObject = JSONObject()
     val job = Job()
     val scope = CoroutineScope(Dispatchers.Default + job)
+    val recoveryMode: StateFlow<Boolean> get() = _recoveryMode
+
+
+    fun enableRecoveryMode() {
+        _recoveryMode.value = true
+    }
+
+    fun disableRecoveryMode() {
+        _recoveryMode.value = false
+    }
+
 
     fun createSerialization(): List<Answer> {
         return tentaViewModel.getAnswers().map { (questionId, canvasObjects) ->

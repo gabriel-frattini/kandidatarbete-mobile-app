@@ -25,11 +25,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DAT068TentaminaTheme {
-                val externalStorageManager = ExternalStorageManager()
-                val tentaViewModel = remember { TentaViewModel() }
                 val examInfo = remember {ExamInfo()}
-                val recoveryMode by tentaViewModel.recoveryMode.collectAsState()
-
+                val recoveryMode by examInfo.recoveryMode.collectAsState()
                 var isDataFetched by remember { mutableStateOf(false) } // Track if data is fetched
                 var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) } // Start with Login
 
@@ -43,7 +40,7 @@ class MainActivity : ComponentActivity() {
                     Screen.Overlay -> {
                         if (isDataFetched) {
                            Overlay(
-                                viewModel = tentaViewModel,
+                                viewModel = examInfo.getTentaModel(),
                                 examInfo = examInfo,
                                 activity = this,
                                 recoveryMode = recoveryMode,
@@ -54,9 +51,8 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     Screen.Login -> Login(
-                        viewModel = tentaViewModel,
                         examInfo = examInfo,
-                        onNavigateToExam = { currentScreen = Screen.Overlay },
+                        onNavigateToExam = {},
                     )
                 }
             }

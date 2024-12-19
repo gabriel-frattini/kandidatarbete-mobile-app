@@ -27,15 +27,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dat068_tentamina.R
-import com.example.dat068_tentamina.TentaViewModel
+import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import java.time.LocalDate
 import ExamInfo
 import androidx.compose.ui.platform.LocalContext
 
 @Composable
-fun Login(viewModel : TentaViewModel ,examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
+fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
     val examId = remember { mutableStateOf(TextFieldValue("")) }
     val anonymousCode = remember { mutableStateOf(TextFieldValue("")) }
+    var context = LocalContext.current
+
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -94,6 +96,7 @@ fun Login(viewModel : TentaViewModel ,examInfo: ExamInfo,onNavigateToExam: () ->
             onClick = {
                 examInfo.fetchData(courseCode = examId.component1().text, anonymousCode = anonymousCode.component1().text)
                 onNavigateToExam()
+                examInfo.startBackUp(context)
             },
             colors = ButtonColors(Color.DarkGray, Color.White, Color.LightGray, Color.LightGray),
             modifier = Modifier
@@ -104,13 +107,12 @@ fun Login(viewModel : TentaViewModel ,examInfo: ExamInfo,onNavigateToExam: () ->
         ) {
             Text("Check in", fontSize = 25.sp)
         }
-        var context = LocalContext.current
         ElevatedButton(
             onClick = {
                 examInfo.fetchData(courseCode = examId.component1().text, anonymousCode = anonymousCode.component1().text)
                 if((examInfo.verifyBackupCredentials(exId = examId.component1().text, aCode = anonymousCode.component1().text , context = context)))
                 {
-                    viewModel.enableRecoveryMode()
+                    examInfo.enableRecoveryMode()
                     onNavigateToExam()
                 }
 

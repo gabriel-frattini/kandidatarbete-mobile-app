@@ -40,7 +40,7 @@ import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
 
-import com.example.dat068_tentamina.TentaViewModel
+import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlin.math.max
 
 @SuppressLint("RememberReturnType")

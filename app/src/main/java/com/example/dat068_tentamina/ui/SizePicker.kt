@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.R
-import com.example.dat068_tentamina.TentaViewModel
+import com.example.dat068_tentamina.viewmodel.TentaViewModel
 
 @Composable
 fun SizePicker(viewModel: TentaViewModel, tool: String = "pen") {

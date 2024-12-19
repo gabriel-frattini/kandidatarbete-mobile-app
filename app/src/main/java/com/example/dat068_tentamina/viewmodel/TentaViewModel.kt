@@ -1,4 +1,4 @@
-package com.example.dat068_tentamina
+package com.example.dat068_tentamina.viewmodel
 
 import Stack
 import androidx.compose.runtime.mutableIntStateOf
@@ -14,10 +14,8 @@ import kotlinx.coroutines.flow.StateFlow
 class TentaViewModel {
     private var _objects = mutableStateListOf<CanvasObject>()
     private val history = Stack<List<CanvasObject>>()
-    private val _recoveryMode = MutableStateFlow(false)
     //private var historyMap = mutableMapOf<Int, Stack<List<CanvasObject>>>()
     var textMode = mutableStateOf(false)
-    val recoveryMode: StateFlow<Boolean> get() = _recoveryMode
     var strokeWidth = 2.dp
     var eraserWidth = 6.dp
     var eraser = false
@@ -30,15 +28,6 @@ class TentaViewModel {
         for (i in 1..questions.size) {
             this[i] = 2600.dp
         }
-    }
-
-
-    fun enableRecoveryMode() {
-        _recoveryMode.value = true
-    }
-
-    fun disableRecoveryMode() {
-        _recoveryMode.value = false
     }
 
     @Synchronized
