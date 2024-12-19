@@ -1,7 +1,9 @@
 package com.example.dat068_tentamina.ui
 
+import ExamInfo
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.ScrollState
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -9,20 +11,21 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,11 +37,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
@@ -47,9 +47,6 @@ import com.example.dat068_tentamina.model.TextBox
 
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlin.math.max
-import androidx.compose.material3.TextField as TextField1
-
-// Changed TextBox.kt. Currently only scrolling is possible. Zooming needs to be implemented. Lags on my pc idk if i impacted performance.
 
 @SuppressLint("RememberReturnType")
 @Composable
@@ -58,7 +55,10 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
     var textValue by remember { mutableStateOf("") }
     var textOffset by remember { mutableStateOf(Offset(0f, 0f)) }
     val textMeasurer = rememberTextMeasurer()
-    val verticalScrollState = rememberScrollState()
+    // Scroll state for vertical scrolling
+    val verticalScrollState = remember(viewModel.currentQuestion.intValue) {
+        ScrollState(initial = viewModel.scrollPositions[viewModel.currentQuestion.intValue] ?: 0)
+    }
     val density = LocalDensity.current.density
     var context = LocalContext.current
 
@@ -80,8 +80,24 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
         }
     }
 
+    // Save scroll position when switching questions
+    DisposableEffect(viewModel.currentQuestion.intValue) {
+        val questionToSave = viewModel.currentQuestion.intValue // Capture the current question
+        onDispose {
+            val currentScroll = verticalScrollState.value
+            viewModel.saveScrollPosition(
+                questionNr = questionToSave, // Save for the captured question
+                scrollValue = currentScroll
+            )
+            Log.d("ScrollDebug", "DisposableEffect - Saved scroll position for question $questionToSave: $currentScroll")
+        }
+    }
     LaunchedEffect(viewModel.currentQuestion.intValue) {
-        canvasHeight = viewModel.currentCanvasHeight.value
+        val savedScroll = viewModel.getScrollPosition(viewModel.currentQuestion.intValue)
+        Log.d("ScrollDebug", "LaunchedEffect - Restoring scroll position for question ${viewModel.currentQuestion.intValue}: $savedScroll")
+        if (verticalScrollState.value != savedScroll) {
+            verticalScrollState.scrollTo(savedScroll)
+        }
     }
     LaunchedEffect(viewModel.objects) {
         val newHeight = calculateCanvasHeight(viewModel.objects, density)
@@ -91,6 +107,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
             viewModel.updateCanvasHeight(newHeight)
         }
     }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         Box(
@@ -204,7 +221,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
             }
         }
 
-
+        CustomScrollIndicator(scrollState = verticalScrollState)
 
         // Toggle between scroll and draw modes
         Button(
@@ -214,10 +231,39 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
             },
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(16.dp)
+                .padding(60.dp)
         ) {
             Text(if (isScrollMode) "Enable Draw Mode" else "Enable Scroll Mode")
         }
+    }
+}
+
+@Composable
+fun CustomScrollIndicator(scrollState: ScrollState) {
+    // Calculate scroll thumb position and size
+    val topBarHeight = 90f
+    val adjustedHeight = 800f - topBarHeight
+    // value between 0 and 1, how much space the scroll will take, can change it so its based on the current height, but not necessary rn i think
+    val thumbHeightRatio = 0.1f
+    // normalized scroll progress value between 0.0 and 1.0 that indicates how far its scrolled
+    val scrollProgress = scrollState.value.toFloat() / max(scrollState.maxValue, 1)
+    val thumbOffset = scrollProgress * (1f - thumbHeightRatio)
+
+    Box(
+        modifier = Modifier
+            .fillMaxHeight()
+            .fillMaxWidth()
+            .padding(top = topBarHeight.dp, end = 4.dp)
+    ) {
+        // Scrollbar thumb
+        Box(
+            modifier = Modifier
+                .width(8.dp)
+                .fillMaxHeight(thumbHeightRatio)
+                .offset(y = (thumbOffset * adjustedHeight).dp)
+                .background(Color(0xFF2247FF))
+                .align(Alignment.TopEnd) // Align the thumb to the top-right
+        )
     }
 }
 

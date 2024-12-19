@@ -29,6 +29,7 @@ class TentaViewModel {
             this[i] = 2600.dp
         }
     }
+    var scrollPositions = mutableMapOf<Int, Int>()
 
     @Synchronized
     fun addObject(obj: CanvasObject) {
@@ -76,6 +77,16 @@ class TentaViewModel {
     fun updateCanvasHeight(newHeight: Dp) {
         currentCanvasHeight.value = newHeight
         height[currentQuestion.intValue] = newHeight
+    }
+    fun saveScrollPosition(questionNr: Int, scrollValue: Int) {
+        if (scrollValue > 0) {
+            scrollPositions[questionNr] = scrollValue
+        } else {
+            scrollPositions[questionNr] = 0 // Ensure default is 0 for unscrolled questions
+        }
+    }
+    fun getScrollPosition(questionId: Int): Int {
+        return scrollPositions[questionId] ?: 0
     }
 
 }
