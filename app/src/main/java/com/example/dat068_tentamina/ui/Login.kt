@@ -109,9 +109,9 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
         }
         ElevatedButton(
             onClick = {
-                examInfo.fetchData(courseCode = examId.component1().text, anonymousCode = anonymousCode.component1().text)
                 if((examInfo.verifyBackupCredentials(exId = examId.component1().text, aCode = anonymousCode.component1().text , context = context)))
                 {
+                    examInfo.fetchData(courseCode = examId.component1().text, anonymousCode = anonymousCode.component1().text)
                     examInfo.enableRecoveryMode()
                     onNavigateToExam()
                 }
