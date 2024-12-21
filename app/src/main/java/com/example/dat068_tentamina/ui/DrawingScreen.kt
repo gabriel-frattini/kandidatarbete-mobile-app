@@ -165,7 +165,24 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                             offset.x,
                                             offset.y + verticalScrollState.value
                                         )
-                                        Log.d("Debug", "Tap offset: $offset, Scroll: ${verticalScrollState.value}, TextOffset: $textOffset")
+                                    }
+                                        // Handling of dots
+                                        if (!viewModel.textMode.value) {
+                                            var dotLine = Line(
+                                                start = offset,
+                                                end = offset,
+                                                strokeWidth = viewModel.strokeWidth,
+                                            )
+                                            if (viewModel.eraser) {
+                                                dotLine.cap = StrokeCap.Square
+                                                dotLine.color = Color.White
+                                                dotLine.strokeWidth = viewModel.eraserWidth
+                                            }
+                                            viewModel.saveHistory()
+                                            viewModel.addObject(dotLine)
+                                            expandCanvasIfNeeded(dotLine, density, canvasHeight) {
+                                                canvasHeight = it
+                                            }
                                     }
                                 }
                             )

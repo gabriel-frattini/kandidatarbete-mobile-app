@@ -1,13 +1,11 @@
 package com.example.dat068_tentamina.model
 
-import android.graphics.Canvas
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import kotlinx.serialization.Serializable
 
 
 data class Line (
@@ -25,5 +23,13 @@ data class Line (
             cap = cap ,
             strokeWidth = strokeWidth.value
         )
+        if (start == end) {
+            // Draw a dot
+            drawScope.drawCircle(
+                color = color,
+                radius = strokeWidth.value,
+                center = start
+            )
+        }
     }
 }
