@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 data class SerializableLine(
     val start: SerializableOffset,
     val end: SerializableOffset,
-    var color: String = "Black",
-    var strokeWidth: Float = 1f,
-    var cap: String = "Round"
+    val color: String,
+    val strokeWidth: Float,
+    val cap: String
 ) : SerializableCanvasObject()

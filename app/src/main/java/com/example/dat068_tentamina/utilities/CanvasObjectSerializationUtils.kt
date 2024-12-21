@@ -1,6 +1,7 @@
 package com.example.dat068_tentamina.utilities
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.TextBox
 import com.example.dat068_tentamina.model.Line
@@ -33,9 +34,9 @@ object CanvasObjectSerializationUtils {
                 fontSize = this.fontSize.value
             )
             is Line -> SerializableLine(
-                start = this.start.toSerializable(), // Convert Offset
-                end = this.end.toSerializable(),    // Convert Offset
-                color = this.color.toString(),
+                start = this.start.toSerializable(),
+                end = this.end.toSerializable(),
+                color = this.color.toSerializable(),
                 strokeWidth = this.strokeWidth.value,
                 cap = this.cap.toString()
             )
@@ -53,5 +54,20 @@ object CanvasObjectSerializationUtils {
     fun SerializableOffset.toOffset(): Offset {
         return Offset(x, y)
     }
+
+    fun Color.toSerializable(): String {
+        // Serialize the color as a string in RGBA format
+        return "rgba(${red},${green},${blue},${alpha})"
+    }
+
+    fun String.toColor(): Color {
+        // Deserialize the color from the RGBA string
+        val components = this.removePrefix("rgba(").removeSuffix(")").split(",").map { it.toFloat() }
+        if (components.size != 4) {
+            throw IllegalArgumentException("Invalid color format")
+        }
+        return Color(components[0], components[1], components[2], components[3])
+    }
+
 
 }

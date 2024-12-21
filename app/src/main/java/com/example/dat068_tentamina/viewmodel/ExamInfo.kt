@@ -18,6 +18,7 @@ import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.serializable.Answer
 import com.example.dat068_tentamina.model.serializable.SerializableTextbox
 import com.example.dat068_tentamina.model.serializable.SerializableLine
+import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toColor
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toOffset
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toSerializable
 import kotlinx.coroutines.CoroutineScope
@@ -114,15 +115,13 @@ class ExamInfo() : ViewModel() {
                 val canvasObjects: List<CanvasObject> = answer.canvasObjects.map { serializedObject ->
                     Log.d("Backup", "Processing canvas object: $serializedObject")
                     when (serializedObject) {
-                        is SerializableLine -> {
-                            Log.d("Backup", "SerializableLine detected: $serializedObject")
-                            Line(
-                                start = serializedObject.start.toOffset(),
-                                end = serializedObject.end.toOffset(),
-                                color = Color.Black,
-                                strokeWidth = serializedObject.strokeWidth.dp
-                            )
-                        }
+                        is SerializableLine -> Line(
+                            start = serializedObject.start.toOffset(),
+                            end = serializedObject.end.toOffset(),
+                            color = serializedObject.color.toColor() ,
+                            strokeWidth = serializedObject.strokeWidth.dp
+                        )
+
                         is SerializableTextbox -> {
                             Log.d("Backup", "SerializableTextbox detected: $serializedObject")
                             TextBox(
