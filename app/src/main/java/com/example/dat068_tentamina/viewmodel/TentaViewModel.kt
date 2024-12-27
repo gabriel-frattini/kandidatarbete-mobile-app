@@ -49,6 +49,7 @@ class TentaViewModel {
 
     fun changeQuestion(qNr: Int) {
         //save the current question nr for usage across classes
+        textMode.value = false
         currentQuestion.intValue = qNr
         // Change the content on the DrawingScreen to the current question
         val currentObjects = questions[currentQuestion.intValue] ?: emptyList()
