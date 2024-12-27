@@ -161,7 +161,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
                 Button(onClick = {
                     val answers = viewModel.getAnswers()
                     val pdfFile = PdfConverter.createPdfFromAnswers(answers, 2560, 1700, activity) // Adjust dimensions as needed
-                    examInfo.sendPdf(pdfFile, "Math 101", "student_username")
+                    examInfo.sendPdf(pdfFile)
                 }) {
                     Text("Confirm")
                 }

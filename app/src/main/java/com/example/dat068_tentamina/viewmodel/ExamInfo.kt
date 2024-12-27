@@ -261,8 +261,8 @@ class ExamInfo() : ViewModel() {
     }
 
 
-    fun sendPdf(pdfFile: File, course: String, username: String) {
-        apiHelper.sendPdfToServer(pdfFile, "Math 101", "student_username")
+    fun sendPdf(pdfFile: File) {
+        apiHelper.sendPdfToServer(pdfFile, course, user)
     }
 
     fun getTentaModel() : TentaViewModel{

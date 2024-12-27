@@ -54,7 +54,6 @@ import com.example.dat068_tentamina.model.TextBox
 import com.example.dat068_tentamina.ui.EditableTextField
 import com.example.dat068_tentamina.ui.createTextBox
 import com.example.dat068_tentamina.ui.findTappedTextBox
-import com.example.dat068_tentamina.viewmodel.ExamInfo
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlin.math.max
 import androidx.compose.material3.TextField as TextField1
