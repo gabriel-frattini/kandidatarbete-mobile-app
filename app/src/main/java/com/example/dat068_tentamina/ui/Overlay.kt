@@ -1,6 +1,6 @@
 package com.example.dat068_tentamina.ui
 
-import android.util.Log
+import ExamInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
@@ -35,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,16 +45,16 @@ import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.R
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.example.dat068_tentamina.viewmodel.ExamInfo
+import com.example.dat068_tentamina.MainActivity
+import PdfConverter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo) {
+fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolean , activity: MainActivity) {
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -64,8 +64,7 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo) {
         drawerContent = {
             ModalDrawerSheet {
                 //The content of the menu
-                MenuScreen(modifier = Modifier,viewModel,examInfo)
-
+                MenuScreen(modifier = Modifier,viewModel, activity, examInfo)
             }
         },
     ) {
@@ -118,37 +117,64 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo) {
             },
         )
         { contentPadding ->
-            ExamScreen(modifier = Modifier.padding(contentPadding), viewModel)
+            ExamScreen(modifier = Modifier.padding(contentPadding), examInfo, viewModel, recoveryMode)
         }
     }
 }
 @Composable
-fun ExamScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel ) {
+fun ExamScreen(modifier: Modifier = Modifier, examInfo: ExamInfo, viewModel: TentaViewModel, recoveryMode: Boolean ) {
     Column {
         Box(modifier = Modifier
             .weight(1f)
             .fillMaxSize()) {
-            DrawingScreen(viewModel)
+            DrawingScreen(viewModel, examInfo , recoveryMode )
         }
     }
 }
 @Composable
-fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, examInfo: ExamInfo){
+fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activity: MainActivity, examInfo: ExamInfo) {
     val scrollState = rememberScrollState()
+    var submitDialog by remember { mutableStateOf(false)}
     var showInfoDialog by remember { mutableStateOf(false) }
 
     if (showInfoDialog) {
         AlertDialog(
             onDismissRequest = { showInfoDialog = false },
             title = {Text("Student Information")},
-            text = {Text("${examInfo.getName()}\n${examInfo.getPersonalNumber()} \n${examInfo.getAnonymousCode()}")},
+            text = {Text("Course: ${examInfo.course}\nAnonymous Code: ${examInfo.user} \nBirth ID: ${examInfo.personalID}")},
             confirmButton = {},
-            dismissButton = {}
+            dismissButton = {
+                Button(onClick = { showInfoDialog = false }) {
+                    Text("Back")
+                }
+            }
         )
 
     }
 
-    Column (
+    if (submitDialog) {
+        AlertDialog(
+            onDismissRequest = { submitDialog = false },
+            title = { Text("Submit exam") },
+            text = { Text("Are you sure you want to submit the exam?") },
+            confirmButton = {
+                Button(onClick = {
+                    val answers = viewModel.getAnswers()
+                    val pdfFile = PdfConverter.createPdfFromAnswers(answers, 2560, 1700, activity) // Adjust dimensions as needed
+                    examInfo.sendPdf(pdfFile, "Math 101", "student_username")
+                }) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { submitDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    Column(
         verticalArrangement = Arrangement.Top,
         modifier = Modifier
             .background(Color.LightGray)
@@ -156,6 +182,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, examInf
             .verticalScroll(scrollState)
             .requiredWidth(500.dp)
     ) {
+        // Information card
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -165,25 +192,26 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, examInf
                 .requiredHeight(100.dp)
                 .align(alignment = Alignment.CenterHorizontally)
         ) {
-                IconButton(
-                    onClick = { showInfoDialog = true /*TODO: An actual information page with user info and user guide???*/},
+            IconButton(
+                onClick = { showInfoDialog = true},
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxSize()
+                    .align(alignment = Alignment.CenterHorizontally)
+            ) {
+                Icon(
+                    Icons.Filled.Info, contentDescription = "Information",
                     modifier = Modifier
-                        .padding(10.dp)
-                        .fillMaxSize()
+                        .size(100.dp, 100.dp)
                         .align(alignment = Alignment.CenterHorizontally)
-
-                ) {
-                    Icon(
-                        Icons.Filled.Info, contentDescription = "Information",
-                        modifier = Modifier
-                            .size(100.dp, 100.dp)
-                            .align(alignment = Alignment.CenterHorizontally)
-                    )
-                }
+                )
+            }
         }
-        for((key,value) in viewModel.questions)
-        {
-            Card (
+
+        // List of questions
+        for ((key, value) in viewModel.questions) {
+            println(key)
+            Card(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 ),
@@ -191,13 +219,16 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, examInf
                     .fillMaxWidth()
                     .requiredHeight(100.dp)
                     .align(alignment = Alignment.CenterHorizontally)
-
-            ){
+            ) {
                 Button(
                     onClick = {
-                        println("Bytte fråga till $key ")
-                        viewModel.changeQuestion(key)
-                              },
+                        println("Switched to question $key")
+                        viewModel.changeQuestion(
+                            qNr = key,
+                            newObjects = viewModel.objects.toList(),
+                            canvasHeight = 2400.dp
+                        )
+                    },
                     modifier = Modifier
                         .padding(10.dp)
                         .fillMaxSize()
@@ -210,10 +241,45 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, examInf
                             .padding(10.dp)
                             .align(alignment = Alignment.CenterVertically)
                     )
-
-
                 }
             }
         }
+
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFF4CAF50)
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .requiredHeight(100.dp)
+                .align(alignment = Alignment.CenterHorizontally)
+                .padding(top = 10.dp)
+
+        ) {
+            Button(
+                onClick = {
+                    submitDialog = true
+                },
+
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF4CAF50)
+                ),
+
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxSize()
+                    .align(alignment = Alignment.CenterHorizontally)
+            ) {
+                Text(
+                    text = "Submit",
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.align(alignment = Alignment.CenterVertically)
+                )
+            }
+        }
     }
+
 }
+
+

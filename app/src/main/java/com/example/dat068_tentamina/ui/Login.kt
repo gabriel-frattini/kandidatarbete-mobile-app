@@ -27,13 +27,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dat068_tentamina.R
-import com.example.dat068_tentamina.viewmodel.ExamInfo
+import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import java.time.LocalDate
+import ExamInfo
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
     val examId = remember { mutableStateOf(TextFieldValue("")) }
     val anonymousCode = remember { mutableStateOf(TextFieldValue("")) }
+    var context = LocalContext.current
+
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -89,8 +93,11 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
             )
         }
         ElevatedButton(
-            onClick = { if(examInfo.loginCheck(exId = examId.component1().text, aCode = anonymousCode.component1().text)){ onNavigateToExam() }
-                      },
+            onClick = {
+                examInfo.fetchData(courseCode = examId.component1().text, anonymousCode = anonymousCode.component1().text)
+                onNavigateToExam()
+                examInfo.startBackUp(context)
+            },
             colors = ButtonColors(Color.DarkGray, Color.White, Color.LightGray, Color.LightGray),
             modifier = Modifier
                 .align(alignment = Alignment.CenterHorizontally)
@@ -99,6 +106,25 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 .requiredWidth(250.dp)
         ) {
             Text("Check in", fontSize = 25.sp)
+        }
+        ElevatedButton(
+            onClick = {
+                if((examInfo.verifyBackupCredentials(exId = examId.component1().text, aCode = anonymousCode.component1().text , context = context)))
+                {
+                    examInfo.fetchData(courseCode = examId.component1().text, anonymousCode = anonymousCode.component1().text)
+                    examInfo.enableRecoveryMode()
+                    onNavigateToExam()
+                }
+
+            } ,
+            colors = ButtonColors(Color.LightGray, Color.White, Color.LightGray, Color.LightGray),
+            modifier = Modifier
+                .align(alignment = Alignment.CenterHorizontally)
+                .padding(10.dp)
+                .requiredHeight(75.dp)
+                .requiredWidth(250.dp)
+        ) {
+            Text("Recover exam", fontSize = 25.sp)
         }
         Image(
             painter = painterResource(id = R.drawable.chalmers_logo),

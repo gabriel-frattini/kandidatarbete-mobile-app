@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-
+import kotlinx.serialization.Serializable
 
 
 data class Line (
@@ -16,7 +16,7 @@ data class Line (
     var color: Color = Color.Black,
     var strokeWidth: Dp = 1.dp,
     var cap: StrokeCap = StrokeCap.Round
-) : CanvasObject {
+) : CanvasObject  {
     override fun draw(drawScope: DrawScope) {
         drawScope.drawLine(
             start = start,

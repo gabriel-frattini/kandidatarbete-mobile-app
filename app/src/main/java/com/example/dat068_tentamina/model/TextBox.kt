@@ -23,14 +23,15 @@ import androidx.compose.ui.unit.dp
 
 data class TextBox(
     var position: Offset,
-    var text: TextLayoutResult,
+    var text : String,
+    var textLayout: TextLayoutResult,
     var color: Color = Color.Black,
     var fontSize: Dp = 16.dp
 ) : CanvasObject {
     override fun draw(drawScope: DrawScope) {
         drawScope.drawText(
-            textLayoutResult = text,
-            topLeft = position
+            textLayoutResult = textLayout,
+            topLeft = position // Use position directly without scaling
         )
     }
 

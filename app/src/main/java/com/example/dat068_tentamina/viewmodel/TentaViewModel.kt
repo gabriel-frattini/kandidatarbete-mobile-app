@@ -5,9 +5,13 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
-import com.example.dat068_tentamina.ui.DrawingScreen
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlin.collections.remove
+import kotlin.text.set
 
 class TentaViewModel {
     private var _objects = mutableStateListOf<CanvasObject>()
@@ -18,12 +22,24 @@ class TentaViewModel {
     var eraserWidth = 6.dp
     var eraser = false
     var currentQuestion = mutableIntStateOf(1)
+    var currentCanvasHeight = mutableStateOf(2400.dp)
     val objects: SnapshotStateList<CanvasObject> get() = _objects
     var questions = mutableMapOf<Int, List<CanvasObject>>()
+    var height = mutableMapOf<Int, Dp>().apply {
+        // Initialize default heights for each question (e.g., 2400.dp)
+        for (i in 1..questions.size) {
+            this[i] = 2600.dp
+        }
+    }
 
+    @Synchronized
     fun addObject(obj: CanvasObject) {
-        objects.add(obj)
-        questions[currentQuestion.intValue] = _objects.toList()
+            objects.add(obj)
+            questions[currentQuestion.intValue] = _objects.toList()
+    }
+
+    fun getAnswers(): MutableMap<Int, List<CanvasObject>> {
+        return questions
     }
 
     fun pop() {
@@ -41,23 +57,28 @@ class TentaViewModel {
         history.append(_objects.toList())
     }
 
-    fun addQuestions() {
-        for (i in 1..10) {
+    fun addQuestions(size : Int) {
+        for (i in 1..size) {
             questions[i] = emptyList()
         }
     }
 
-    fun changeQuestion(qNr: Int) {
-        //save the current question nr for usage across classes
+    fun changeQuestion(qNr: Int, newObjects: List<CanvasObject>, canvasHeight: Dp) {
         textMode.value = false
+        height[currentQuestion.intValue] = canvasHeight
         currentQuestion.intValue = qNr
         // Change the content on the DrawingScreen to the current question
         val currentObjects = questions[currentQuestion.intValue] ?: emptyList()
         _objects.clear()
         _objects.addAll(currentObjects)
+        currentCanvasHeight.value = height[currentQuestion.intValue] ?: 2400.dp
 
         //history is cleared when changing to a new question
         history.clear()
+    }
+    fun updateCanvasHeight(newHeight: Dp) {
+        currentCanvasHeight.value = newHeight
+        height[currentQuestion.intValue] = newHeight
     }
 
     fun replaceObject(oldObject: CanvasObject, newObject: CanvasObject) {
@@ -72,7 +93,4 @@ class TentaViewModel {
         _objects.remove(obj)
         questions[currentQuestion.intValue] = _objects.toList()
     }
-
-
 }
-
