@@ -14,7 +14,7 @@ import java.io.IOException
 
 class ServerHandler {
     private val SCHEME = "http"
-    private val HOST = "192.168.0.104"
+    private val HOST = "10.0.1.45"
     private val PORT = 3000
     private val client = OkHttpClient()
 
