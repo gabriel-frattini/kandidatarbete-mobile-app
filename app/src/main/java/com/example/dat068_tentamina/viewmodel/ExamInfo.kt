@@ -151,7 +151,7 @@ class ExamInfo() : ViewModel() {
     }
 
     fun startBackUp(context : Context ){
-        externalStorageManager.writeToBackUp(context,storageObject)
+        externalStorageManager.writeToSDCardBackUp(context,storageObject)
         startPerodicallyUpdatingExternalStorage(scope, context)
     }
 
@@ -181,7 +181,7 @@ class ExamInfo() : ViewModel() {
             }
 
             // Write the updated storageObject to external storage
-            externalStorageManager.writeToBackUp(context, storageObject)
+            externalStorageManager.writeToSDCardBackUp(context, storageObject)
 
             Log.d("ExamInfo", "Backup successfully updated!")
         } catch (e: Exception) {
@@ -194,7 +194,7 @@ class ExamInfo() : ViewModel() {
         Log.d("Backup", "Verifying backup credentials for anonymousCode: $aCode and examID: $exId")
 
         // Step 1: Check if a backup file exists
-        if (!externalStorageManager.backUpExists(context)) {
+        if (!externalStorageManager.sdCardBackUpExists(context)) {
             Log.d("Backup", "No backup file exists")
             return false
         }
@@ -261,8 +261,8 @@ class ExamInfo() : ViewModel() {
     }
 
 
-    fun sendPdf(pdfFile: File, course: String, username: String) {
-        apiHelper.sendPdfToServer(pdfFile, "Math 101", "student_username")
+    fun sendPdf(pdfFile: File) {
+        apiHelper.sendPdfToServer(pdfFile, course, user)
     }
 
     fun getTentaModel() : TentaViewModel{

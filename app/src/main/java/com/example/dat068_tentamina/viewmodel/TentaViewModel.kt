@@ -10,6 +10,8 @@ import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlin.collections.remove
+import kotlin.text.set
 
 class TentaViewModel {
     private var _objects = mutableStateListOf<CanvasObject>()
@@ -63,6 +65,7 @@ class TentaViewModel {
     }
 
     fun changeQuestion(qNr: Int, newObjects: List<CanvasObject>, canvasHeight: Dp) {
+        textMode.value = false
         height[currentQuestion.intValue] = canvasHeight
         currentQuestion.intValue = qNr
         // Change the content on the DrawingScreen to the current question
@@ -89,4 +92,16 @@ class TentaViewModel {
         return scrollPositions[questionId] ?: 0
     }
 
+    fun replaceObject(oldObject: CanvasObject, newObject: CanvasObject) {
+        val index = _objects.indexOf(oldObject)
+        if (index != -1) {
+            _objects[index] = newObject
+            questions[currentQuestion.intValue] = _objects.toList()
+        }
+    }
+
+    fun removeObject(obj: CanvasObject) {
+        _objects.remove(obj)
+        questions[currentQuestion.intValue] = _objects.toList()
+    }
 }

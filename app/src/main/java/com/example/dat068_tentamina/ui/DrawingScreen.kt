@@ -1,6 +1,5 @@
 package com.example.dat068_tentamina.ui
 
-import ExamInfo
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.ScrollState
@@ -18,35 +17,51 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
-
+import com.example.dat068_tentamina.ui.EditableTextField
+import com.example.dat068_tentamina.ui.createTextBox
+import com.example.dat068_tentamina.ui.findTappedTextBox
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlin.math.max
+import androidx.compose.material3.TextField as TextField1
 
 @SuppressLint("RememberReturnType")
 @Composable
@@ -63,6 +78,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
     var context = LocalContext.current
 
     var canvasHeight by remember { mutableStateOf(viewModel.currentCanvasHeight.value) }
+
 
     // Trigger recovery mode only once
     LaunchedEffect(recoveryMode) {
@@ -107,7 +123,6 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
             viewModel.updateCanvasHeight(newHeight)
         }
     }
-
 
     Box(modifier = Modifier.fillMaxSize()) {
         Box(
@@ -160,29 +175,40 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                             detectTapGestures(
                                 onTap = { offset ->
                                     if (viewModel.textMode.value) {
-                                        viewModel.saveHistory()
-                                        textOffset = Offset(
-                                            offset.x,
-                                            offset.y + verticalScrollState.value
-                                        )
-                                    }
-                                        // Handling of dots
-                                        if (!viewModel.textMode.value) {
-                                            var dotLine = Line(
-                                                start = offset,
-                                                end = offset,
-                                                strokeWidth = viewModel.strokeWidth,
-                                            )
-                                            if (viewModel.eraser) {
-                                                dotLine.cap = StrokeCap.Square
-                                                dotLine.color = Color.White
-                                                dotLine.strokeWidth = viewModel.eraserWidth
-                                            }
+                                        if (textValue.isEmpty()) {
                                             viewModel.saveHistory()
+                                            textOffset = offset
+                                        } else {
+                                            createTextBox(viewModel, textValue, textOffset, textMeasurer)
+                                            textValue = ""
+                                            textOffset = Offset.Zero
+                                            viewModel.textMode.value = false
+                                            viewModel.eraser = false
+                                        }
+                                    } else {
+                                        var dotLine = Line(
+                                            start = offset,
+                                            end = offset,
+                                            strokeWidth = viewModel.strokeWidth,
+                                        )
+                                        if (viewModel.eraser) {
+                                            dotLine.cap = StrokeCap.Square
+                                            dotLine.color = Color.White
+                                            dotLine.strokeWidth = viewModel.eraserWidth
+                                        }
+                                        val tappedTextBox = findTappedTextBox(viewModel, offset)
+                                        if (tappedTextBox != null) {
+                                            viewModel.removeObject(tappedTextBox)
+                                            viewModel.saveHistory()
+                                            textOffset = tappedTextBox.position
+                                            textValue = tappedTextBox.text
+                                            viewModel.textMode.value = true
+
                                             viewModel.addObject(dotLine)
                                             expandCanvasIfNeeded(dotLine, density, canvasHeight) {
                                                 canvasHeight = it
                                             }
+                                        }
                                     }
                                 }
                             )
@@ -196,46 +222,22 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
             }
         }
 
-        // Text input mode
-        if (viewModel.textMode.value) {
-            val textOffsetDp = with(LocalDensity.current) {
-                Offset(textOffset.x / density, textOffset.y / density) // Convert pixels to dp
-            }
-
-            Row(
-                modifier = Modifier.absoluteOffset(
-                    x = textOffsetDp.x.dp,
-                    y = textOffsetDp.y.dp - (verticalScrollState.value.dp)
-                )) {
-                OutlinedTextField(
-                    value = textValue,
-                    onValueChange = { textValue = it },
-                    label = { Text("Enter text") }
-                )
-                Button(
-                    onClick = {
-                        val newTextBox = TextBox(
-                            position = Offset(
-                                textOffset.x,
-                                textOffset.y - verticalScrollState.value
-                            ),
-                            textLayout = textMeasurer.measure(AnnotatedString(textValue)),
-                            text = textValue
-                        )
-                        viewModel.addObject(newTextBox)
-                        expandCanvasIfNeeded(newTextBox, density, canvasHeight) {
-                            canvasHeight = it
-                        }
-                        // Reset state
-                        viewModel.textMode.value = false
-                        viewModel.eraser = false
-                        textValue = ""
-                        textOffset = Offset(0f, 0f)
+        if (viewModel.textMode.value && textOffset != Offset.Zero) {
+            EditableTextField(
+                initialText = textValue,
+                offset = textOffset,
+                label = "Enter text",
+                onTextChange = { textValue = it },
+                onFocusLost = {
+                    if (textValue.isNotEmpty()) {
+                        createTextBox(viewModel, textValue, textOffset, textMeasurer)
                     }
-                ) {
-                    Text("OK")
+                    textValue = ""
+                    textOffset = Offset.Zero
+                    viewModel.textMode.value = false
+                    viewModel.eraser = false
                 }
-            }
+            )
         }
 
         CustomScrollIndicator(scrollState = verticalScrollState)
@@ -283,6 +285,79 @@ fun CustomScrollIndicator(scrollState: ScrollState) {
         )
     }
 }
+
+@Composable
+private fun EditableTextField(
+    initialText: String,
+    offset: Offset,
+    label: String,
+    onTextChange: (String) -> Unit,
+    onFocusLost: () -> Unit
+) {
+    var hasBeenFocused by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+    var value by remember { mutableStateOf(initialText) }
+
+    val density = LocalDensity.current
+    val offsetX = with(density) { offset.x.toDp() }
+    val offsetY = with(density) { offset.y.toDp() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
+    Row(
+        modifier = Modifier
+            .absoluteOffset(x = offsetX, y = offsetY)
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = {
+                value = it
+                onTextChange(it)
+            },
+            label = { Text(label) },
+            modifier = Modifier
+                .focusRequester(focusRequester)
+                .onFocusChanged { focusState ->
+                    if (!focusState.isFocused && hasBeenFocused) {
+                        onFocusLost()
+                    }
+                    if (focusState.isFocused) {
+                        hasBeenFocused = true
+                    }
+                }
+        )
+    }
+}
+
+private fun createTextBox(
+    viewModel: TentaViewModel,
+    textValue: String,
+    textOffset: Offset,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer
+) {
+    val measuredText = textMeasurer.measure(AnnotatedString(textValue))
+    viewModel.addObject(
+        TextBox(
+            position = textOffset,
+            text = textValue,
+            textLayout = measuredText
+        )
+    )
+}
+
+private fun findTappedTextBox(viewModel: TentaViewModel, offset: Offset): TextBox? {
+    return viewModel.objects
+        .filterIsInstance<TextBox>()
+        .find { textBox ->
+            val topLeft = textBox.position
+            val sizePx = textBox.textLayout.size
+            val bottomRight = Offset(topLeft.x + sizePx.width, topLeft.y + sizePx.height)
+            offset.x in topLeft.x..bottomRight.x && offset.y in topLeft.y..bottomRight.y
+        }
+}
+
 
 
 private fun calculateCanvasHeight(objects: List<CanvasObject>, density: Float): Dp {

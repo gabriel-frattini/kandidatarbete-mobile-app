@@ -1,9 +1,12 @@
 package com.example.dat068_tentamina.externalStorage
 
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -13,42 +16,45 @@ import java.io.FileWriter
 import java.io.IOException
 
 class ExternalStorageManager {
-    // checks if we can read and write to externalStorage, we should be able to do so as the tablet should handle this.
-    val isExternalStorageWritable : Boolean get() = Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
+    //The name of the backup file. This can be changed here easily and it should still work.
     private val backUpFileName = "ExamBackUp.txt"
 
+    // Returns the the filedirectory of the SD card on the tablet.
     private fun getExternalStorageVolumes(context: Context): File {
         val externalStorageVolumes = ContextCompat.getExternalFilesDirs(context, null)
-        return externalStorageVolumes[0]
+        return externalStorageVolumes[1] // the SD card was placed on 1
     }
-    //create file to store, if able to store it will return true otherwise false
-    private fun createFile(context: Context, fileName: String?) :Boolean
-    {
-        //val appSpecificExternalDir = fileName?.let { File(context.getExternalFilesDir(fileName),it) }
-        //return appSpecificExternalDir!=null
-        if (fileName.isNullOrEmpty()) return false
+    // Checks if the SD card is mounted and we are able to use it
+    fun isSDCardAvailable(context: Context): Boolean {
+        val externalDirs = ContextCompat.getExternalFilesDirs(context, null)
+        // Check if there's more than one directory and the second one is not null
+        return externalDirs.size > 1 && externalDirs[1] != null
+    }
+    // creates a file on the SD card if SD card is mounted, will return false if it was unable to create file
+    private fun createFileOnSDCard(context: Context, fileName: String?): Boolean {
+        if (fileName.isNullOrEmpty() || isSDCardAvailable(context)==false) return false
 
-        val appSpecificExternalDir = context.getExternalFilesDir(null) ?: return false
+        val sdCardDir = getExternalStorageVolumes(context)
 
-        val file = File(appSpecificExternalDir, fileName)
+        val file = File(sdCardDir, fileName)
         return try {
-            // Attempt to create the file
             if (!file.exists()) {
-                file.createNewFile() // Create the file on disk
+                file.createNewFile()
             }
-            true // Return true if file was successfully created or already exists
+            true
         } catch (e: IOException) {
             e.printStackTrace()
-            false // Return false if an error occurred
+            false
         }
     }
-    // this one works.
+    // getFile from SD card
     private fun getFile(context: Context, fileName: String?): File? {
+        val sdCardDir = getExternalStorageVolumes(context)
         return fileName?.let {
-            File(context.getExternalFilesDir(null), it)
+            File(sdCardDir, it)
         }
     }
-    // this one works
+    // writes data to file
     private fun write(file: File?, data: String?)
     {
         try{
@@ -60,7 +66,7 @@ class ExternalStorageManager {
             e.printStackTrace()
         }
     }
-    //this one works
+    // reads data from file
     private fun read(file: File?): StringBuilder{
         var line: String?
         val stringBuilder = StringBuilder()
@@ -77,35 +83,34 @@ class ExternalStorageManager {
         }
         return stringBuilder
     }
-    // this one works
-    fun writeToBackUp(context: Context, data: JSONObject){
-
-        val createdFile = createFile(context,backUpFileName)
-        if(createdFile)
-        {
-            val file : File? = getFile(context,backUpFileName)
-            write(file,data.toString())
-        }
-        else{
-            println("Failed in making external Backup")
-            // TODO: Make sure it calls on something here to notify or something
-            //Toast.makeText(context,"Failed in making external backup!", Toast.LENGTH_SHORT).show()
+    // Writes to BackUp on SDcard if it is mounted
+    fun writeToSDCardBackUp(context: Context, data: JSONObject) {
+        val sdCardFileCreated = createFileOnSDCard(context, backUpFileName)
+        if (sdCardFileCreated) {
+            val sdCardFile = getFile(context, backUpFileName)
+            write(sdCardFile, data.toString())
+        } else {
+            println("Failed to create backup on SD card")
         }
     }
-//works
+    // Reads from backup SDcard and returns JSONOBJECT if it finds one
     fun readFromBackUp(context: Context): JSONObject?{
         val file = getFile(context, backUpFileName)
-        if(backUpExists(context))
+        if(sdCardBackUpExists(context))
         {
             val stringBuilder = read(file)
             return JSONObject(stringBuilder.toString())
         }
         return null
     }
-    // works
-    fun backUpExists(context: Context): Boolean {
-        val appSpecificExternalDir = context.getExternalFilesDir(null) ?: return false
-        val file = File(appSpecificExternalDir,backUpFileName)
-        return file.exists()
+    //Checks if there is a backup on SDcard, if the SD card is mounted
+    fun sdCardBackUpExists(context: Context): Boolean {
+        if (isSDCardAvailable(context))
+        {
+            val sdCardDir = getExternalStorageVolumes(context)
+            val file = File(sdCardDir, backUpFileName)
+            return file.exists()
+        }
+        return false
     }
 }
