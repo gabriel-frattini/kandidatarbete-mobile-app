@@ -1,21 +1,21 @@
 package com.example.dat068_tentamina
 
 import ExamInfo
+import android.app.ActivityManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.runtime.setValue
 import com.example.dat068_tentamina.ui.theme.DAT068TentaminaTheme
 import com.example.dat068_tentamina.ui.Overlay
 import com.example.dat068_tentamina.ui.Login
-import com.example.dat068_tentamina.externalStorage.ExternalStorageManager
 
 sealed class Screen {
     object Overlay : Screen()
     object Login : Screen()
-    //object InfoPage : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -23,42 +23,70 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Enable Lock Task Mode if app is whitelisted
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+            if (!activityManager.isInLockTaskMode) {
+                startLockTask()
+            }
+        }
+
         setContent {
             DAT068TentaminaTheme {
-                val examInfo = remember {ExamInfo()}
+                var examInfo = remember { ExamInfo() }
                 val recoveryMode by examInfo.recoveryMode.collectAsState()
-                var isDataFetched by remember { mutableStateOf(false) } // Track if data is fetched
-                var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) } // Start with Login
+                var isDataFetched by remember { mutableStateOf(false) }
+                var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) }
 
-                // Setup callback for data fetching completion
-                examInfo.setOnDataFetched {
-                    isDataFetched = true
-                    currentScreen = Screen.Overlay
+                // Callback for when data is fetched
+                LaunchedEffect(Unit) {
+                    examInfo.setOnDataFetched {
+                        isDataFetched = true
+                        currentScreen = Screen.Overlay
+                    }
                 }
 
                 when (currentScreen) {
                     Screen.Overlay -> {
                         if (isDataFetched) {
-                           Overlay(
+                            Overlay(
                                 viewModel = examInfo.getTentaModel(),
                                 examInfo = examInfo,
                                 activity = this,
                                 recoveryMode = recoveryMode,
+                                signout = {
+                                    isDataFetched = false
+                                    examInfo.clearInfo()
+                                    currentScreen = Screen.Login
+                                }
                             )
                         } else {
-                            // Optionally show a loading screen or placeholder
-                            android.graphics.Canvas()
+                            LoadingScreen() // A composable for loading
                         }
                     }
-                    Screen.Login -> Login(
-                        examInfo = examInfo,
-                        onNavigateToExam = {},
-                    )
+                    Screen.Login -> {
+                        Login(
+                            examInfo = examInfo,
+                            onNavigateToExam = { currentScreen = Screen.Overlay }
+                        )
+                    }
                 }
             }
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Exit Lock Task Mode when activity is destroyed
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            stopLockTask()
+        }
+    }
 }
 
-
-
+@Composable
+fun LoadingScreen() {
+    // A simple loading screen placeholder
+    Text(text = "Loading...")
+}

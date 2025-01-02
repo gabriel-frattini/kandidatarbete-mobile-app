@@ -35,7 +35,7 @@ import org.json.JSONObject
 
 class ExamInfo() : ViewModel() {
     private val apiHelper = ServerHandler()
-    private val questions = mutableListOf<String>()
+    private var questions = mutableListOf<String>()
     private val externalStorageManager = ExternalStorageManager()
     private val _recoveryMode = MutableStateFlow(false)
     private lateinit var tentaViewModel: TentaViewModel
@@ -267,6 +267,14 @@ class ExamInfo() : ViewModel() {
 
     fun getTentaModel() : TentaViewModel{
         return tentaViewModel
+    }
+
+    fun clearInfo() {
+        questions = mutableListOf<String>()
+        tentaViewModel = TentaViewModel()
+        user = ""
+        personalID = ""
+        course = ""
     }
 }
 
