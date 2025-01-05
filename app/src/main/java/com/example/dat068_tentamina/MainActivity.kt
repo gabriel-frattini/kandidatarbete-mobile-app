@@ -45,14 +45,6 @@ class MainActivity : ComponentActivity() {
         // Enable Immersive Mode
         enableImmersiveMode()
 
-        // Enable Lock Task Mode if app is whitelisted
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-            if (!activityManager.isInLockTaskMode) {
-                startLockTask()
-            }
-        }
-
         // Manage Device Policy
         setupDevicePolicy()
 
@@ -80,6 +72,8 @@ class MainActivity : ComponentActivity() {
                                 activity = this,
                                 recoveryMode = recoveryMode,
                                 signout = {
+                                    // Signout: Unlock the app
+                                    unlockApp()
                                     isDataFetched = false
                                     examInfo.clearInfo()
                                     currentScreen = Screen.Login
@@ -92,7 +86,11 @@ class MainActivity : ComponentActivity() {
                     Screen.Login -> {
                         Login(
                             examInfo = examInfo,
-                            onNavigateToExam = { currentScreen = Screen.Overlay }
+                            onNavigateToExam = {
+                                // Lock the app when navigating to the exam
+                                lockApp()
+                                currentScreen = Screen.Overlay
+                            }
                         )
                     }
                 }
@@ -141,7 +139,25 @@ class MainActivity : ComponentActivity() {
 
         // Notify user
         Toast.makeText(this, "Camera has been disabled.", Toast.LENGTH_SHORT).show()
-        Log.d("BAJS", "YES")
+    }
+
+    // Method to lock the app (enter Lock Task Mode)
+    private fun lockApp() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+            if (!activityManager.isInLockTaskMode) {
+                startLockTask()
+                Toast.makeText(this, "App is locked", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // Method to unlock the app (exit Lock Task Mode)
+    private fun unlockApp() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            stopLockTask()
+            Toast.makeText(this, "App is unlocked", Toast.LENGTH_SHORT).show()
+        }
     }
 }
 
