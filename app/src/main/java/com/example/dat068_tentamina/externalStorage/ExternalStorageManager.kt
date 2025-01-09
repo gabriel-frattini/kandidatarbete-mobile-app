@@ -90,7 +90,7 @@ class ExternalStorageManager {
             val sdCardFile = getFile(context, backUpFileName)
             write(sdCardFile, data.toString())
         } else {
-            println("Failed to create backup on SD card")
+            Log.d("ExamInfo", "Failed to create backUp on SD card")
         }
     }
     // Reads from backup SDcard and returns JSONOBJECT if it finds one
