@@ -183,7 +183,6 @@ class ExamInfo() : ViewModel() {
             // Write the updated storageObject to external storage
             externalStorageManager.writeToSDCardBackUp(context, storageObject)
 
-            Log.d("ExamInfo", "Backup successfully updated!")
         } catch (e: Exception) {
             e.printStackTrace()
             Log.e("ExamError", "Failed to update backup: ${e.message}")
