@@ -141,7 +141,6 @@ class ExamInfo() : ViewModel() {
                 Log.d("Backup", "Objects for question ${answer.questionId} added successfully")
             }
 
-            Log.d("Backup", "Recovery process completed. Questions: ${tentaViewModel.questions}")
             true // Successfully recovered
         } catch (e: Exception) {
             e.printStackTrace()
@@ -267,6 +266,14 @@ class ExamInfo() : ViewModel() {
 
     fun getTentaModel() : TentaViewModel{
         return tentaViewModel
+    }
+
+    fun clearInfo() {
+        questions = mutableListOf<String>()
+        tentaViewModel = TentaViewModel()
+        user = ""
+        personalID = ""
+        course = ""
     }
 }
 

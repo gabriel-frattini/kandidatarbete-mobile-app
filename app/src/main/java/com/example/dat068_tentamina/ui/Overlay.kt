@@ -212,7 +212,6 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
 
         // List of questions
         for ((key, value) in viewModel.questions) {
-            println(key)
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -224,7 +223,6 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
             ) {
                 Button(
                     onClick = {
-                        println("Switched to question $key")
                         viewModel.changeQuestion(
                             qNr = key,
                             newObjects = viewModel.objects.toList(),

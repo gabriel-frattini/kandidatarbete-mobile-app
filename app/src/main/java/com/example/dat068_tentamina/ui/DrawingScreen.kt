@@ -1,5 +1,6 @@
 package com.example.dat068_tentamina.ui
 
+import ExamInfo
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.ScrollState
@@ -69,9 +70,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
     // Trigger recovery mode only once
     LaunchedEffect(recoveryMode) {
         if (recoveryMode) {
-            Log.d("Backup", "Starting recovery mode...")
             val success = examInfo.continueAlreadyStartedExam(textMeasurer,context)
-            Log.d("Backup", "Recovery mode status: $success")
             if (success) {
                 examInfo.startBackUp(context)
                 viewModel.changeQuestion(
@@ -91,19 +90,16 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                 questionNr = questionToSave, // Save for the captured question
                 scrollValue = currentScroll
             )
-            Log.d("ScrollDebug", "DisposableEffect - Saved scroll position for question $questionToSave: $currentScroll")
         }
     }
     LaunchedEffect(viewModel.currentQuestion.intValue) {
         val savedScroll = viewModel.getScrollPosition(viewModel.currentQuestion.intValue)
-        Log.d("ScrollDebug", "LaunchedEffect - Restoring scroll position for question ${viewModel.currentQuestion.intValue}: $savedScroll")
         if (verticalScrollState.value != savedScroll) {
             verticalScrollState.scrollTo(savedScroll)
         }
     }
     LaunchedEffect(viewModel.objects) {
         val newHeight = calculateCanvasHeight(viewModel.objects, density)
-        Log.d("CanvasDebug", "Calculated New Height: $newHeight, Current Height: $canvasHeight")
         if (newHeight > canvasHeight) {
             canvasHeight = newHeight
             viewModel.updateCanvasHeight(newHeight)
@@ -248,7 +244,6 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
         Button(
             onClick = {
                 isScrollMode = !isScrollMode
-                Log.d("Debug", "Switched to ${if (isScrollMode) "Scroll Mode" else "Draw Mode"}")
             },
             modifier = Modifier
                 .align(Alignment.BottomStart)
@@ -377,7 +372,7 @@ private fun expandCanvasIfNeeded(
     currentHeight: Dp,
     onHeightUpdate: (Dp) -> Unit
 ) {
-    val thresholdPx = 400f // Expand if the object is within 400px of the bottom
+    val thresholdPx = 400f
     val bottomY = when (obj) {
         is Line -> max(obj.start.y, obj.end.y)
         is TextBox -> obj.position.y + obj.textLayout.size.height
