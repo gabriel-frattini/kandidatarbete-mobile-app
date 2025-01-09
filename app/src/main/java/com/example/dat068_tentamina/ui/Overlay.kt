@@ -51,10 +51,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.dat068_tentamina.MainActivity
 import PdfConverter
+import kotlin.math.sign
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolean , activity: MainActivity) {
+fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolean , activity: MainActivity, signout: () -> Unit) {
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -64,7 +65,7 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
         drawerContent = {
             ModalDrawerSheet {
                 //The content of the menu
-                MenuScreen(modifier = Modifier,viewModel, activity, examInfo)
+                MenuScreen(modifier = Modifier,viewModel, activity, examInfo, signout)
             }
         },
     ) {
@@ -132,7 +133,7 @@ fun ExamScreen(modifier: Modifier = Modifier, examInfo: ExamInfo, viewModel: Ten
     }
 }
 @Composable
-fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activity: MainActivity, examInfo: ExamInfo) {
+fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activity: MainActivity, examInfo: ExamInfo, signout: () -> Unit) {
     val scrollState = rememberScrollState()
     var submitDialog by remember { mutableStateOf(false)}
     var showInfoDialog by remember { mutableStateOf(false) }
@@ -162,6 +163,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
                     val answers = viewModel.getAnswers()
                     val pdfFile = PdfConverter.createPdfFromAnswers(answers, 2560, 1700, activity) // Adjust dimensions as needed
                     examInfo.sendPdf(pdfFile)
+                    signout()
                 }) {
                     Text("Confirm")
                 }

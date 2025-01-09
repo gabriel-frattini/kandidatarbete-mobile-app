@@ -35,7 +35,7 @@ import org.json.JSONObject
 
 class ExamInfo() : ViewModel() {
     private val apiHelper = ServerHandler()
-    private val questions = mutableListOf<String>()
+    private var questions = mutableListOf<String>()
     private val externalStorageManager = ExternalStorageManager()
     private val _recoveryMode = MutableStateFlow(false)
     private lateinit var tentaViewModel: TentaViewModel
@@ -183,7 +183,7 @@ class ExamInfo() : ViewModel() {
             // Write the updated storageObject to external storage
             externalStorageManager.writeToSDCardBackUp(context, storageObject)
 
-            Log.d("ExamInfo", "30 secs for backup has passed!")
+            Log.d("ExamInfo", "Backup successfully updated!")
         } catch (e: Exception) {
             e.printStackTrace()
             Log.e("ExamError", "Failed to update backup: ${e.message}")
