@@ -30,10 +30,8 @@ class MainActivity : ComponentActivity() {
 
     private val activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
-            // Device admin has been activated
             setupDevicePolicy()
         } else {
-            // User denied the device admin request
             Toast.makeText(this, "Device admin not activated", Toast.LENGTH_SHORT).show()
         }
     }
@@ -42,10 +40,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Enable Immersive Mode
         enableImmersiveMode()
-
-        // Manage Device Policy
         setupDevicePolicy()
 
         setContent {
@@ -72,7 +67,6 @@ class MainActivity : ComponentActivity() {
                                 activity = this,
                                 recoveryMode = recoveryMode,
                                 signout = {
-                                    // Signout: Unlock the app
                                     unlockApp()
                                     isDataFetched = false
                                     examInfo.clearInfo()
@@ -80,7 +74,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         } else {
-                            LoadingScreen() // A composable for loading
+                            LoadingScreen()
                         }
                     }
                     Screen.Login -> {
@@ -100,7 +94,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Exit Lock Task Mode when activity is destroyed
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             stopLockTask()
         }
@@ -124,7 +117,6 @@ class MainActivity : ComponentActivity() {
             intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Please activate device admin to control device features.")
             activityResultLauncher.launch(intent)
         } else {
-            // Device admin is already active, proceed with your logic
             Toast.makeText(this, "Device admin is already active.", Toast.LENGTH_SHORT).show()
             setupDevicePolicyLogic()
         }
@@ -134,11 +126,12 @@ class MainActivity : ComponentActivity() {
         val devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val adminComponent = ComponentName(this, MyDeviceAdminReceiver::class.java)
 
+        /* Purely for testing
+
         // Example: Disable the camera
         devicePolicyManager.setCameraDisabled(adminComponent, true)
-
-        // Notify user
         Toast.makeText(this, "Camera has been disabled.", Toast.LENGTH_SHORT).show()
+        */
     }
 
     // Method to lock the app (enter Lock Task Mode)
@@ -163,6 +156,5 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun LoadingScreen() {
-    // A simple loading screen placeholder
     Text(text = "Loading...")
 }
