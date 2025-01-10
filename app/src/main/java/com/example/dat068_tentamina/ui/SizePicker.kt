@@ -26,7 +26,6 @@ fun SizePicker(viewModel: TentaViewModel, tool: String = "pen") {
     // State to manage the visibility of the menu
     var expanded by remember { mutableStateOf(false) }
 
-    // Anchor element for the dropdown menu
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -48,7 +47,7 @@ fun SizePicker(viewModel: TentaViewModel, tool: String = "pen") {
         // Dropdown Menu
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false } // Collapse when clicking outside
+            onDismissRequest = { expanded = false }
         ) {
             DropdownMenuItem(text = {
                     IconButton(onClick = {
