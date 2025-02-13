@@ -84,6 +84,7 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
                     },
                     actions = {
                         IconButton(onClick = {
+                            // (Gabbe) Button to create textbox.
                             viewModel.textMode.value = true
                         }) {
                             Icon(
@@ -99,6 +100,7 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
                         IconButton(onClick = {}) {
                             SizePicker(viewModel)
                         }
+                        // TODO: (Gabbe) Button to undo changes, add another button below to redo changes
                         IconButton(onClick = {
                             viewModel.pop()
                         }) {
@@ -113,6 +115,7 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
                                 contentDescription = "Localized description"
                             )
                         }
+                        // TODO: (Gabbe) Another button for drawing geometric shapes
                     }
                 )
             },
@@ -139,6 +142,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
     var showInfoDialog by remember { mutableStateOf(false) }
 
     if (showInfoDialog) {
+        // TODO: (Gabbe) Use `AlertDialog` to display error messages if something goes wrong
         AlertDialog(
             onDismissRequest = { showInfoDialog = false },
             title = {Text("Student Information")},

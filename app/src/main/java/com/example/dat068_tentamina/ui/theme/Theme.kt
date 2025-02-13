@@ -39,12 +39,15 @@ fun DAT068TentaminaTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
+            // (Gabbe) Support for dark mode exits? :D
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
+        // TODO: (Gabbe) If user has selected graph paper, we set GraphColorScheme here
+        // Type of background, like graph paper, should be stored in ExamInfo
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

@@ -169,6 +169,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                             textOffset = offset
                                         } else {
                                             // Create a new TextBox if there is text
+                                            // TODO: (Gabbe) Create markdown textbox here?
                                             createTextBox(viewModel, textValue, textOffset, textMeasurer)
                                             textValue = ""
                                             textOffset = Offset.Zero
@@ -330,7 +331,9 @@ private fun createTextBox(
     textOffset: Offset,
     textMeasurer: androidx.compose.ui.text.TextMeasurer
 ) {
-    val measuredText = textMeasurer.measure(AnnotatedString(textValue))
+    // TODO: (Gabbe) I think newline bug happens here
+    // Print measuredText and textValue to see they have '\n' before a new line
+    val measuredText = textMeasurer.measure(AnnotatedString(textValue), softWrap = true)
     viewModel.addObject(
         TextBox(
             position = textOffset,

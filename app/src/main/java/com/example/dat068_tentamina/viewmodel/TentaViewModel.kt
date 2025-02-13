@@ -43,6 +43,9 @@ class TentaViewModel {
         return questions
     }
 
+    // TODO: (Gabbe) Here is the 'undo' function.
+    //  Make it scoped to the active question user is viewing
+    // Also add another function to redo the undoing
     fun pop() {
         if (_objects.isNotEmpty()) {
             _objects.clear()
@@ -50,6 +53,10 @@ class TentaViewModel {
             if (previousState != null) {
                 _objects.addAll(previousState)
             }
+            // We don't want to pop the actual history because we need to keep it to be able to redo.
+            // Here we could 'soft delete' the change instead of popping it,
+            // we set a flag like 'deleted': true for undo (then remove change from the UI)
+            // and when the user clicks redo, we set 'deleted' : false again, and show the change in the UI
             history.pop()
         }
     }

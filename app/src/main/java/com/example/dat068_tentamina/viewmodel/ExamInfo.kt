@@ -154,6 +154,9 @@ class ExamInfo() : ViewModel() {
         startPerodicallyUpdatingExternalStorage(scope, context)
     }
 
+    // TODO: (Gabbe) This method is a good example of how we could check if the exam end time has passed
+    // in the while loop we would check if time is up, if so; submit the exam and redirect`user
+    // We could also set up the reminder modal if 15 minutes are remaining
     private fun startPerodicallyUpdatingExternalStorage(scope: CoroutineScope, context : Context) {
         scope.launch {
             while (isActive) { // Ensures the coroutine can be canceled
@@ -247,6 +250,8 @@ class ExamInfo() : ViewModel() {
                         }
                         questionLength = questions.size
                     }
+                    // TODO: (Gabbe) We want to get Exam start time & end time here and show it somewhere
+                    // Then have a listener that listens to when time is up. See `startPerodicallyUpdatingExternalStorage`
                     tentaViewModel = TentaViewModel().apply {
                         addQuestions(questionLength)
                     }
