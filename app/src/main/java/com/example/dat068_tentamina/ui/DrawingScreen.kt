@@ -331,8 +331,6 @@ private fun createTextBox(
     textOffset: Offset,
     textMeasurer: androidx.compose.ui.text.TextMeasurer
 ) {
-    // TODO: (Gabbe) I think newline bug happens here
-    // Print measuredText and textValue to see they have '\n' before a new line
     val measuredText = textMeasurer.measure(AnnotatedString(textValue), softWrap = true)
     viewModel.addObject(
         TextBox(
