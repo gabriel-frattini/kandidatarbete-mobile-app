@@ -20,10 +20,13 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.richeditor.model.RichTextState
+import com.mohamedrejeb.richeditor.ui.material.RichText
 
 data class TextBox(
     var position: Offset,
-    var text : String,
+    //var text : String,
+    var text: RichTextState = RichTextState(), // Changed String to Rich text state
     var textLayout: TextLayoutResult,
     var color: Color = Color.Black,
     var fontSize: Dp = 16.dp
@@ -34,8 +37,4 @@ data class TextBox(
             topLeft = position // Use position directly without scaling
         )
     }
-
 }
-
-
-
