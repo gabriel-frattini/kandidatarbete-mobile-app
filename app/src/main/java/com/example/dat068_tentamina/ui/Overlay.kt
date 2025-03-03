@@ -102,14 +102,16 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
                         }
                         // TODO: (Gabbe) Button to undo changes, add another button below to redo changes
                         IconButton(onClick = {
-                            viewModel.pop()
+                            viewModel.undo()
                         }) {
                             Icon(
                                 Icons.Filled.ArrowBack,
                                 contentDescription = "Localized description"
                             )
                         }
-                        IconButton(onClick = { /* doSomething() */ }) {
+                        IconButton(onClick = {
+                            viewModel.redo()
+                        }) {
                             Icon(
                                 Icons.Filled.ArrowForward,
                                 contentDescription = "Localized description"

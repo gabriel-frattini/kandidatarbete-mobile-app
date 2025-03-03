@@ -12,10 +12,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.collections.remove
 import kotlin.text.set
+import android.util.Log
 
 class TentaViewModel {
     private var _objects = mutableStateListOf<CanvasObject>()
     private val history = Stack<List<CanvasObject>>()
+    private val redoHistory = Stack<List<CanvasObject>>()
+    private val redoLive = Stack<List<CanvasObject>>()
     //private var historyMap = mutableMapOf<Int, Stack<List<CanvasObject>>>()
     var textMode = mutableStateOf(false)
     var strokeWidth = 2.dp
@@ -45,24 +48,48 @@ class TentaViewModel {
 
     // TODO: (Gabbe) Here is the 'undo' function.
     //  Make it scoped to the active question user is viewing
-    // Also add another function to redo the undoing
-    fun pop() {
+    fun undo() {
         if (_objects.isNotEmpty()) {
-            _objects.clear()
             val previousState = history.getCurrValue()
+
+            if (previousState != null) {
+                redoHistory.append(previousState)
+                redoLive.append(_objects.toList())
+            }
+
+            _objects.clear()
             if (previousState != null) {
                 _objects.addAll(previousState)
             }
-            // We don't want to pop the actual history because we need to keep it to be able to redo.
-            // Here we could 'soft delete' the change instead of popping it,
-            // we set a flag like 'deleted': true for undo (then remove change from the UI)
-            // and when the user clicks redo, we set 'deleted' : false again, and show the change in the UI
             history.pop()
+        }
+    }
+
+    fun redo() {
+        if (redoHistory.isNotEmpty() && redoLive.isNotEmpty()) {
+            val recoverHead = redoHistory.getCurrValue()
+            val live = redoLive.getCurrValue()
+
+            _objects.clear()
+
+            if (live != null && recoverHead != null) {
+                history.append(recoverHead)
+                _objects.addAll(live)
+            }
+
+            redoHistory.pop()
+            redoLive.pop()
         }
     }
 
     fun saveHistory() {
         history.append(_objects.toList())
+        clearRedoHistory()
+    }
+
+    fun clearRedoHistory() {
+        redoHistory.clear()
+        redoLive.clear()
     }
 
     fun addQuestions(size : Int) {
