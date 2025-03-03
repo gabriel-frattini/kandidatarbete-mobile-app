@@ -47,7 +47,12 @@ import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
+import com.example.dat068_tentamina.ui.DrawGraphPaperBackground //Junyi
+import com.example.dat068_tentamina.ui.DrawLinedPaperBackground //Junyi
+import com.example.dat068_tentamina.ui.DrawDottedBackground //Junyi
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
+import com.example.dat068_tentamina.viewmodel.BackgroundType //Junyi
+import com.example.dat068_tentamina.ui.BackgroundPicker //Junyi
 import kotlin.math.max
 
 @SuppressLint("RememberReturnType")
@@ -112,8 +117,15 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                 .fillMaxWidth()
                 .verticalScroll(verticalScrollState, enabled = isScrollMode) // Enables vertical scrolling
                 .height(canvasHeight)
-                .background(Color.White)
+                //.background(Color.White) --> Junyi
+
         ) {
+            when (viewModel.backgroundType.value) {
+                BackgroundType.BLANK -> {}
+                BackgroundType.GRAPH -> DrawGraphPaperBackground(Modifier.fillMaxSize())
+                BackgroundType.LINED -> DrawLinedPaperBackground(Modifier.fillMaxSize())
+                BackgroundType.DOTTED -> DrawDottedBackground(Modifier.fillMaxSize())
+            } //Junyi
             androidx.compose.foundation.Canvas(
                 modifier = Modifier
                     .fillMaxSize()
