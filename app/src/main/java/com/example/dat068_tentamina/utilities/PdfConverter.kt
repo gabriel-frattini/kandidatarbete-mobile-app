@@ -146,8 +146,10 @@ class PdfConverter {
                             // Correct baseline adjustment using FontMetrics
                             val metrics = textPaint.fontMetrics
                             val baselineAdjustment = -metrics.top
-
-                            canvas.drawText(obj.text, adjustedX, adjustedY + baselineAdjustment, textPaint)
+                            val lines = obj.text.split("\n")
+                            lines.forEachIndexed { index, line ->
+                                canvas.drawText(line, adjustedX, adjustedY + baselineAdjustment + index * obj.fontSize.value * density, textPaint)
+                            }
                         }
                     }
                 }
