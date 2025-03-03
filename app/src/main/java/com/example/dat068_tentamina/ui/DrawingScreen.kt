@@ -51,8 +51,8 @@ import com.example.dat068_tentamina.ui.DrawGraphPaperBackground //Junyi
 import com.example.dat068_tentamina.ui.DrawLinedPaperBackground //Junyi
 import com.example.dat068_tentamina.ui.DrawDottedBackground //Junyi
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
-import com.example.dat068_tentamina.viewmodel.BackgroundType //Junyi
-import com.example.dat068_tentamina.ui.BackgroundPicker //Junyi
+import com.mohamedrejeb.richeditor.model.RichTextState
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
 import kotlin.math.max
 
 @SuppressLint("RememberReturnType")
@@ -61,6 +61,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
     var isScrollMode by remember { mutableStateOf(false) }
     var textValue by remember { mutableStateOf("") }
     var textOffset by remember { mutableStateOf(Offset(0f, 0f)) }
+    var richTextState by remember { mutableStateOf(RichTextState()) }    //Added remember richTextState
     val textMeasurer = rememberTextMeasurer()
     // Scroll state for vertical scrolling
     val verticalScrollState = remember(viewModel.currentQuestion.intValue) {
@@ -175,7 +176,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                             viewModel.removeObject(tappedTextBox)
                                             viewModel.saveHistory()
                                             textOffset = tappedTextBox.position
-                                            textValue = tappedTextBox.text
+                                            richTextState = tappedTextBox.text
                                         } else if (textValue.isEmpty()) {
                                             // Enter text mode at clicked position
                                             textOffset = offset
@@ -236,7 +237,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                         val newTextBox = TextBox(
                             position = adjustedOffset,
                             textLayout = textMeasurer.measure(AnnotatedString(textValue)),
-                            text = textValue
+                            text = richTextState
                         )
                         viewModel.addObject(newTextBox)
                         expandCanvasIfNeeded(newTextBox, density, canvasHeight) {
@@ -307,26 +308,23 @@ private fun EditableTextField(
     var hasBeenFocused by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     var value by remember { mutableStateOf(initialText) }
+    var richTextState by remember { mutableStateOf(RichTextState()) } // Track Markdown state
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
+        richTextState.setMarkdown(value)
     }
-
     Row(
         modifier = Modifier
             .absoluteOffset(x = offset.x.dp, y = offset.y.dp) //removed density, caused problems here.
     ) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = {
-                value = it
-                onTextChange(it)
-            },
-            label = { Text(label) },
+        RichTextEditor(                         //Switched to RichTextEditor
+            state = richTextState,
             modifier = Modifier
                 .focusRequester(focusRequester)
                 .onFocusChanged { focusState ->
                     if (!focusState.isFocused && hasBeenFocused) {
+                        value = richTextState.toMarkdown()      // Save edited markdown
                         onFocusLost()
                     }
                     if (focusState.isFocused) {
@@ -343,11 +341,14 @@ private fun createTextBox(
     textOffset: Offset,
     textMeasurer: androidx.compose.ui.text.TextMeasurer
 ) {
+    // TODO: (Gabbe) I think newline bug happens here
+    val richTextState = RichTextState().apply { setMarkdown(textValue) }  // Markdown input
+    // Print measuredText and textValue to see they have '\n' before a new line
     val measuredText = textMeasurer.measure(AnnotatedString(textValue), softWrap = true)
     viewModel.addObject(
         TextBox(
             position = textOffset,
-            text = textValue,
+            text = richTextState,
             textLayout = measuredText
         )
     )
