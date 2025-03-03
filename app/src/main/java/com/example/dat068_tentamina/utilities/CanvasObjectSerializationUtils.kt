@@ -29,7 +29,7 @@ object CanvasObjectSerializationUtils {
         return when (this) {
             is TextBox -> SerializableTextbox(
                 position = this.position.toSerializable(), // Convert Offset
-                text = this.text,
+                text = this.text.toMarkdown(), // Converted to Markdown
                 color = this.color.toString(),
                 fontSize = this.fontSize.value
             )
