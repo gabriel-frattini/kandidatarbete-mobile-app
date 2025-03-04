@@ -14,6 +14,10 @@ class Stack<T> {
         size++
     }
 
+    fun size(): Int {
+        return size
+    }
+
     fun pop() {
         if (head != null) {
             head = head?.next
