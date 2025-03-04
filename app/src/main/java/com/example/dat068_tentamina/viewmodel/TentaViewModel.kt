@@ -16,10 +16,11 @@ import android.util.Log
 
 class TentaViewModel {
     private var _objects = mutableStateListOf<CanvasObject>()
-    private val history = Stack<List<CanvasObject>>()
-    private val redoHistory = Stack<List<CanvasObject>>()
-    private val redoLive = Stack<List<CanvasObject>>()
-    //private var historyMap = mutableMapOf<Int, Stack<List<CanvasObject>>>()
+
+    private var history = mutableMapOf<Int, Stack<List<CanvasObject>>>()
+    private var redoHistory = mutableMapOf<Int, Stack<List<CanvasObject>>>()
+    private var redoLive = mutableMapOf<Int, Stack<List<CanvasObject>>>()
+
     var textMode = mutableStateOf(false)
     var strokeWidth = 2.dp
     var eraserWidth = 6.dp
@@ -46,55 +47,58 @@ class TentaViewModel {
         return questions
     }
 
-    // TODO: (Gabbe) Here is the 'undo' function.
-    //  Make it scoped to the active question user is viewing
     fun undo() {
         if (_objects.isNotEmpty()) {
-            val previousState = history.getCurrValue()
-
+            val Q = currentQuestion.intValue;
+            val previousState = history[Q]?.getCurrValue()
             if (previousState != null) {
-                redoHistory.append(previousState)
-                redoLive.append(_objects.toList())
-            }
+                redoHistory[Q]?.append(previousState)
+                redoLive[Q]?.append(_objects.toList())
 
-            _objects.clear()
-            if (previousState != null) {
+                _objects.clear()
                 _objects.addAll(previousState)
+
+                questions[currentQuestion.intValue] = _objects.toList()
+                history[Q]?.pop()
             }
-            history.pop()
         }
     }
 
     fun redo() {
-        if (redoHistory.isNotEmpty() && redoLive.isNotEmpty()) {
-            val recoverHead = redoHistory.getCurrValue()
-            val live = redoLive.getCurrValue()
+        val Q = currentQuestion.intValue;
+        if (redoHistory[Q]?.isNotEmpty() == true && redoLive[Q]?.isNotEmpty() == true) {
+            val recoverHead = redoHistory[Q]?.getCurrValue()
+            val live = redoLive[Q]?.getCurrValue()
 
             _objects.clear()
 
             if (live != null && recoverHead != null) {
-                history.append(recoverHead)
+                history[Q]?.append(recoverHead)
                 _objects.addAll(live)
             }
 
-            redoHistory.pop()
-            redoLive.pop()
+            questions[currentQuestion.intValue] = _objects.toList()
+            redoHistory[Q]?.pop()
+            redoLive[Q]?.pop()
         }
     }
 
     fun saveHistory() {
-        history.append(_objects.toList())
-        clearRedoHistory()
+        history[currentQuestion.intValue]?.append(_objects.toList())
+        clearRedo()
     }
 
-    fun clearRedoHistory() {
-        redoHistory.clear()
-        redoLive.clear()
+    private fun clearRedo() {
+        redoHistory[currentQuestion.intValue]?.clear()
+        redoLive[currentQuestion.intValue]?.clear()
     }
 
     fun addQuestions(size : Int) {
         for (i in 1..size) {
             questions[i] = emptyList()
+            history[i] = Stack()
+            redoHistory[i] = Stack()
+            redoLive[i] = Stack()
         }
     }
 
@@ -107,9 +111,6 @@ class TentaViewModel {
         _objects.clear()
         _objects.addAll(currentObjects)
         currentCanvasHeight.value = height[currentQuestion.intValue] ?: 2400.dp
-
-        //history is cleared when changing to a new question
-        history.clear()
     }
     fun updateCanvasHeight(newHeight: Dp) {
         currentCanvasHeight.value = newHeight
