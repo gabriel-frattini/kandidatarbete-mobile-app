@@ -100,14 +100,13 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                 modifier = Modifier
                     .padding(20.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                /*colors = TextFieldDefaults.outlinedTextFieldColors(
                     containerColor = Color.White, // Insidan av textfält
                     focusedBorderColor = Color.Black,
                     unfocusedBorderColor = Color.Gray,
                     focusedLabelColor = Color.Black,
                     unfocusedLabelColor = Color.Gray
-                )
-
+                )*/
             )
             val maxCharAnonymousCode = 6
             OutlinedTextField(
@@ -120,13 +119,13 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                 modifier = Modifier
                     .padding(20.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                /*colors = TextFieldDefaults.outlinedTextFieldColors(
                     containerColor = Color.White,
                     focusedBorderColor = Color.Black,
                     unfocusedBorderColor = Color.Gray,
                     focusedLabelColor = Color.Black,
                     unfocusedLabelColor = Color.Gray
-                )
+                )*/
             )
         }
         OutlinedButton(

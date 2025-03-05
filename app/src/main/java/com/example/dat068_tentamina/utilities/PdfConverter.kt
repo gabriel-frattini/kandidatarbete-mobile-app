@@ -150,6 +150,8 @@ class PdfConverter {
                             lines.forEachIndexed { index, line ->
                                 canvas.drawText(line, adjustedX, adjustedY + baselineAdjustment + index * obj.fontSize.value * density, textPaint)
                             }
+
+                            canvas.drawText(obj.text.toMarkdown(), adjustedX, adjustedY + baselineAdjustment, textPaint) //Convert text to Markdown
                         }
                     }
                 }

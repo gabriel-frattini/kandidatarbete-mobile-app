@@ -7,7 +7,6 @@ import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlinx.coroutines.launch // Import launch
 import org.json.JSONArray
 import java.io.File
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.unit.dp
@@ -21,6 +20,7 @@ import com.example.dat068_tentamina.model.serializable.SerializableLine
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toColor
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toOffset
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toSerializable
+import com.mohamedrejeb.richeditor.model.RichTextState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -127,7 +127,7 @@ class ExamInfo() : ViewModel() {
                             TextBox(
                                 position = serializedObject.position.toOffset(),
                                 textLayout = textMeasurer.measure(AnnotatedString(serializedObject.text)),
-                                text = serializedObject.text
+                                text = RichTextState().apply { setText(serializedObject.text) } //Changed to rich text
                             )
                         }
                         else -> {
