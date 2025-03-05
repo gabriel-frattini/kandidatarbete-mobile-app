@@ -2,7 +2,6 @@ package com.example.dat068_tentamina.ui
 
 import ExamInfo
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.ScrollState
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.background
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -307,92 +305,119 @@ private fun EditableTextField(
     Row(
         modifier = Modifier
             .absoluteOffset(x = offset.x.dp, y = offset.y.dp) //removed density, caused problems here.
+            .background(Color.Transparent) // Ensure transparency
+            .padding(6.dp) // Add some padding
     ) {
-        RichTextEditor(                         //Switched to RichTextEditor
-            state = richTextState,
-            modifier = Modifier
-                .focusRequester(focusRequester)
-                .onFocusChanged { focusState ->
-                    if (!focusState.isFocused && hasBeenFocused) {
-                        value = richTextState.toMarkdown()      // Save edited markdown
-                        onFocusLost()
-                    }
-                    if (focusState.isFocused) {
-                        hasBeenFocused = true
-                    }
-                }
-        )
-    }
+
+/*OutlinedTextField(
+    value = value,
+    onValueChange = {
+        value = it
+        onTextChange(it)
+    },
+    label = { Text(label) },
+    modifier = Modifier
+        .focusRequester(focusRequester)
+        .onFocusChanged { focusState ->
+            if (!focusState.isFocused && hasBeenFocused) {
+                onFocusLost()
+            }
+            if (focusState.isFocused) {
+                hasBeenFocused = true
+            }
+        }
+)
+}*/
+
+RichTextToolbar(richTextState)            // Attach Rich text format toolbar
+RichTextEditor(                         //Switched to RichTextEditor
+    state = richTextState,
+    modifier = Modifier
+        .focusRequester(focusRequester)
+        .height(100.dp) // Adjust height
+        .background(Color.White) // Set to white or transparent
+        .padding(8.dp)
+        .onFocusChanged { focusState ->
+            if (!focusState.isFocused && hasBeenFocused) {
+                value = richTextState.toMarkdown()      // Save as markdown
+                onFocusLost()
+            }
+            if (focusState.isFocused) {
+                hasBeenFocused = true
+            }
+        }
+)
+}
 }
 
 private fun createTextBox(
-    viewModel: TentaViewModel,
-    textValue: String,
-    textOffset: Offset,
-    textMeasurer: androidx.compose.ui.text.TextMeasurer
+viewModel: TentaViewModel,
+textValue: String,
+textOffset: Offset,
+textMeasurer: androidx.compose.ui.text.TextMeasurer
 ) {
-    // TODO: (Gabbe) I think newline bug happens here
-    val richTextState = RichTextState().apply { setMarkdown(textValue) }  // Markdown input
-    // Print measuredText and textValue to see they have '\n' before a new line
-    val measuredText = textMeasurer.measure(AnnotatedString(textValue), softWrap = true)
-    viewModel.addObject(
-        TextBox(
-            position = textOffset,
-            text = richTextState,
-            textLayout = measuredText
-        )
-    )
+// TODO: (Gabbe) I think newline bug happens here
+val richTextState = RichTextState().apply { setMarkdown(textValue) }  // Markdown input
+// Print measuredText and textValue to see they have '\n' before a new line
+val measuredText = textMeasurer.measure(AnnotatedString(textValue), softWrap = true)
+viewModel.addObject(
+TextBox(
+    position = textOffset,
+    text = richTextState,
+    textLayout = measuredText
+)
+)
 }
 
 private fun findTappedTextBox(viewModel: TentaViewModel, offset: Offset): TextBox? {
-    return viewModel.objects
-        .filterIsInstance<TextBox>()
-        .find { textBox ->
-            val topLeft = textBox.position
-            val sizePx = textBox.textLayout.size
-            val bottomRight = Offset(topLeft.x + sizePx.width, topLeft.y + sizePx.height)
-            offset.x in topLeft.x..bottomRight.x && offset.y in topLeft.y..bottomRight.y
-        }
+return viewModel.objects
+.filterIsInstance<TextBox>()
+.find { textBox ->
+    val topLeft = textBox.position
+    val sizePx = textBox.textLayout.size
+    val bottomRight = Offset(topLeft.x + sizePx.width, topLeft.y + sizePx.height)
+    offset.x in topLeft.x..bottomRight.x && offset.y in topLeft.y..bottomRight.y
+}
 }
 
 
 
 private fun calculateCanvasHeight(objects: List<CanvasObject>, density: Float): Dp {
-    val maxY = objects.maxOfOrNull { obj ->
-        when (obj) {
-            is Line -> max(obj.start.y, obj.end.y)
-            is TextBox -> obj.position.y + obj.textLayout.size.height
-            else -> 0f
-        }
-    } ?: 0f
+val maxY = objects.maxOfOrNull { obj ->
+when (obj) {
+    is Line -> max(obj.start.y, obj.end.y)
+    is TextBox -> obj.position.y + obj.textLayout.size.height
+    else -> 0f
+}
+} ?: 0f
 
-    // Convert the maximum Y position to dp and add a buffer space
-    return ((maxY / density) + 200).dp
+// Convert the maximum Y position to dp and add a buffer space
+return ((maxY / density) + 200).dp
 }
 
 private fun expandCanvasIfNeeded(
-    obj: CanvasObject,
-    density: Float,
-    currentHeight: Dp,
-    onHeightUpdate: (Dp) -> Unit
+obj: CanvasObject,
+density: Float,
+currentHeight: Dp,
+onHeightUpdate: (Dp) -> Unit
 ) {
-    val thresholdPx = 400f
-    val bottomY = when (obj) {
-        is Line -> max(obj.start.y, obj.end.y)
-        is TextBox -> obj.position.y + obj.textLayout.size.height
-        else -> 0f
-    }
-    val currentHeightPx = currentHeight.value * density
+val thresholdPx = 400f
+val bottomY = when (obj) {
+is Line -> max(obj.start.y, obj.end.y)
+is TextBox -> obj.position.y + obj.textLayout.size.height
+else -> 0f
+}
+val currentHeightPx = currentHeight.value * density
 
 
-    // Expand canvas if the object is close to the current height
-    if (currentHeightPx - bottomY <= thresholdPx) {
-        val newHeight = (currentHeightPx / density).dp + 600.dp // Add buffer space
-        onHeightUpdate(newHeight)
-    }
+// Expand canvas if the object is close to the current height
+if (currentHeightPx - bottomY <= thresholdPx) {
+val newHeight = (currentHeightPx / density).dp + 600.dp // Add buffer space
+onHeightUpdate(newHeight)
+}
 }
 
 
 private fun isInBounds(point: Offset, canvasSize: IntSize): Boolean {
-    return point.x in 0f..canvasSize.width.toFloat() && point.y in 0f..canvasSize.height.toFloat()
+return point.x in 0f..canvasSize.width.toFloat() && point.y in 0f..canvasSize.height.toFloat()
 }

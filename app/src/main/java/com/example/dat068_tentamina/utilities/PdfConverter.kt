@@ -147,7 +147,7 @@ class PdfConverter {
                             val metrics = textPaint.fontMetrics
                             val baselineAdjustment = -metrics.top
 
-                            canvas.drawText(obj.text, adjustedX, adjustedY + baselineAdjustment, textPaint)
+                            canvas.drawText(obj.text.toMarkdown(), adjustedX, adjustedY + baselineAdjustment, textPaint) //Convert text to Markdown
                         }
                     }
                 }
