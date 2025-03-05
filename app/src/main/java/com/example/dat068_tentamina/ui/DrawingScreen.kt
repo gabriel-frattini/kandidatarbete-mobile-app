@@ -8,15 +8,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -302,11 +306,11 @@ private fun EditableTextField(
         focusRequester.requestFocus()
         richTextState.setMarkdown(value)
     }
-    Row(
+    Column(                                                    // Changed to Column
         modifier = Modifier
-            .absoluteOffset(x = offset.x.dp, y = offset.y.dp) //removed density, caused problems here.
-            .background(Color.Transparent) // Ensure transparency
-            .padding(6.dp) // Add some padding
+            .absoluteOffset(x = offset.x.dp, y = offset.y.dp + 2.dp)  //removed density, caused problems here. Push textbox down
+            .padding(8.dp)
+            .background(Color.White, shape = RoundedCornerShape(6.dp)) // Better styling
     ) {
 
 /*OutlinedTextField(
@@ -329,17 +333,18 @@ private fun EditableTextField(
 )
 }*/
 
-RichTextToolbar(richTextState)            // Attach Rich text format toolbar
-RichTextEditor(                         //Switched to RichTextEditor
+RichTextToolbar(richTextState)                // Attach Rich text format toolbar
+RichTextEditor(                               //Switched to RichTextEditor
     state = richTextState,
     modifier = Modifier
         .focusRequester(focusRequester)
-        .height(100.dp) // Adjust height
-        .background(Color.White) // Set to white or transparent
-        .padding(8.dp)
+        .height(300.dp)                       // Adjust height
+        .background(Color.White)
+        .width(1000.dp)                        // Adjust width
+        .padding(10.dp)
         .onFocusChanged { focusState ->
             if (!focusState.isFocused && hasBeenFocused) {
-                value = richTextState.toMarkdown()      // Save as markdown
+                value = richSTextState.toMarkdown()      // Save as markdown
                 onFocusLost()
             }
             if (focusState.isFocused) {
