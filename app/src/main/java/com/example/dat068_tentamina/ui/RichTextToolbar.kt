@@ -2,9 +2,9 @@ package com.example.dat068_tentamina.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,53 +15,131 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.mohamedrejeb.richeditor.model.RichTextState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FormatAlignCenter
+import androidx.compose.material.icons.filled.FormatAlignJustify
+import androidx.compose.material.icons.filled.FormatAlignLeft
+import androidx.compose.material.icons.filled.FormatAlignRight
+import androidx.compose.material.icons.filled.FormatBold
+import androidx.compose.material.icons.filled.FormatItalic
+import androidx.compose.material.icons.filled.FormatListBulleted
+import androidx.compose.material.icons.filled.FormatListNumbered
+import androidx.compose.material.icons.filled.FormatUnderlined
+import androidx.compose.material.icons.filled.FormatStrikethrough
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.sp
 
 
 @Composable
 fun RichTextToolbar(richTextState: RichTextState) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Gray) // Toolbar background
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+            .width(1000.dp)                                                         // Adjust width
+            .background(Color(0xFF1E3A8A), shape = RoundedCornerShape(8.dp)) // Toolbar background
+            .padding(horizontal = 6.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         // Alignment buttons
-        ToolbarButton("⬅") { richTextState.toggleParagraphStyle(ParagraphStyle(textAlign = TextAlign.Left)) }
-        ToolbarButton("⬆") { richTextState.toggleParagraphStyle(ParagraphStyle(textAlign = TextAlign.Center)) }
-        ToolbarButton("➡") { richTextState.toggleParagraphStyle(ParagraphStyle(textAlign = TextAlign.Right)) }
-        ToolbarButton("⤴") { richTextState.toggleParagraphStyle(ParagraphStyle(textAlign = TextAlign.Justify)) }
+        ToolbarIconButton(Icons.Filled.FormatAlignLeft) {
+            richTextState.toggleParagraphStyle(
+                ParagraphStyle(textAlign = TextAlign.Left)
+            )
+        }
+        ToolbarIconButton(Icons.Filled.FormatAlignCenter) {
+            richTextState.toggleParagraphStyle(
+                ParagraphStyle(textAlign = TextAlign.Center)
+            )
+        }
+        ToolbarIconButton(Icons.Filled.FormatAlignRight) {
+            richTextState.toggleParagraphStyle(
+                ParagraphStyle(textAlign = TextAlign.Right)
+            )
+        }
+        ToolbarIconButton(Icons.Filled.FormatAlignJustify) {
+            richTextState.toggleParagraphStyle(
+                ParagraphStyle(textAlign = TextAlign.Justify)
+            )
+        }
 
         // Formatting buttons
-        ToolbarButton("B") { richTextState.toggleSpanStyle(SpanStyle(fontWeight = FontWeight.Bold)) }
-        ToolbarButton("I") { richTextState.toggleSpanStyle(SpanStyle(fontStyle = FontStyle.Italic)) }
-        ToolbarButton("U") { richTextState.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline)) }
-        ToolbarButton("T̶") { richTextState.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough)) }
+        ToolbarIconButton(Icons.Filled.FormatBold) {
+            richTextState.toggleSpanStyle(
+                SpanStyle(
+                    fontWeight = FontWeight.Bold
+                )
+            )
+        }
+        ToolbarIconButton(Icons.Filled.FormatItalic) {
+            richTextState.toggleSpanStyle(
+                SpanStyle(
+                    fontStyle = FontStyle.Italic
+                )
+            )
+        }
+        ToolbarIconButton(Icons.Filled.FormatUnderlined) {
+            richTextState.toggleSpanStyle(
+                SpanStyle(
+                    textDecoration = TextDecoration.Underline
+                )
+            )
+        }
+        ToolbarIconButton(Icons.Filled.FormatStrikethrough) {
+            richTextState.toggleSpanStyle(
+                SpanStyle(textDecoration = TextDecoration.LineThrough)
+            )
+        }
 
         // Headings (H1, H2, H3)
-        ToolbarButton("H1") { richTextState.setMarkdown(richTextState.toMarkdown() + "\n# ") }
-        ToolbarButton("H2") { richTextState.setMarkdown(richTextState.toMarkdown() + "\n## ") }
-        ToolbarButton("H3") { richTextState.setMarkdown(richTextState.toMarkdown() + "\n### ") }
+        ToolbarTextButton("H1") { richTextState.setMarkdown(richTextState.toMarkdown() + "\n# ") }
+        ToolbarTextButton("H2") { richTextState.setMarkdown(richTextState.toMarkdown() + "\n## ") }
+        ToolbarTextButton("H3") { richTextState.setMarkdown(richTextState.toMarkdown() + "\n### ") }
 
         // List & Code Formatting
-        ToolbarButton("• List") { richTextState.toggleUnorderedList() }
-        ToolbarButton("1. List") { richTextState.toggleOrderedList() }
-
+        ToolbarIconButton(Icons.Filled.FormatListBulleted) { richTextState.toggleUnorderedList() }
+        ToolbarIconButton(Icons.Filled.FormatListNumbered) { richTextState.toggleOrderedList() }
     }
 }
-
     @Composable
-    fun ToolbarButton(text: String, onClick: () -> Unit) {
+    fun ToolbarIconButton(icon: ImageVector, onClick: () -> Unit) {
         Button(
             onClick = onClick,
             modifier = Modifier
-                .padding(2.dp) // Reduce padding
-                .height(36.dp) // Smaller height
-                .width(50.dp), // Uniform button width
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5068A9)) // Blue background
+                .height(45.dp)              // Adjust height
+                .width(60.dp),              // Adjust width
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White,
+                contentColor = Color(0xFF1E3A8A)
+            )
         ) {
-            Text(text, color = Color.White, fontSize = 12.sp) // Smaller text
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color(0xFF1E3A8A),
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
+
+@Composable
+fun ToolbarTextButton(text: String, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .height(45.dp)
+            .width(60.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.White,
+            contentColor = Color(0xFF1E3A8A)
+        )
+    ) {
+        androidx.compose.material3.Text(
+            text = text,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1E3A8A),
+            maxLines = 1
+        )
+    }
+}
