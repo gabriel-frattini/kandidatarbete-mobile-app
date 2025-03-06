@@ -214,9 +214,13 @@ fun ExampageToolbar(
                 SizePicker(viewModel)
             }
 
+            IconButton(onClick = {}) {
+                BackgroundPicker(viewModel) //Junyi
+            }
+
             // Undo button
             IconButton(onClick = {
-                viewModel.pop()
+                viewModel.undo()
             }) {
                 Icon(
                     Icons.Filled.ArrowBack,
@@ -225,7 +229,7 @@ fun ExampageToolbar(
             }
             // Redo button
             IconButton(onClick = {
-                // Implement redo functionality
+                viewModel.redo()
             }) {
                 Icon(
                     Icons.Filled.ArrowForward,
