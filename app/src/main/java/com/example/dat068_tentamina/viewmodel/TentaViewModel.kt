@@ -12,17 +12,26 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.collections.remove
 import kotlin.text.set
+import android.util.Log
+
+enum class BackgroundType {
+    BLANK, GRAPH, LINED, DOTTED
+}  //Junyi
 
 class TentaViewModel {
     private var _objects = mutableStateListOf<CanvasObject>()
-    private val history = Stack<List<CanvasObject>>()
-    //private var historyMap = mutableMapOf<Int, Stack<List<CanvasObject>>>()
+
+    private var history = mutableMapOf<Int, Stack<List<CanvasObject>>>()
+    private var redoHistory = mutableMapOf<Int, Stack<List<CanvasObject>>>()
+    private var redoLive = mutableMapOf<Int, Stack<List<CanvasObject>>>()
+
     var textMode = mutableStateOf(false)
     var strokeWidth = 2.dp
     var eraserWidth = 6.dp
     var eraser = false
     var currentQuestion = mutableIntStateOf(1)
     var currentCanvasHeight = mutableStateOf(2400.dp)
+    var backgroundType = mutableStateOf(BackgroundType.BLANK) //Junyi
     val objects: SnapshotStateList<CanvasObject> get() = _objects
     var questions = mutableMapOf<Int, List<CanvasObject>>()
     var height = mutableMapOf<Int, Dp>().apply {
@@ -43,31 +52,58 @@ class TentaViewModel {
         return questions
     }
 
-    // TODO: (Gabbe) Here is the 'undo' function.
-    //  Make it scoped to the active question user is viewing
-    // Also add another function to redo the undoing
-    fun pop() {
+    fun undo() {
         if (_objects.isNotEmpty()) {
-            _objects.clear()
-            val previousState = history.getCurrValue()
+            val Q = currentQuestion.intValue;
+            val previousState = history[Q]?.getCurrValue()
             if (previousState != null) {
+                redoHistory[Q]?.append(previousState)
+                redoLive[Q]?.append(_objects.toList())
+
+                _objects.clear()
                 _objects.addAll(previousState)
+
+                questions[currentQuestion.intValue] = _objects.toList()
+                history[Q]?.pop()
             }
-            // We don't want to pop the actual history because we need to keep it to be able to redo.
-            // Here we could 'soft delete' the change instead of popping it,
-            // we set a flag like 'deleted': true for undo (then remove change from the UI)
-            // and when the user clicks redo, we set 'deleted' : false again, and show the change in the UI
-            history.pop()
+        }
+    }
+
+    fun redo() {
+        val Q = currentQuestion.intValue;
+        if (redoHistory[Q]?.isNotEmpty() == true && redoLive[Q]?.isNotEmpty() == true) {
+            val recoverHead = redoHistory[Q]?.getCurrValue()
+            val live = redoLive[Q]?.getCurrValue()
+
+            _objects.clear()
+
+            if (live != null && recoverHead != null) {
+                history[Q]?.append(recoverHead)
+                _objects.addAll(live)
+            }
+
+            questions[currentQuestion.intValue] = _objects.toList()
+            redoHistory[Q]?.pop()
+            redoLive[Q]?.pop()
         }
     }
 
     fun saveHistory() {
-        history.append(_objects.toList())
+        history[currentQuestion.intValue]?.append(_objects.toList())
+        clearRedo()
+    }
+
+    private fun clearRedo() {
+        redoHistory[currentQuestion.intValue]?.clear()
+        redoLive[currentQuestion.intValue]?.clear()
     }
 
     fun addQuestions(size : Int) {
         for (i in 1..size) {
             questions[i] = emptyList()
+            history[i] = Stack()
+            redoHistory[i] = Stack()
+            redoLive[i] = Stack()
         }
     }
 
@@ -80,9 +116,6 @@ class TentaViewModel {
         _objects.clear()
         _objects.addAll(currentObjects)
         currentCanvasHeight.value = height[currentQuestion.intValue] ?: 2400.dp
-
-        //history is cleared when changing to a new question
-        history.clear()
     }
     fun updateCanvasHeight(newHeight: Dp) {
         currentCanvasHeight.value = newHeight

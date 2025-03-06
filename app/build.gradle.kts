@@ -61,6 +61,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.okhttp)
+    implementation ("androidx.compose.material:material-icons-extended:1.4.3") //Junyi background
     implementation ("com.google.code.gson:gson:2.10.1")
     implementation ("androidx.activity:activity-compose:1.6.0")  // or the latest version
     implementation ("androidx.compose.ui:ui:1.4.0")  // or the latest version
