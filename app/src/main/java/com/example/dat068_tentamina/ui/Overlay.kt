@@ -100,6 +100,10 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
                         IconButton(onClick = {}) {
                             SizePicker(viewModel)
                         }
+
+                        IconButton(onClick = {}) {
+                            BackgroundPicker(viewModel) //Junyi
+                        }
                         // TODO: (Gabbe) Button to undo changes, add another button below to redo changes
                         IconButton(onClick = {
                             viewModel.undo()

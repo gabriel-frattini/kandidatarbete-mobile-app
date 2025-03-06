@@ -14,6 +14,10 @@ import kotlin.collections.remove
 import kotlin.text.set
 import android.util.Log
 
+enum class BackgroundType {
+    BLANK, GRAPH, LINED, DOTTED
+}  //Junyi
+
 class TentaViewModel {
     private var _objects = mutableStateListOf<CanvasObject>()
 
@@ -27,6 +31,7 @@ class TentaViewModel {
     var eraser = false
     var currentQuestion = mutableIntStateOf(1)
     var currentCanvasHeight = mutableStateOf(2400.dp)
+    var backgroundType = mutableStateOf(BackgroundType.BLANK) //Junyi
     val objects: SnapshotStateList<CanvasObject> get() = _objects
     var questions = mutableMapOf<Int, List<CanvasObject>>()
     var height = mutableMapOf<Int, Dp>().apply {
