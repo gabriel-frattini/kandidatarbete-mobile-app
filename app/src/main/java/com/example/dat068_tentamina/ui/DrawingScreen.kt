@@ -354,7 +354,7 @@ RichTextEditor(                               //Switched to RichTextEditor
         .padding(10.dp)
         .onFocusChanged { focusState ->
             if (!focusState.isFocused && hasBeenFocused) {
-                value = richSTextState.toMarkdown()      // Save as markdown
+                value = richTextState.toMarkdown()      // Save as markdown
                 onFocusLost()
             }
             if (focusState.isFocused) {
