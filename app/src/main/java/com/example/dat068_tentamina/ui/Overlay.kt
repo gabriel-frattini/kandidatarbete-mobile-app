@@ -1,5 +1,6 @@
 package com.example.dat068_tentamina.ui
 
+
 import ExamInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -51,101 +52,201 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.dat068_tentamina.MainActivity
 import PdfConverter
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.TopAppBarDefaults
 import kotlin.math.sign
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolean , activity: MainActivity, signout: () -> Unit) {
 
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    // State to track current tab
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    // List of tab titles
+    val questionNumbers = viewModel.questions.keys.sorted()
+    val tabs = questionNumbers.map { "Question $it" }
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                //The content of the menu
-                MenuScreen(modifier = Modifier,viewModel, activity, examInfo, signout)
+                MenuScreen(modifier = Modifier, viewModel, activity, examInfo, signout)
             }
         },
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("Question ${viewModel.currentQuestion.intValue} ") },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch {
-                            drawerState.apply {
-                                if (isClosed) open() else close()
+                Column {
+                    TopAppBar(
+                        navigationIcon = {
+                            IconButton(
+                                onClick = {
+                                    scope.launch {
+                                        drawerState.apply {
+                                            if (isClosed) open() else close()
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.background(Color.White, shape = RoundedCornerShape(12.dp)) //Utseende på menyknappen
+                            ) {
+                                Icon(Icons.Filled.Menu, contentDescription = null)
                             }
-                        } }) {
-                            Icon(Icons.Filled.Menu, contentDescription = null)
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = {
-                            // (Gabbe) Button to create textbox.
-                            viewModel.textMode.value = true
-                        }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.text),
-                                contentDescription = "text",
-                                modifier = Modifier.size(25.dp)
-                            )
-                        }
-                        IconButton(onClick = {
-                        }) {
-                            SizePicker(viewModel, "eraser")
-                        }
-                        IconButton(onClick = {}) {
-                            SizePicker(viewModel)
-                        }
-
-                        IconButton(onClick = {}) {
-                            BackgroundPicker(viewModel) //Junyi
-                        }
-                        // TODO: (Gabbe) Button to undo changes, add another button below to redo changes
-                        IconButton(onClick = {
-                            viewModel.undo()
-                        }) {
-                            Icon(
-                                Icons.Filled.ArrowBack,
-                                contentDescription = "Localized description"
-                            )
-                        }
-                        IconButton(onClick = {
-                            viewModel.redo()
-                        }) {
-                            Icon(
-                                Icons.Filled.ArrowForward,
-                                contentDescription = "Localized description"
-                            )
-                        }
-                        // TODO: (Gabbe) Another button for drawing geometric shapes
-                    }
-                )
+                        },
+                        title = {
+                            Row(
+                                modifier = Modifier
+                                    .offset(y = 10.dp) //tabsen "sticker upp"
+                                    .horizontalScroll(rememberScrollState()), // Gör så att tabsen kan scrollas??? FUNKAR EJ ELLER?
+                                horizontalArrangement = Arrangement.Start, // Vänster-allignade tabs
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                tabs.forEachIndexed { index, title ->
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                            .background(
+                                                color = if (selectedTabIndex == index) Color.White
+                                                else Color(0xFFDFDFDF), // Bakgrundsfärg för icke-selectade flikar
+                                                shape = RoundedCornerShape(
+                                                    topStart = 6.dp, topEnd = 6.dp,
+                                                    bottomStart = 0.dp, bottomEnd = 0.dp // Gör botten helt fyrkantig
+                                                )
+                                            )
+                                            .clickable {
+                                                selectedTabIndex = index
+                                                viewModel.changeQuestion(
+                                                    qNr = questionNumbers[index],
+                                                    newObjects = viewModel.objects.toList(),
+                                                    canvasHeight = 2400.dp
+                                                )
+                                            }
+                                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    ) {
+                                        Text(
+                                            text = title,
+                                            color = if (selectedTabIndex == index) Color.Black else Color.Black.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                }
+                            }
+                        },
+                        colors = TopAppBarDefaults.mediumTopAppBarColors(
+                            containerColor = Color(0xFF49546C) // Färg för top bar
+                        )
+                    )
+                }
             },
-        )
-        { contentPadding ->
-            ExamScreen(modifier = Modifier.padding(contentPadding), examInfo, viewModel, recoveryMode)
+        ) { contentPadding ->
+            ExamScreen(
+                modifier = Modifier.padding(contentPadding),
+                examInfo = examInfo,
+                viewModel = viewModel,
+                recoveryMode = recoveryMode
+            )
         }
     }
 }
+
 @Composable
-fun ExamScreen(modifier: Modifier = Modifier, examInfo: ExamInfo, viewModel: TentaViewModel, recoveryMode: Boolean ) {
-    Column {
-        Box(modifier = Modifier
-            .weight(1f)
-            .fillMaxSize()) {
-            DrawingScreen(viewModel, examInfo , recoveryMode )
+fun ExamScreen(
+    modifier: Modifier = Modifier,
+    examInfo: ExamInfo,
+    viewModel: TentaViewModel,
+    recoveryMode: Boolean
+) {
+    Box(modifier = modifier.fillMaxSize()) {
+        DrawingScreen(
+            viewModel,
+            examInfo,
+            recoveryMode,
+        )
+        ExampageToolbar(
+            viewModel,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(13.dp)
+        )
+    }
+}
+
+
+@Composable
+fun ExampageToolbar(
+    viewModel: TentaViewModel,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            // Text mode button
+            IconButton(onClick = {
+                viewModel.textMode.value = true
+            }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.text),
+                    contentDescription = "Text Mode",
+                    modifier = Modifier.size(25.dp)
+                )
+            }
+
+            // Eraser size picker
+            IconButton(onClick = {}) {
+                SizePicker(viewModel, "eraser")
+            }
+
+            // Pen size picker
+            IconButton(onClick = {}) {
+                SizePicker(viewModel)
+            }
+
+            IconButton(onClick = {}) {
+                BackgroundPicker(viewModel) //Junyi
+            }
+
+            // Undo button
+            IconButton(onClick = {
+                viewModel.undo()
+            }) {
+                Icon(
+                    Icons.Filled.ArrowBack,
+                    contentDescription = "Undo"
+                )
+            }
+            // Redo button
+            IconButton(onClick = {
+                viewModel.redo()
+            }) {
+                Icon(
+                    Icons.Filled.ArrowForward,
+                    contentDescription = "Redo"
+                )
+            }
         }
     }
 }
+
+
 @Composable
 fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activity: MainActivity, examInfo: ExamInfo, signout: () -> Unit) {
     val scrollState = rememberScrollState()
     var submitDialog by remember { mutableStateOf(false)}
     var showInfoDialog by remember { mutableStateOf(false) }
+
 
     if (showInfoDialog) {
         // TODO: (Gabbe) Use `AlertDialog` to display error messages if something goes wrong
@@ -160,8 +261,8 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
                 }
             }
         )
-
     }
+
 
     if (submitDialog) {
         AlertDialog(
@@ -185,6 +286,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
             }
         )
     }
+
 
     Column(
         verticalArrangement = Arrangement.Top,
@@ -220,6 +322,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
             }
         }
 
+
         // List of questions
         for ((key, value) in viewModel.questions) {
             Card(
@@ -244,6 +347,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
                         .fillMaxSize()
                         .align(alignment = Alignment.CenterHorizontally)
 
+
                 ) {
                     Text(
                         text = "Question $key",
@@ -255,6 +359,7 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
             }
         }
 
+
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = Color(0xFF4CAF50)
@@ -265,15 +370,18 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
                 .align(alignment = Alignment.CenterHorizontally)
                 .padding(top = 10.dp)
 
+
         ) {
             Button(
                 onClick = {
                     submitDialog = true
                 },
 
+
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF4CAF50)
                 ),
+
 
                 modifier = Modifier
                     .padding(10.dp)
@@ -289,7 +397,6 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
             }
         }
     }
-
 }
 
 
