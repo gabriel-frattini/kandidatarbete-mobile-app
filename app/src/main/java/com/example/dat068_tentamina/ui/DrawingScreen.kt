@@ -852,7 +852,7 @@ fun RichEditorScreen(navigateBack: () -> Unit) {
     ) {
         
         // top padding
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(48.dp))
 
         // Rich Text Formatting Row
         RichTextStyleRow(

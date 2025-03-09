@@ -150,6 +150,7 @@ class PdfConverter {
                             lines.forEachIndexed { index, line ->
                                 canvas.drawText(line, adjustedX, adjustedY + baselineAdjustment + index * obj.fontSize.value * density, textPaint)
                             }
+                            canvas.drawText("test", adjustedX, adjustedY + baselineAdjustment, textPaint)
                         }
                     }
                 }
