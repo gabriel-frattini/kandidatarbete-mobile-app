@@ -843,41 +843,50 @@ fun RichTextStyleRow(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RichEditorScreen(viewModel: TentaViewModel, navigateBack: () -> Unit) {
-    val basicRichTextState = rememberRichTextState()
+        val richTextState = rememberRichTextState()
+    val textMeasurer = rememberTextMeasurer()
+
+    // Sync initial content when ViewModel changes (e.g., on question change)
+    LaunchedEffect(viewModel.richTextContent.value) {
+        if (richTextState.toMarkdown() != viewModel.richTextContent.value) {
+            richTextState.setMarkdown(viewModel.richTextContent.value)
+        }
+    }
+
+    // Save changes from the editor to ViewModel
+    LaunchedEffect(richTextState.annotatedString) {
+        val markdown = richTextState.toMarkdown()
+        if (viewModel.richTextContent.value != markdown) {
+            viewModel.updateRichText(markdown)
+
+            // Save as a CanvasObject (TextBox) just like in DrawingScreen
+            val measuredText = textMeasurer.measure(AnnotatedString(markdown))
+            val textBox = TextBox(
+                position = Offset(50f, 50f), // Default position, can be adjusted
+                text = markdown,
+                textLayout = measuredText
+            )
+            viewModel.addObject(textBox)
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp) // Optional: Adjust if needed
+            .padding(16.dp)
     ) {
-        
-        // top padding
         Spacer(Modifier.height(48.dp))
 
-        // Rich Text Formatting Row
         RichTextStyleRow(
             modifier = Modifier.fillMaxWidth(),
-            state = basicRichTextState
+            state = richTextState
         )
 
-        Spacer(Modifier.height(8.dp))
-
-                    BasicRichTextEditor(
-                        modifier = Modifier.fillMaxSize(),
-                        state = basicRichTextState,
-                        textStyle = TextStyle.Default.copy(fontFamily = FontFamily.Monospace),
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    val textMeasurer = rememberTextMeasurer()
-                    Button(onClick = {
-                        val richText = basicRichTextState.toString().trim()
-                        if (richText.isNotEmpty()){
-                            val measuredText = textMeasurer.measure(AnnotatedString(richText))
-                            viewModel.addObject(TextBox(position = Offset(50f, 50f), text = richText, textLayout = measuredText))
-                        }
-                        // navigateBack()
-                    }) {
-                        Text("Save")
-                    }
+        BasicRichTextEditor(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 16.dp),
+            state = richTextState,
+        )
     }
 }
