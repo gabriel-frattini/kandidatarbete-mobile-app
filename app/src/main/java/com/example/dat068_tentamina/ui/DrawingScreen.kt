@@ -842,7 +842,7 @@ fun RichTextStyleRow(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RichEditorScreen(navigateBack: () -> Unit) {
+fun RichEditorScreen(viewModel: TentaViewModel, navigateBack: () -> Unit) {
     val basicRichTextState = rememberRichTextState()
 
     Column(
@@ -867,5 +867,17 @@ fun RichEditorScreen(navigateBack: () -> Unit) {
                         state = basicRichTextState,
                         textStyle = TextStyle.Default.copy(fontFamily = FontFamily.Monospace),
                     )
+                    Spacer(Modifier.height(16.dp))
+                    val textMeasurer = rememberTextMeasurer()
+                    Button(onClick = {
+                        val richText = basicRichTextState.toString().trim()
+                        if (richText.isNotEmpty()){
+                            val measuredText = textMeasurer.measure(AnnotatedString(richText))
+                            viewModel.addObject(TextBox(position = Offset(50f, 50f), text = richText, textLayout = measuredText))
+                        }
+                        // navigateBack()
+                    }) {
+                        Text("Save")
+                    }
     }
 }

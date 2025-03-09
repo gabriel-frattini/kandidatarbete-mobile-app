@@ -161,7 +161,7 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
             println("examInfo.questions[viewModel.currentQuestion.intValue]?.type: ${examInfo.questions[viewModel.currentQuestion.intValue - 1]?.type}")
             showRichEditor = examInfo.questions[viewModel.currentQuestion.intValue - 1]?.type == "text"
             if (showRichEditor) {
-                RichEditorScreen(navigateBack = { showRichEditor = false })
+                RichEditorScreen(viewModel, navigateBack = { showRichEditor = false })
             } else {
                 ExamScreen(modifier = Modifier.padding(contentPadding), examInfo, viewModel, recoveryMode)
             }
