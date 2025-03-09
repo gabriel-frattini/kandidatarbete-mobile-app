@@ -82,7 +82,7 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
     val questionNumbers = viewModel.questions.keys.sorted()
     val tabs = questionNumbers.map { "Question $it" }
 
-    var showRichEditor by remember { mutableStateOf(examInfo.questions[viewModel.currentQuestion.intValue - 1]?.type == "text") }
+    var showRichEditor by remember { mutableStateOf(examInfo.questions[viewModel.currentQuestion.intValue - 1].type == "text") }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -158,8 +158,8 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
         { contentPadding ->
             println("showRichEditor: $showRichEditor")
             println("currentQuestion: ${viewModel.currentQuestion.intValue}")
-            println("examInfo.questions[viewModel.currentQuestion.intValue]?.type: ${examInfo.questions[viewModel.currentQuestion.intValue - 1]?.type}")
-            showRichEditor = examInfo.questions[viewModel.currentQuestion.intValue - 1]?.type == "text"
+            println("examInfo.questions[viewModel.currentQuestion.intValue]?.type: ${examInfo.questions[viewModel.currentQuestion.intValue - 1].type}")
+            showRichEditor = examInfo.questions[viewModel.currentQuestion.intValue - 1].type == "text"
             if (showRichEditor) {
                 RichEditorScreen(viewModel, navigateBack = { showRichEditor = false })
             } else {
