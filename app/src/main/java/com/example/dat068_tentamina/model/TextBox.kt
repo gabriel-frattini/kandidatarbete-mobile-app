@@ -25,8 +25,7 @@ import com.mohamedrejeb.richeditor.ui.material.RichText
 
 data class TextBox(
     var position: Offset,
-    //var text : String,
-    var text: RichTextState = RichTextState(), // Changed String to Rich text state
+    var text : String,
     var textLayout: TextLayoutResult,
     var color: Color = Color.Black,
     var fontSize: Dp = 16.dp

@@ -7,6 +7,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,14 +16,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -30,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,19 +42,24 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
-import com.example.dat068_tentamina.ui.DrawGraphPaperBackground //Junyi
-import com.example.dat068_tentamina.ui.DrawLinedPaperBackground //Junyi
-import com.example.dat068_tentamina.ui.DrawDottedBackground //Junyi
+import com.example.dat068_tentamina.viewmodel.BackgroundType
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import com.mohamedrejeb.richeditor.model.RichTextState
-import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
+import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import kotlin.math.max
 
 @SuppressLint("RememberReturnType")
@@ -63,7 +68,6 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
     var isScrollMode by remember { mutableStateOf(false) }
     var textValue by remember { mutableStateOf("") }
     var textOffset by remember { mutableStateOf(Offset(0f, 0f)) }
-    var richTextState by remember { mutableStateOf(RichTextState()) }    //Added remember richTextState
     val textMeasurer = rememberTextMeasurer()
     // Scroll state for vertical scrolling
     val verticalScrollState = remember(viewModel.currentQuestion.intValue) {
@@ -120,7 +124,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                 .fillMaxWidth()
                 .verticalScroll(verticalScrollState, enabled = isScrollMode) // Enables vertical scrolling
                 .height(canvasHeight)
-                //.background(Color.White) --> Junyi
+                .background(Color.White) // Junyi
 
         ) {
             when (viewModel.backgroundType.value) {
@@ -129,6 +133,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                 BackgroundType.LINED -> DrawLinedPaperBackground(Modifier.fillMaxSize())
                 BackgroundType.DOTTED -> DrawDottedBackground(Modifier.fillMaxSize())
             } //Junyi
+
             androidx.compose.foundation.Canvas(
                 modifier = Modifier
                     .fillMaxSize()
@@ -178,7 +183,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                             viewModel.removeObject(tappedTextBox)
                                             viewModel.saveHistory()
                                             textOffset = tappedTextBox.position
-                                            richTextState = tappedTextBox.text
+                                            textValue = tappedTextBox.text
                                         } else if (textValue.isEmpty()) {
                                             // Enter text mode at clicked position
                                             textOffset = offset
@@ -239,7 +244,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                         val newTextBox = TextBox(
                             position = adjustedOffset,
                             textLayout = textMeasurer.measure(AnnotatedString(textValue)),
-                            text = richTextState
+                            text = textValue
                         )
                         viewModel.addObject(newTextBox)
                         expandCanvasIfNeeded(newTextBox, density, canvasHeight) {
@@ -309,130 +314,109 @@ private fun EditableTextField(
 ) {
     var hasBeenFocused by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
-    var value by remember { mutableStateOf(initialText) }
-    var richTextState by remember { mutableStateOf(RichTextState()) } // Track Markdown state
+    val richTextState = rememberRichTextState().apply { setMarkdown(initialText) }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
-        richTextState.setMarkdown(value)
     }
-    Column(                                                    // Changed to Column
+    Column(
         modifier = Modifier
-            .absoluteOffset(x = offset.x.dp, y = offset.y.dp + 2.dp)  //removed density, caused problems here. Push textbox down
+            .absoluteOffset(x = offset.x.dp, y = offset.y.dp)
             .padding(8.dp)
-            .background(Color.White, shape = RoundedCornerShape(6.dp)) // Better styling
     ) {
-
-/*OutlinedTextField(
-    value = value,
-    onValueChange = {
-        value = it
-        onTextChange(it)
-    },
-    label = { Text(label) },
-    modifier = Modifier
-        .focusRequester(focusRequester)
-        .onFocusChanged { focusState ->
-            if (!focusState.isFocused && hasBeenFocused) {
-                onFocusLost()
-            }
-            if (focusState.isFocused) {
-                hasBeenFocused = true
-            }
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            RichTextToolbar(richTextState) // Attach toolbar to the text field
         }
-)
-}*/
+        OutlinedTextField(
+            value = richTextState.toMarkdown(),
+            onValueChange = {
+                richTextState.setMarkdown(it)
+                onTextChange(it)
+            },
+            label = { Text(label) },
+            modifier = Modifier
+                .focusRequester(focusRequester)
+                .padding(8.dp)
+                .onFocusChanged { focusState ->
+                    if (!focusState.isFocused && hasBeenFocused && richTextState.toMarkdown().isEmpty()) {
+                        onFocusLost()
+                    }
+                    if (focusState.isFocused) {
+                        hasBeenFocused = true
+                    }
+                }
+        )
+    }
+}
 
-RichTextToolbar(richTextState)                // Attach Rich text format toolbar
-RichTextEditor(                               //Switched to RichTextEditor
-    state = richTextState,
-    modifier = Modifier
-        .focusRequester(focusRequester)
-        .height(300.dp)                       // Adjust height
-        .background(Color.White)
-        .width(1000.dp)                        // Adjust width
-        .padding(10.dp)
-        .onFocusChanged { focusState ->
-            if (!focusState.isFocused && hasBeenFocused) {
-                value = richTextState.toMarkdown()      // Save as markdown
-                onFocusLost()
-            }
-            if (focusState.isFocused) {
-                hasBeenFocused = true
-            }
-        }
-)
-}
-}
+
+
+
 
 private fun createTextBox(
-viewModel: TentaViewModel,
-textValue: String,
-textOffset: Offset,
-textMeasurer: androidx.compose.ui.text.TextMeasurer
+    viewModel: TentaViewModel,
+    textValue: String,
+    textOffset: Offset,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer
 ) {
 // TODO: (Gabbe) I think newline bug happens here
-val richTextState = RichTextState().apply { setMarkdown(textValue) }  // Markdown input
 // Print measuredText and textValue to see they have '\n' before a new line
-val measuredText = textMeasurer.measure(AnnotatedString(textValue), softWrap = true)
-viewModel.addObject(
-TextBox(
-    position = textOffset,
-    text = richTextState,
-    textLayout = measuredText
-)
-)
+    val measuredText = textMeasurer.measure(AnnotatedString(textValue), softWrap = true)
+    viewModel.addObject(
+        TextBox(
+            position = textOffset,
+            text = textValue,
+            textLayout = measuredText
+        )
+    )
 }
-
 private fun findTappedTextBox(viewModel: TentaViewModel, offset: Offset): TextBox? {
-return viewModel.objects
-.filterIsInstance<TextBox>()
-.find { textBox ->
-    val topLeft = textBox.position
-    val sizePx = textBox.textLayout.size
-    val bottomRight = Offset(topLeft.x + sizePx.width, topLeft.y + sizePx.height)
-    offset.x in topLeft.x..bottomRight.x && offset.y in topLeft.y..bottomRight.y
+    return viewModel.objects
+        .filterIsInstance<TextBox>()
+        .find { textBox ->
+            val topLeft = textBox.position
+            val sizePx = textBox.textLayout.size
+            val bottomRight = Offset(topLeft.x + sizePx.width, topLeft.y + sizePx.height)
+            offset.x in topLeft.x..bottomRight.x && offset.y in topLeft.y..bottomRight.y
+        }
 }
-}
-
-
 
 private fun calculateCanvasHeight(objects: List<CanvasObject>, density: Float): Dp {
-val maxY = objects.maxOfOrNull { obj ->
-when (obj) {
-    is Line -> max(obj.start.y, obj.end.y)
-    is TextBox -> obj.position.y + obj.textLayout.size.height
-    else -> 0f
-}
-} ?: 0f
+    val maxY = objects.maxOfOrNull { obj ->
+        when (obj) {
+            is Line -> max(obj.start.y, obj.end.y)
+            is TextBox -> obj.position.y + obj.textLayout.size.height
+            else -> 0f
+        }
+    } ?: 0f
+
 
 // Convert the maximum Y position to dp and add a buffer space
-return ((maxY / density) + 200).dp
+    return ((maxY / density) + 200).dp
 }
-
 private fun expandCanvasIfNeeded(
-obj: CanvasObject,
-density: Float,
-currentHeight: Dp,
-onHeightUpdate: (Dp) -> Unit
+    obj: CanvasObject,
+    density: Float,
+    currentHeight: Dp,
+    onHeightUpdate: (Dp) -> Unit
 ) {
-val thresholdPx = 400f
-val bottomY = when (obj) {
-is Line -> max(obj.start.y, obj.end.y)
-is TextBox -> obj.position.y + obj.textLayout.size.height
-else -> 0f
+    val thresholdPx = 400f
+    val bottomY = when (obj) {
+        is Line -> max(obj.start.y, obj.end.y)
+        is TextBox -> obj.position.y + obj.textLayout.size.height
+        else -> 0f
+    }
+    val currentHeightPx = currentHeight.value * density
+    // Expand canvas if the object is close to the current height
+    if (currentHeightPx - bottomY <= thresholdPx) {
+        val newHeight = (currentHeightPx / density).dp + 600.dp // Add buffer space
+        onHeightUpdate(newHeight)
+    }
 }
-val currentHeightPx = currentHeight.value * density
-
-
-// Expand canvas if the object is close to the current height
-if (currentHeightPx - bottomY <= thresholdPx) {
-val newHeight = (currentHeightPx / density).dp + 600.dp // Add buffer space
-onHeightUpdate(newHeight)
-}
-}
-
 
 private fun isInBounds(point: Offset, canvasSize: IntSize): Boolean {
-return point.x in 0f..canvasSize.width.toFloat() && point.y in 0f..canvasSize.height.toFloat()
+    return point.x in 0f..canvasSize.width.toFloat() && point.y in 0f..canvasSize.height.toFloat()
 }

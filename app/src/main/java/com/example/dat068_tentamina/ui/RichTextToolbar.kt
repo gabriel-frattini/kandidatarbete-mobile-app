@@ -28,17 +28,21 @@ import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.FormatUnderlined
 import androidx.compose.material.icons.filled.FormatStrikethrough
 import androidx.compose.material3.Icon
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.*
 
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RichTextToolbar(richTextState: RichTextState) {
     Row(
         modifier = Modifier
-            .width(1000.dp)                                                         // Adjust width
-            .background(Color(0xFF1E3A8A), shape = RoundedCornerShape(8.dp)) // Toolbar background
-            .padding(horizontal = 6.dp, vertical = 2.dp),
+            .wrapContentWidth(Alignment.Start)
+            .padding(horizontal = 6.dp, vertical = 2.dp)
+            .background(Color(0xFF1E3A8A), shape = RoundedCornerShape(8.dp)), // Toolbar background
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         // Alignment buttons
@@ -62,7 +66,6 @@ fun RichTextToolbar(richTextState: RichTextState) {
                 ParagraphStyle(textAlign = TextAlign.Justify)
             )
         }
-
         // Formatting buttons
         ToolbarIconButton(Icons.Filled.FormatBold) {
             richTextState.toggleSpanStyle(
@@ -90,7 +93,6 @@ fun RichTextToolbar(richTextState: RichTextState) {
                 SpanStyle(textDecoration = TextDecoration.LineThrough)
             )
         }
-
         // Headings (H1, H2, H3)
         ToolbarTextButton("H1") { richTextState.setMarkdown(richTextState.toMarkdown() + "\n# ") }
         ToolbarTextButton("H2") { richTextState.setMarkdown(richTextState.toMarkdown() + "\n## ") }
@@ -101,6 +103,8 @@ fun RichTextToolbar(richTextState: RichTextState) {
         ToolbarIconButton(Icons.Filled.FormatListNumbered) { richTextState.toggleOrderedList() }
     }
 }
+
+
     @Composable
     fun ToolbarIconButton(icon: ImageVector, onClick: () -> Unit) {
         Button(

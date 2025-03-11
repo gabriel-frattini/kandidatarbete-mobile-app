@@ -127,7 +127,7 @@ class ExamInfo() : ViewModel() {
                             TextBox(
                                 position = serializedObject.position.toOffset(),
                                 textLayout = textMeasurer.measure(AnnotatedString(serializedObject.text)),
-                                text = RichTextState().apply { setText(serializedObject.text) } //Changed to rich text
+                                text = serializedObject.text
                             )
                         }
                         else -> {
