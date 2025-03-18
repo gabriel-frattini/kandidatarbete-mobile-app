@@ -109,7 +109,7 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 )
 
             )
-            val maxCharAnonymousCode = 6
+            val maxCharAnonymousCode = 15
             OutlinedTextField(
                 value = anonymousCode.value,
                 onValueChange = {
