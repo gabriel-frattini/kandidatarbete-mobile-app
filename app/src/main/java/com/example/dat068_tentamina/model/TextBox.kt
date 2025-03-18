@@ -20,13 +20,15 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.richeditor.model.RichTextState
 
 data class TextBox(
     var position: Offset,
     var text : String,
     var textLayout: TextLayoutResult,
     var color: Color = Color.Black,
-    var fontSize: Dp = 16.dp
+    var fontSize: Dp = 16.dp,
+    var richText: RichTextState? = null
 ) : CanvasObject {
     override fun draw(drawScope: DrawScope) {
         drawScope.drawText(

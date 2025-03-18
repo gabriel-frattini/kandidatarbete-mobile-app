@@ -18,6 +18,7 @@ import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.serializable.Answer
 import com.example.dat068_tentamina.model.serializable.SerializableTextbox
 import com.example.dat068_tentamina.model.serializable.SerializableLine
+import com.example.dat068_tentamina.model.Question
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toColor
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toOffset
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toSerializable
@@ -31,11 +32,12 @@ import kotlinx.coroutines.isActive
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import org.json.JSONObject
+import com.mohamedrejeb.richeditor.model.RichTextState
 
 
 class ExamInfo() : ViewModel() {
     private val apiHelper = ServerHandler()
-    private var questions = mutableListOf<String>()
+    var questions = mutableListOf<Question>()
     private val externalStorageManager = ExternalStorageManager()
     private val _recoveryMode = MutableStateFlow(false)
     private lateinit var tentaViewModel: TentaViewModel
@@ -246,7 +248,10 @@ class ExamInfo() : ViewModel() {
                         questions.clear() // Ensure previous data is removed
 
                         for (i in 0 until json.length()) {
-                            questions.add(json.getString(i))
+                            val label = json.getJSONObject(i).getString("label")
+                            val type = json.getJSONObject(i).getString("type")
+                            val question = Question(i, label, type)
+                            questions.add(question)
                         }
                         questionLength = questions.size
                     }
@@ -274,7 +279,7 @@ class ExamInfo() : ViewModel() {
     }
 
     fun clearInfo() {
-        questions = mutableListOf<String>()
+        questions = mutableListOf<Question>()
         tentaViewModel = TentaViewModel()
         user = ""
         personalID = ""

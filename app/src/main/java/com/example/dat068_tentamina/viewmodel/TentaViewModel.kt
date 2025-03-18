@@ -42,6 +42,11 @@ class TentaViewModel {
     }
     var scrollPositions = mutableMapOf<Int, Int>()
 
+    var richTextContent = mutableStateOf("")
+        fun updateRichText(richText: String) {
+        richTextContent.value = richText
+    }
+
     @Synchronized
     fun addObject(obj: CanvasObject) {
             objects.add(obj)
