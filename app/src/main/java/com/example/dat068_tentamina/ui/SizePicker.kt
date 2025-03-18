@@ -41,7 +41,7 @@ fun SizePicker(viewModel: TentaViewModel, tool: String = "pen") {
                 Icon(painter = painterResource(id = R.drawable.eraser), contentDescription = "eraser", modifier = Modifier.size(30.dp))
             }
         }
-        viewModel.textMode.value = false
+        // viewModel.textMode.value = false
 
 
         // Dropdown Menu
