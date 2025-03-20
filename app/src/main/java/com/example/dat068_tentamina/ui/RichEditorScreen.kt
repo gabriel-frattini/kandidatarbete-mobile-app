@@ -50,12 +50,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.em
 import com.example.dat068_tentamina.model.TextBox
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
-import com.mohamedrejeb.richeditor.ui.BasicRichTextEditor
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
+
+
 
 @Composable
 fun RichTextStyleButton(
@@ -158,7 +160,7 @@ fun RichTextStyleRow(
                         )
                     )
                 },
-                isSelected = state.currentSpanStyle.fontWeight == FontWeight.Bold && state.currentSpanStyle.fontSize != 1.5.em,
+                isSelected = state.currentSpanStyle.fontWeight == FontWeight.Bold && state.currentSpanStyle.fontSize != 24.sp,
 
                 icon = Icons.Outlined.FormatBold
             )
@@ -209,10 +211,10 @@ fun RichTextStyleRow(
         item {
             RichTextStyleButton(
                 onClick = {
-                    val newFontSize = if (state.currentSpanStyle.fontSize == 1.5.em) 1.em else 1.5.em
+                    val newFontSize = if (state.currentSpanStyle.fontSize == 24.sp) 16.sp else 24.sp
                     state.toggleSpanStyle(SpanStyle(fontSize = newFontSize, fontWeight = FontWeight.Bold))
                 },
-                isSelected = state.currentSpanStyle.fontSize == 1.5.em,
+                isSelected = state.currentSpanStyle.fontSize == 24.sp,
                 icon = Icons.Outlined.FormatSize
             )
         }
@@ -273,9 +275,9 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
             // Restore the rich text state with all styles, including font size
             it.richText?.let { richText ->
                 println("Restoring rich text state font size: ${richText.currentSpanStyle.fontSize}")
+                richTextState.setMarkdown(richText.toMarkdown())
                 richTextState.toggleSpanStyle(richText.currentSpanStyle)
                 richTextState.toggleParagraphStyle(richText.currentParagraphStyle)
-                richTextState.setMarkdown(richText.toMarkdown())
                 richTextState.addParagraphStyle(richText.currentParagraphStyle)
                 richTextState.addSpanStyle(richText.currentSpanStyle)
             }
@@ -296,17 +298,15 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
                 textBox.textLayout = textMeasurer.measure(AnnotatedString(markdown))
                 println("Will replace object with font size: ${richTextState.currentSpanStyle.fontSize}")
              textBox.richText = RichTextState().apply {
+                 setMarkdown(markdown)
+                 toggleSpanStyle(spanStyle = richTextState.currentSpanStyle)
+                 toggleParagraphStyle(paragraphStyle = richTextState.currentParagraphStyle)
                  addParagraphStyle(richTextState.currentParagraphStyle)
                  addSpanStyle(richTextState.currentSpanStyle)
-                 if(!markdown.contains("##")) {
-                     setMarkdown("## $markdown")
-                 } else {
-                     setMarkdown(markdown)
-                 }
+
              }
 
                 println("Replacing object with font size: ${textBox.richText?.currentSpanStyle?.fontSize}")
-                viewModel.replaceObject(textBox, textBox)
                 richTextState = textBox.richText!!
             } else {
                 val measuredText = textMeasurer.measure(AnnotatedString(markdown))
@@ -331,14 +331,20 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
 
         RichTextStyleRow(
             modifier = Modifier.fillMaxWidth(),
-            state = richTextState
+            state = richTextState,
         )
 
-        BasicRichTextEditor(
+        RichTextEditor(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(vertical = 16.dp),
             state = richTextState,
+                        singleLine = false,
+            colors = RichTextEditorDefaults.richTextEditorColors(
+                containerColor = Color.White,
+                focusedIndicatorColor = Color.White,
+                unfocusedIndicatorColor = Color.White,
+            ),
         )
     }
 }

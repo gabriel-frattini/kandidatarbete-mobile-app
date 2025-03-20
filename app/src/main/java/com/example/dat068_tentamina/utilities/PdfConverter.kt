@@ -148,7 +148,12 @@ class PdfConverter {
                             if (annotatedString != null) {
                             for (i in 0 until annotatedString.spanStyles.size) {
                                     val spanRange = annotatedString.spanStyles[i]
-                                    val text = annotatedString.subSequence(spanRange.start, spanRange.end).toString()
+                                    val span = annotatedString.subSequence(spanRange.start, spanRange.end)
+                                    val text = span.toString()
+                                    span.spanStyles.forEach {
+                                        println("item text: ${text}")
+                                        println("item spanStyle: ${it.item.fontSize.value}")
+                                    }
                                     val nextSpanRange = if (i + 1 < annotatedString.spanStyles.size) annotatedString.spanStyles[i + 1] else null
                                     if (nextSpanRange != null) {
                                         val nextText = annotatedString.subSequence(nextSpanRange.start, nextSpanRange.end).toString()
@@ -158,8 +163,15 @@ class PdfConverter {
                                     }
                                     val spanStyle = spanRange.item
                                     var fontSize = obj.fontSize.value
+                                    println("annotatedString: $annotatedString")
+                                    println("obj.fontSize.value: ${obj.fontSize.value}")
                                     if (!spanStyle.fontSize.value.isNaN()) {
-                                        fontSize = spanStyle.fontSize.value
+                                        if (spanStyle.fontSize.isEm) {
+                                            fontSize = spanStyle.fontSize.value * obj.fontSize.value
+                                        } else {
+                                            fontSize = spanStyle.fontSize.value
+                                        }
+                                        println("spanStyle.fontSize.value: ${spanStyle.fontSize.value}")
                                     }
                                     val textPaint = Paint().apply {
                                         color = android.graphics.Color.BLACK
