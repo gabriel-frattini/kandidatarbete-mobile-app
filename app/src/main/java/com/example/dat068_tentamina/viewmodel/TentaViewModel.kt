@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlin.collections.remove
 import kotlin.text.set
 import android.util.Log
+import com.example.dat068_tentamina.model.TextBox
 
 enum class BackgroundType {
     BLANK, GRAPH, LINED, DOTTED
