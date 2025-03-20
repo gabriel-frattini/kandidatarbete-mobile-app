@@ -265,30 +265,34 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
     val textMeasurer = rememberTextMeasurer()
 
     // Sync initial content from TextBox when ViewModel changes (e.g., on question change)
-    val textBox = viewModel.objects.find { it is TextBox && it.richTextContent.isNotEmpty() } as? TextBox
+    val textBox = viewModel.objects.find { it is TextBox } as? TextBox
     LaunchedEffect(textBox) {
         textBox?.let {
             richTextState.setMarkdown(it.richTextContent)
+        } ?: run {
+            richTextState.setMarkdown("") // Clear the editor if no TextBox is found
         }
     }
 
     // Save changes from the editor to ViewModel
     LaunchedEffect(richTextState.annotatedString) {
         val markdown = richTextState.toMarkdown()
-        if (textBox != null) {
-            textBox.richTextContent = markdown
-            textBox.textLayout = textMeasurer.measure(AnnotatedString(markdown))
-            viewModel.replaceObject(textBox, textBox)
-        } else if (markdown.isNotEmpty()) {
-            val measuredText = textMeasurer.measure(AnnotatedString(markdown))
-            val newTextBox = TextBox(
-                position = Offset(50f, 50f), // Default position, can be adjusted
-                text = markdown,
-                textLayout = measuredText,
-                richText = richTextState,
-                richTextContent = markdown
-            )
-            viewModel.addObject(newTextBox)
+        if (markdown.isNotEmpty()) {
+            if (textBox != null) {
+                textBox.richTextContent = markdown
+                textBox.textLayout = textMeasurer.measure(AnnotatedString(markdown))
+                viewModel.replaceObject(textBox, textBox)
+            } else {
+                val measuredText = textMeasurer.measure(AnnotatedString(markdown))
+                val newTextBox = TextBox(
+                    position = Offset(50f, 50f), // Default position, can be adjusted
+                    text = markdown,
+                    textLayout = measuredText,
+                    richText = richTextState,
+                    richTextContent = markdown
+                )
+                viewModel.addObject(newTextBox)
+            }
         }
     }
 
