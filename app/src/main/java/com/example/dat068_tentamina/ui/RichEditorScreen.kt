@@ -295,9 +295,16 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
                 textBox.richTextContent = markdown
                 textBox.textLayout = textMeasurer.measure(AnnotatedString(markdown))
                 println("Will replace object with font size: ${richTextState.currentSpanStyle.fontSize}")
-                textBox.richText = richTextState.copy() // Save the current rich text state
+                             // Manually copy the rich text state properties
+             textBox.richText = RichTextState().apply {
+                 addParagraphStyle(richTextState.currentParagraphStyle)
+                 addSpanStyle(richTextState.currentSpanStyle)
+                 setMarkdown("## " + markdown)
+             }
+
                 println("Replacing object with font size: ${textBox.richText?.currentSpanStyle?.fontSize}")
                 viewModel.replaceObject(textBox, textBox)
+                richTextState = textBox.richText!!
             } else {
                 val measuredText = textMeasurer.measure(AnnotatedString(markdown))
                 val newTextBox = TextBox(
