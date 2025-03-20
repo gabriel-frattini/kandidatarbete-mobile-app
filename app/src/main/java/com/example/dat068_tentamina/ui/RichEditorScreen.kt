@@ -1,6 +1,7 @@
 package com.example.dat068_tentamina.ui
 
 
+import ExamInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -259,7 +260,7 @@ fun RichTextStyleRow(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RichEditorScreen(viewModel: TentaViewModel, navigateBack: () -> Unit) {
+fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode : Boolean) {
     val richTextState = rememberRichTextState()
     val textMeasurer = rememberTextMeasurer()
 
