@@ -28,7 +28,8 @@ data class TextBox(
     var textLayout: TextLayoutResult,
     var color: Color = Color.Black,
     var fontSize: Dp = 16.dp,
-    var richText: RichTextState? = null
+    var richText: RichTextState? = null,
+    var richTextContent: String = ""
 ) : CanvasObject {
     override fun draw(drawScope: DrawScope) {
         drawScope.drawText(

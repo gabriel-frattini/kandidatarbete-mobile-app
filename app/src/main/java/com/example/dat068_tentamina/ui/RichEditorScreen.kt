@@ -264,27 +264,32 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
     val richTextState = rememberRichTextState()
     val textMeasurer = rememberTextMeasurer()
 
-    // Sync initial content when ViewModel changes (e.g., on question change)
-    LaunchedEffect(Unit) {
-            richTextState.setMarkdown(viewModel.richTextContent.value)
+    // Sync initial content from TextBox when ViewModel changes (e.g., on question change)
+    val textBox = viewModel.objects.find { it is TextBox } as? TextBox
+    LaunchedEffect(textBox) {
+        textBox?.richText?.let {
+            richTextState.setMarkdown(it.toMarkdown())
+        }
     }
 
     // Save changes from the editor to ViewModel
     LaunchedEffect(richTextState.annotatedString) {
-        var markdown = richTextState.toMarkdown()
-        viewModel.updateRichText(markdown)
-        val found = viewModel.objects.find { it is TextBox }
-        if (found != null) {
-            viewModel.objects.remove(found)
+        val markdown = richTextState.toMarkdown()
+        textBox?.let {
+            it.richTextContent = markdown
+            it.textLayout = textMeasurer.measure(AnnotatedString(markdown))
+            viewModel.replaceObject(it, it)
+        } ?: run {
+            val measuredText = textMeasurer.measure(AnnotatedString(markdown))
+            val newTextBox = TextBox(
+                position = Offset(50f, 50f), // Default position, can be adjusted
+                text = markdown,
+                textLayout = measuredText,
+                richText = richTextState,
+                richTextContent = markdown
+            )
+            viewModel.addObject(newTextBox)
         }
-        val measuredText = textMeasurer.measure(AnnotatedString(markdown))
-        val textBox = TextBox(
-            position = Offset(50f, 50f), // Default position, can be adjusted
-            text = markdown,
-            textLayout = measuredText,
-            richText = richTextState,
-        )
-        viewModel.addObject(textBox)
     }
 
     Column(

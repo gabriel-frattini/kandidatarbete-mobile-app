@@ -42,10 +42,6 @@ class TentaViewModel {
     }
     var scrollPositions = mutableMapOf<Int, Int>()
 
-    var richTextContent = mutableStateOf("")
-        fun updateRichText(richText: String) {
-        richTextContent.value = richText
-    }
 
     @Synchronized
     fun addObject(obj: CanvasObject) {
@@ -120,6 +116,12 @@ class TentaViewModel {
         val currentObjects = questions[currentQuestion.intValue] ?: emptyList()
         _objects.clear()
         _objects.addAll(currentObjects)
+
+        // Load rich text content if available
+        val textBox = currentObjects.find { it is TextBox && it.richTextContent.isNotEmpty() } as? TextBox
+        textBox?.let {
+            it.richText?.setMarkdown(it.richTextContent)
+        }
         currentCanvasHeight.value = height[currentQuestion.intValue] ?: 2400.dp
     }
     fun updateCanvasHeight(newHeight: Dp) {
