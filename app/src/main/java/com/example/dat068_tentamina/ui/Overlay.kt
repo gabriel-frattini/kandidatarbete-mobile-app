@@ -158,7 +158,7 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
         { contentPadding ->
             showRichEditor = examInfo.questions[viewModel.currentQuestion.intValue - 1].type == "text"
             if (showRichEditor) {
-                RichEditorScreen(viewModel, navigateBack = { showRichEditor = false })
+                RichEditorScreen(viewModel, examInfo, recoveryMode)
             } else {
                 ExamScreen(modifier = Modifier.padding(contentPadding), examInfo, viewModel, recoveryMode)
             }

@@ -267,33 +267,36 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
 
     // Sync initial content from TextBox when ViewModel changes (e.g., on question change)
     val textBox = viewModel.objects.find { it is TextBox } as? TextBox
+    var mounted = false
     LaunchedEffect(textBox) {
         textBox?.let {
             // Restore the rich text state with all styles, including font size
             it.richText?.let { richText ->
                 println("Restoring rich text state font size: ${richText.currentSpanStyle.fontSize}")
+                richTextState.toggleSpanStyle(richText.currentSpanStyle)
+                richTextState.toggleParagraphStyle(richText.currentParagraphStyle)
+                richTextState.setMarkdown(richText.toMarkdown())
                 richTextState.addParagraphStyle(richText.currentParagraphStyle)
                 richTextState.addSpanStyle(richText.currentSpanStyle)
-                richTextState.setMarkdown(richText.toMarkdown())
-                richTextState = richText.copy()
             }
         } ?: run {
             richTextState.setMarkdown("") // Clear the editor if no TextBox is found
         }
+        println("font size is ${richTextState.currentSpanStyle.fontSize}")
+        mounted = true
     }
 
     // Save changes from the editor to ViewModel
     LaunchedEffect(richTextState.annotatedString) {
+        println("Saving rich text state font size: ${richTextState.currentSpanStyle.fontSize}")
         val markdown = richTextState.toMarkdown()
         if (markdown.isNotEmpty()) {
             if (textBox != null) {
                 textBox.richTextContent = markdown
                 textBox.textLayout = textMeasurer.measure(AnnotatedString(markdown))
+                println("Will replace object with font size: ${richTextState.currentSpanStyle.fontSize}")
                 textBox.richText = richTextState.copy() // Save the current rich text state
-                textBox.richText?.let { richText ->
-                    richTextState.addParagraphStyle(richText.currentParagraphStyle)
-                    richTextState.addSpanStyle(richText.currentSpanStyle)
-                }
+                println("Replacing object with font size: ${textBox.richText?.currentSpanStyle?.fontSize}")
                 viewModel.replaceObject(textBox, textBox)
             } else {
                 val measuredText = textMeasurer.measure(AnnotatedString(markdown))
