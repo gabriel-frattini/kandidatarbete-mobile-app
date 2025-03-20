@@ -123,8 +123,8 @@ class TentaViewModel {
         textBox?.let {
             it.richText?.let { richText ->
                 richText.setMarkdown(it.richTextContent)
-                richText.setParagraphStyle(it.richText.currentParagraphStyle)
-                richText.setSpanStyle(it.richText.currentSpanStyle)
+                richText.addParagraphStyle(it.richText.currentParagraphStyle)
+                richText.addSpanStyle(it.richText.currentSpanStyle)
             }
         }
         currentCanvasHeight.value = height[currentQuestion.intValue] ?: 2400.dp
