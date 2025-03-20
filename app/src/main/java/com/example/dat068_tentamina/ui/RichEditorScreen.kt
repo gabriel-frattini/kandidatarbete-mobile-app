@@ -271,8 +271,8 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
             richTextState.setMarkdown(it.richTextContent)
             // Restore the rich text state with all styles, including font size
             it.richText?.let { richText ->
-                richTextState.addParagraphStyle(richText.currentParagraphStyle)
-                richTextState.addSpanStyle(richText.currentSpanStyle)
+                richTextState.setParagraphStyle(richText.currentParagraphStyle)
+                richTextState.setSpanStyle(richText.currentSpanStyle)
             }
         } ?: run {
             richTextState.setMarkdown("") // Clear the editor if no TextBox is found

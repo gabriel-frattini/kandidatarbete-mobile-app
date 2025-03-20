@@ -118,10 +118,14 @@ class TentaViewModel {
         _objects.clear()
         _objects.addAll(currentObjects)
 
-        // Load rich text content if available
-        val textBox = currentObjects.find { it is TextBox && it.richTextContent.isNotEmpty() } as? TextBox
+        // Load rich text content and styles if available
+        val textBox = currentObjects.find { it is TextBox } as? TextBox
         textBox?.let {
-            it.richText?.setMarkdown(it.richTextContent)
+            it.richText?.let { richText ->
+                richText.setMarkdown(it.richTextContent)
+                richText.setParagraphStyle(it.richText.currentParagraphStyle)
+                richText.setSpanStyle(it.richText.currentSpanStyle)
+            }
         }
         currentCanvasHeight.value = height[currentQuestion.intValue] ?: 2400.dp
     }
