@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.em
 import com.example.dat068_tentamina.model.TextBox
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import com.mohamedrejeb.richeditor.model.RichTextState
@@ -208,10 +209,10 @@ fun RichTextStyleRow(
         item {
             RichTextStyleButton(
                 onClick = {
-                    val newFontSize = if (state.currentSpanStyle.fontSize == 24.sp) 16.sp else 24.sp
+                    val newFontSize = if (state.currentSpanStyle.fontSize == 1.5.em) 1.em else 1.5.em
                     state.toggleSpanStyle(SpanStyle(fontSize = newFontSize))
                 },
-                isSelected = state.currentSpanStyle.fontSize == 24.sp,
+                isSelected = state.currentSpanStyle.fontSize == 1.5.em,
                 icon = Icons.Outlined.FormatSize
             )
         }
@@ -261,18 +262,20 @@ fun RichTextStyleRow(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode : Boolean) {
-    val richTextState = rememberRichTextState()
+    var richTextState = rememberRichTextState()
     val textMeasurer = rememberTextMeasurer()
 
     // Sync initial content from TextBox when ViewModel changes (e.g., on question change)
     val textBox = viewModel.objects.find { it is TextBox } as? TextBox
     LaunchedEffect(textBox) {
         textBox?.let {
-            richTextState.setMarkdown(it.richTextContent)
             // Restore the rich text state with all styles, including font size
             it.richText?.let { richText ->
+                println("Restoring rich text state font size: ${richText.currentSpanStyle.fontSize}")
                 richTextState.addParagraphStyle(richText.currentParagraphStyle)
                 richTextState.addSpanStyle(richText.currentSpanStyle)
+                richTextState.setMarkdown(richText.toMarkdown())
+                richTextState = richText.copy()
             }
         } ?: run {
             richTextState.setMarkdown("") // Clear the editor if no TextBox is found
