@@ -42,6 +42,7 @@ class TentaViewModel {
         }
     }
     var scrollPositions = mutableMapOf<Int, Int>()
+    var questionChangeTrigger = mutableStateOf(0)
 
 
     @Synchronized
@@ -114,6 +115,7 @@ class TentaViewModel {
         height[currentQuestion.intValue] = canvasHeight
         currentQuestion.intValue = qNr
         // Change the content on the DrawingScreen to the current question
+        questionChangeTrigger.value++
         val currentObjects = questions[currentQuestion.intValue] ?: emptyList()
         _objects.clear()
         _objects.addAll(currentObjects)
