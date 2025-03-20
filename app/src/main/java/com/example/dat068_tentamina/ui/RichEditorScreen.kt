@@ -158,7 +158,7 @@ fun RichTextStyleRow(
                         )
                     )
                 },
-                isSelected = state.currentSpanStyle.fontWeight == FontWeight.Bold,
+                isSelected = state.currentSpanStyle.fontWeight == FontWeight.Bold && state.currentSpanStyle.fontSize != 1.5.em,
 
                 icon = Icons.Outlined.FormatBold
             )
@@ -210,7 +210,7 @@ fun RichTextStyleRow(
             RichTextStyleButton(
                 onClick = {
                     val newFontSize = if (state.currentSpanStyle.fontSize == 1.5.em) 1.em else 1.5.em
-                    state.toggleSpanStyle(SpanStyle(fontSize = newFontSize))
+                    state.toggleSpanStyle(SpanStyle(fontSize = newFontSize, fontWeight = FontWeight.Bold))
                 },
                 isSelected = state.currentSpanStyle.fontSize == 1.5.em,
                 icon = Icons.Outlined.FormatSize
@@ -295,11 +295,14 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
                 textBox.richTextContent = markdown
                 textBox.textLayout = textMeasurer.measure(AnnotatedString(markdown))
                 println("Will replace object with font size: ${richTextState.currentSpanStyle.fontSize}")
-                             // Manually copy the rich text state properties
              textBox.richText = RichTextState().apply {
                  addParagraphStyle(richTextState.currentParagraphStyle)
                  addSpanStyle(richTextState.currentSpanStyle)
-                 setMarkdown("## " + markdown)
+                 if(!markdown.contains("##")) {
+                     setMarkdown("## $markdown")
+                 } else {
+                     setMarkdown(markdown)
+                 }
              }
 
                 println("Replacing object with font size: ${textBox.richText?.currentSpanStyle?.fontSize}")
