@@ -248,9 +248,9 @@ class ExamInfo() : ViewModel() {
                         questions.clear() // Ensure previous data is removed
 
                         for (i in 0 until json.length()) {
-                            val label = json.getJSONObject(i).getString("label")
+                            val text = json.getJSONObject(i).getString("text")
                             val type = json.getJSONObject(i).getString("type")
-                            val question = Question(i, label, type)
+                            val question = Question(i, text, type)
                             questions.add(question)
                         }
                         questionLength = questions.size

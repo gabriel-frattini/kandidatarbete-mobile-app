@@ -43,8 +43,8 @@ import androidx.compose.ui.platform.LocalContext
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
-    val examId = remember { mutableStateOf(TextFieldValue("")) }
-    val anonymousCode = remember { mutableStateOf(TextFieldValue("")) }
+    val examId = remember { mutableStateOf(TextFieldValue("text_exam_6")) }
+    val anonymousCode = remember { mutableStateOf(TextFieldValue("HUS456")) }
     var context = LocalContext.current
 
     Column(
@@ -100,13 +100,13 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                 modifier = Modifier
                     .padding(20.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = Color.White, // Insidan av textfält
-                    focusedBorderColor = Color.Black,
-                    unfocusedBorderColor = Color.Gray,
-                    focusedLabelColor = Color.Black,
-                    unfocusedLabelColor = Color.Gray
-                )
+                // colors = TextFieldDefaults.outlinedTextFieldColors(
+                //     containerColor = Color.White, // Insidan av textfält
+                //     focusedBorderColor = Color.Black,
+                //     unfocusedBorderColor = Color.Gray,
+                //     focusedLabelColor = Color.Black,
+                //     unfocusedLabelColor = Color.Gray
+                // )
 
             )
             val maxCharAnonymousCode = 6
@@ -120,13 +120,13 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                 modifier = Modifier
                     .padding(20.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = Color.White,
-                    focusedBorderColor = Color.Black,
-                    unfocusedBorderColor = Color.Gray,
-                    focusedLabelColor = Color.Black,
-                    unfocusedLabelColor = Color.Gray
-                )
+                // colors = TextFieldDefaults.outlinedTextFieldColors(
+                //     containerColor = Color.White,
+                //     focusedBorderColor = Color.Black,
+                //     unfocusedBorderColor = Color.Gray,
+                //     focusedLabelColor = Color.Black,
+                //     unfocusedLabelColor = Color.Gray
+                // )
             )
         }
         OutlinedButton(
