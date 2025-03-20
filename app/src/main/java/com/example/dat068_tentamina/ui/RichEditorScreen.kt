@@ -288,8 +288,8 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
                 textBox.textLayout = textMeasurer.measure(AnnotatedString(markdown))
                 textBox.richText = richTextState.copy() // Save the current rich text state
                 textBox.richText?.let { richText ->
-                    richTextState.setParagraphStyle(richText.currentParagraphStyle)
-                    richTextState.setSpanStyle(richText.currentSpanStyle)
+                    richTextState.addParagraphStyle(richText.currentParagraphStyle)
+                    richTextState.addSpanStyle(richText.currentSpanStyle)
                 }
                 viewModel.replaceObject(textBox, textBox)
             } else {
