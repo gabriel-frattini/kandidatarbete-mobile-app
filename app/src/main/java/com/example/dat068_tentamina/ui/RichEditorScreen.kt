@@ -265,21 +265,21 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
     val textMeasurer = rememberTextMeasurer()
 
     // Sync initial content from TextBox when ViewModel changes (e.g., on question change)
-    val textBox = viewModel.objects.find { it is TextBox } as? TextBox
+    val textBox = viewModel.objects.find { it is TextBox && it.richTextContent.isNotEmpty() } as? TextBox
     LaunchedEffect(textBox) {
-        textBox?.richText?.let {
-            richTextState.setMarkdown(it.toMarkdown())
+        textBox?.let {
+            richTextState.setMarkdown(it.richTextContent)
         }
     }
 
     // Save changes from the editor to ViewModel
     LaunchedEffect(richTextState.annotatedString) {
         val markdown = richTextState.toMarkdown()
-        textBox?.let {
-            it.richTextContent = markdown
-            it.textLayout = textMeasurer.measure(AnnotatedString(markdown))
-            viewModel.replaceObject(it, it)
-        } ?: run {
+        if (textBox != null) {
+            textBox.richTextContent = markdown
+            textBox.textLayout = textMeasurer.measure(AnnotatedString(markdown))
+            viewModel.replaceObject(textBox, textBox)
+        } else if (markdown.isNotEmpty()) {
             val measuredText = textMeasurer.measure(AnnotatedString(markdown))
             val newTextBox = TextBox(
                 position = Offset(50f, 50f), // Default position, can be adjusted
