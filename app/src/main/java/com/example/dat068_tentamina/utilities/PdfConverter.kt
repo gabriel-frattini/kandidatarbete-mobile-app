@@ -157,9 +157,13 @@ class PdfConverter {
                                         } 
                                     }
                                     val spanStyle = spanRange.item
+                                    var fontSize = obj.fontSize.value
+                                    if (!spanStyle.fontSize.value.isNaN()) {
+                                        fontSize = spanStyle.fontSize.value
+                                    }
                                     val textPaint = Paint().apply {
                                         color = android.graphics.Color.BLACK
-                                        textSize = spanStyle.fontSize?.value?.times(density) ?: obj.fontSize.value * density
+                                        textSize = fontSize * density
                                         isAntiAlias = true
                                         typeface = when {
                                             spanStyle.fontWeight == FontWeight.Bold && spanStyle.fontStyle == FontStyle.Italic -> Typeface.create(Typeface.DEFAULT, Typeface.BOLD_ITALIC)
