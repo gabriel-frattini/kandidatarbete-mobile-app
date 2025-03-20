@@ -8,6 +8,13 @@ import androidx.compose.ui.graphics.toArgb
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.sp
 import java.io.File
 
 class PdfConverter {
@@ -135,20 +142,51 @@ class PdfConverter {
                         val adjustedY = obj.position.y + metaHeightPx - scrollOffset
 
                         if (isInViewport(obj.position.y, obj.position.y, viewportTop, viewportBottom)) {
-                            val textPaint = Paint().apply {
-                                color = obj.color.toArgb()
-                                textSize = obj.fontSize.value * density
-                                isAntiAlias = true
-                                typeface = Typeface.DEFAULT
-                                textAlign = Paint.Align.LEFT
-                            }
+                            var currentY = adjustedY
 
-                            // Correct baseline adjustment using FontMetrics
-                            val metrics = textPaint.fontMetrics
-                            val baselineAdjustment = -metrics.top
-                            val lines = obj.text.split("\n")
-                            lines.forEachIndexed { index, line ->
-                                canvas.drawText(line, adjustedX, adjustedY + baselineAdjustment + index * obj.fontSize.value * density, textPaint)
+                            val annotatedString = obj.richText?.annotatedString
+                            if (annotatedString != null) {
+                            for (i in 0 until annotatedString.spanStyles.size) {
+                                    val spanRange = annotatedString.spanStyles[i]
+                                    val span = annotatedString.subSequence(spanRange.start, spanRange.end)
+                                    val text = span.toString()
+                                    val nextSpanRange = if (i + 1 < annotatedString.spanStyles.size) annotatedString.spanStyles[i + 1] else null
+                                    if (nextSpanRange != null) {
+                                        val nextText = annotatedString.subSequence(nextSpanRange.start, nextSpanRange.end).toString()
+                                        if (nextText.trim() == text.trim()) {
+                                            continue
+                                        } 
+                                    }
+                                    val spanStyle = spanRange.item
+                                    var fontSize = obj.fontSize.value
+                                    if (!spanStyle.fontSize.value.isNaN()) {
+                                        if (spanStyle.fontSize.isEm) {
+                                            fontSize = spanStyle.fontSize.value * obj.fontSize.value
+                                        } else {
+                                            fontSize = spanStyle.fontSize.value
+                                        }
+                                    }
+                                    val textPaint = Paint().apply {
+                                        color = android.graphics.Color.BLACK
+                                        textSize = fontSize * density
+                                        isAntiAlias = true
+                                        typeface = when {
+                                            spanStyle.fontWeight == FontWeight.Bold && spanStyle.fontStyle == FontStyle.Italic -> Typeface.create(Typeface.DEFAULT, Typeface.BOLD_ITALIC)
+                                            spanStyle.fontWeight == FontWeight.Bold -> Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                                            spanStyle.fontStyle == FontStyle.Italic -> Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
+                                            else -> Typeface.DEFAULT
+                                        }
+                                        textAlign = Paint.Align.LEFT
+                                        if (spanStyle.textDecoration?.contains(TextDecoration.Underline) == true) {
+                                            isUnderlineText = true
+                                        }
+                                    }
+                                    val metrics = textPaint.fontMetrics
+                                    val baselineAdjustment = -metrics.top
+                                    currentY += 10 // Add some padding
+                                    canvas.drawText(text, adjustedX, currentY + baselineAdjustment, textPaint)
+                                    currentY += textPaint.textSize
+                                }
                             }
                         }
                     }
