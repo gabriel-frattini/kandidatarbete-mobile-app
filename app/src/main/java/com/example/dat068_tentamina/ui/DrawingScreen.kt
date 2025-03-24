@@ -1,10 +1,9 @@
 package com.example.dat068_tentamina.ui
 
+
 import ExamInfo
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.ScrollState
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -39,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
@@ -47,12 +47,8 @@ import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
-import com.example.dat068_tentamina.ui.DrawGraphPaperBackground //Junyi
-import com.example.dat068_tentamina.ui.DrawLinedPaperBackground //Junyi
-import com.example.dat068_tentamina.ui.DrawDottedBackground //Junyi
+import com.example.dat068_tentamina.viewmodel.BackgroundType
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
-import com.example.dat068_tentamina.viewmodel.BackgroundType //Junyi
-import com.example.dat068_tentamina.ui.BackgroundPicker //Junyi
 import kotlin.math.max
 
 @SuppressLint("RememberReturnType")
@@ -405,3 +401,5 @@ private fun expandCanvasIfNeeded(
 private fun isInBounds(point: Offset, canvasSize: IntSize): Boolean {
     return point.x in 0f..canvasSize.width.toFloat() && point.y in 0f..canvasSize.height.toFloat()
 }
+
+
