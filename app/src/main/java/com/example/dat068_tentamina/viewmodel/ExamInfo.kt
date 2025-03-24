@@ -31,6 +31,10 @@ import kotlinx.coroutines.isActive
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.Date
+import java.util.TimeZone
 
 
 class ExamInfo() : ViewModel() {
@@ -40,6 +44,9 @@ class ExamInfo() : ViewModel() {
     private val _recoveryMode = MutableStateFlow(false)
     private lateinit var tentaViewModel: TentaViewModel
     private var onDataFetched: (() -> Unit)? = null
+    private var examDate = ""
+    private var examStartTime = ""
+    private var examEndTime = ""
     var user = ""
     var personalID = ""
     var course = ""
@@ -47,6 +54,43 @@ class ExamInfo() : ViewModel() {
     val job = Job()
     val scope = CoroutineScope(Dispatchers.Default + job)
     val recoveryMode: StateFlow<Boolean> get() = _recoveryMode
+
+
+    fun getTodayDate(): String {
+        return SimpleDateFormat("yyyy-MM-dd",Locale.getDefault()).format(Date())
+    }
+
+    fun getExamDate(): String {
+        return examDate
+    }
+
+    fun getCurrentTimeFormatted(): String {
+        val format = SimpleDateFormat("HH:mm", Locale.getDefault())
+        format.timeZone = TimeZone.getTimeZone("Europe/Stockholm")
+        return format.format(Date())
+    }
+
+    fun canStartExam(): Boolean {
+        val currentTimeFormatted = getCurrentTimeFormatted()
+        val startTimeFormatted = examStartTime
+
+        Log.d("ExamInfo", "Current time: $currentTimeFormatted, Start time: $startTimeFormatted")
+
+        return currentTimeFormatted >= startTimeFormatted
+    }
+
+    fun isExamOver(): Boolean {
+        val currentTimeFormatted = getCurrentTimeFormatted()
+        val endTimeFormatted = examEndTime
+
+        Log.d("ExamInfo", "Current time: $currentTimeFormatted, End time: $endTimeFormatted")
+
+        return currentTimeFormatted >= endTimeFormatted
+    }
+
+    fun getExamStartTime(): String = examStartTime
+
+    fun getExamEndTime(): String = examEndTime
 
 
     fun enableRecoveryMode() {
@@ -249,6 +293,18 @@ class ExamInfo() : ViewModel() {
                             questions.add(json.getString(i))
                         }
                         questionLength = questions.size
+                    }
+
+                    if(it.has("examDate")) {
+                        examDate = it.getString("examDate")
+                    } else { //just debug
+                        Log.d("DEBUG", "examDate is missing!")
+                    }
+                    if(it.has("examStartTime")) {
+                        examStartTime = it.getString("examStartTime")
+                    }
+                    if(it.has("examEndTime")) {
+                        examEndTime = it.getString("examEndTime")
                     }
                     // TODO: (Gabbe) We want to get Exam start time & end time here and show it somewhere
                     // Then have a listener that listens to when time is up. See `startPerodicallyUpdatingExternalStorage`

@@ -60,7 +60,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.TopAppBarDefaults
 import kotlin.math.sign
-
+import android.widget.Toast
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,6 +76,20 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
     // List of tab titles
     val questionNumbers = viewModel.questions.keys.sorted()
     val tabs = questionNumbers.map { "Question $it" }
+
+    /*
+        Checking every 30 seconds if the exam has ended, if so we call submitExam
+        LaunchedEffect(Unit) {
+            while (true) {
+                delay(30 * 1000L)
+                if (examInfo.isExamOver()) {
+                    submitExam(viewModel, examInfo, activity, signout)
+                    break
+                }
+            }
+        }
+
+ */
 
 
     ModalNavigationDrawer(
@@ -156,6 +172,23 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
         }
     }
 }
+
+/*
+
+Automatically submit the exam at a certain time.
+
+fun submitExam(viewModel: TentaViewModel, examInfo: ExamInfo, activity: MainActivity, signout: () -> Unit) {
+    //val answers = viewModel.getAnswers()
+    //val pdfFile = PdfConverter.createPdfFromAnswers(answers, 2560, 1700, activity)
+
+    //examInfo.sendPdf(pdfFile)  // Uncomment to sen the exam
+
+    Toast.makeText(activity, "Exam has been submitted!", Toast.LENGTH_LONG).show()
+
+    signout()  //
+}
+
+ */
 
 @Composable
 fun ExamScreen(
