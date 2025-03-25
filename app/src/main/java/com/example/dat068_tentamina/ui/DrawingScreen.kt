@@ -139,20 +139,20 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                         val endPosition = change.position
 
                                         if (isInBounds(startPosition, size) && isInBounds(endPosition, size)) {
-                                            var newLine = Line(
-                                                start = startPosition,
-                                                end = endPosition,
-                                                strokeWidth = viewModel.strokeWidth,
-                                            )
-
                                             if (viewModel.eraser) {
-                                                newLine.cap = StrokeCap.Square
-                                                newLine.color = Color.White
-                                                newLine.strokeWidth = viewModel.eraserWidth
-                                            }
-                                            viewModel.addObject(newLine)
-                                            expandCanvasIfNeeded(newLine, density, canvasHeight) {
-                                                canvasHeight = it
+                                                // New eraser: remove only intersecting objects
+                                                viewModel.removeIntersectingObjects(startPosition, endPosition, viewModel.eraserWidth)
+                                            } else {
+                                                // Drawing mode: Create and add a new line
+                                                val newLine = Line(
+                                                    start = startPosition,
+                                                    end = endPosition,
+                                                    strokeWidth = viewModel.strokeWidth)
+                                                //Junyi
+                                                viewModel.addObject(newLine)
+                                                expandCanvasIfNeeded(newLine, density, canvasHeight) {
+                                                    canvasHeight = it
+                                                }
                                             }
                                         }
                                     }
