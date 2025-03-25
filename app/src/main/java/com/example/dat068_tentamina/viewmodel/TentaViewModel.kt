@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlin.collections.remove
 import kotlin.text.set
 import android.util.Log
+import com.example.dat068_tentamina.model.TextBox
 
 enum class BackgroundType {
     BLANK, GRAPH, LINED, DOTTED
@@ -41,6 +42,8 @@ class TentaViewModel {
         }
     }
     var scrollPositions = mutableMapOf<Int, Int>()
+    var questionChangeTrigger = mutableStateOf(0)
+
 
     @Synchronized
     fun addObject(obj: CanvasObject) {
@@ -112,9 +115,13 @@ class TentaViewModel {
         height[currentQuestion.intValue] = canvasHeight
         currentQuestion.intValue = qNr
         // Change the content on the DrawingScreen to the current question
+        questionChangeTrigger.value++
         val currentObjects = questions[currentQuestion.intValue] ?: emptyList()
         _objects.clear()
         _objects.addAll(currentObjects)
+
+        // Load rich text content and styles if available
+        val textBox = currentObjects.find { it is TextBox } as? TextBox
         currentCanvasHeight.value = height[currentQuestion.intValue] ?: 2400.dp
     }
     fun updateCanvasHeight(newHeight: Dp) {

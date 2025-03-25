@@ -1,6 +1,14 @@
 package com.example.dat068_tentamina.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.unit.dp
 
+import androidx.compose.foundation.clickable
 import ExamInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -57,7 +65,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.TopAppBarDefaults
 import kotlin.math.sign
 import android.widget.Toast
@@ -162,13 +169,9 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
                     )
                 }
             },
-        ) { contentPadding ->
-            ExamScreen(
-                modifier = Modifier.padding(contentPadding),
-                examInfo = examInfo,
-                viewModel = viewModel,
-                recoveryMode = recoveryMode
-            )
+        )
+        { contentPadding ->
+            ExamScreen(modifier = Modifier.padding(contentPadding), examInfo, viewModel, recoveryMode)
         }
     }
 }
@@ -197,18 +200,23 @@ fun ExamScreen(
     viewModel: TentaViewModel,
     recoveryMode: Boolean
 ) {
-    Box(modifier = modifier.fillMaxSize()) {
-        DrawingScreen(
-            viewModel,
-            examInfo,
-            recoveryMode,
-        )
-        ExampageToolbar(
-            viewModel,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(13.dp)
-        )
+    val showRichEditor = examInfo.questions[viewModel.currentQuestion.intValue - 1].type == "text"
+    if (showRichEditor) {
+        RichEditorScreen(viewModel, examInfo, recoveryMode)
+    } else {
+        Box(modifier = modifier.fillMaxSize()) {
+            DrawingScreen(
+                viewModel,
+                examInfo,
+                recoveryMode,
+            )
+            ExampageToolbar(
+                viewModel,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(13.dp)
+            )
+        }
     }
 }
 

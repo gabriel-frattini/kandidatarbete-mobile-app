@@ -18,6 +18,7 @@ import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.serializable.Answer
 import com.example.dat068_tentamina.model.serializable.SerializableTextbox
 import com.example.dat068_tentamina.model.serializable.SerializableLine
+import com.example.dat068_tentamina.model.Question
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toColor
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toOffset
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toSerializable
@@ -35,11 +36,12 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.Date
 import java.util.TimeZone
+import com.mohamedrejeb.richeditor.model.RichTextState
 
 
 class ExamInfo() : ViewModel() {
     private val apiHelper = ServerHandler()
-    private var questions = mutableListOf<String>()
+    var questions = mutableListOf<Question>()
     private val externalStorageManager = ExternalStorageManager()
     private val _recoveryMode = MutableStateFlow(false)
     private lateinit var tentaViewModel: TentaViewModel
@@ -290,7 +292,10 @@ class ExamInfo() : ViewModel() {
                         questions.clear() // Ensure previous data is removed
 
                         for (i in 0 until json.length()) {
-                            questions.add(json.getString(i))
+                            val text = json.getJSONObject(i).getString("text")
+                            val type = json.getJSONObject(i).getString("type")
+                            val question = Question(i, text, type)
+                            questions.add(question)
                         }
                         questionLength = questions.size
                     }
@@ -330,7 +335,7 @@ class ExamInfo() : ViewModel() {
     }
 
     fun clearInfo() {
-        questions = mutableListOf<String>()
+        questions = mutableListOf<Question>()
         tentaViewModel = TentaViewModel()
         user = ""
         personalID = ""
