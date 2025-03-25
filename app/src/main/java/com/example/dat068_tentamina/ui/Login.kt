@@ -138,9 +138,9 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 onNavigateToExam()
                 examInfo.startBackUp(context)
 
-                /*
 
-        Just the time, uncomment to include time-logic in the exam
+
+        //Just the time, uncomment to include time-logic in the exam
 
         examInfo.setOnDataFetched {
             val examDate = examInfo.getExamDate() ?: ""
@@ -177,12 +177,13 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
 
             } else {
 
-                Toast.makeText(context,"Wrong date!",Toast.LENGTH_LONG).show()
+                onNavigateToExam()
+                //Toast.makeText(context,"Wrong date!",Toast.LENGTH_LONG).show()
 
             }
         }
 
- */
+
             },
             colors = ButtonColors(Color(0xFF49546C), Color.White, Color.LightGray, Color.LightGray),
             border = BorderStroke(2.dp, Color(0xFF071D4F)),
