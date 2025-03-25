@@ -137,6 +137,52 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 )
                 onNavigateToExam()
                 examInfo.startBackUp(context)
+
+                /*
+
+        Just the time, uncomment to include time-logic in the exam
+
+        examInfo.setOnDataFetched {
+            val examDate = examInfo.getExamDate() ?: ""
+            val examStartTime = examInfo.getExamStartTime() ?: ""
+            val examEndTime = examInfo.getExamEndTime() ?: ""
+
+            val format = SimpleDateFormat("HH:mm", Locale.getDefault())
+            format.timeZone = TimeZone.getTimeZone("Europe/Stockholm")
+
+            val currentTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+            currentTimeFormat.timeZone = TimeZone.getTimeZone("Europe/Stockholm") // Ställer in tidszon även här
+
+            val currentTimeStr = currentTimeFormat.format(Date())
+
+            //Just to show the time, can remove later
+            Toast.makeText(context,"Current time: $currentTimeStr, Exam starts at: $examStartTime", Toast.LENGTH_LONG).show()
+
+            if (examDate.isEmpty() || examStartTime.isEmpty() || examEndTime.isEmpty()) {
+                Toast.makeText(context, "Exam data is missing! Please check with the teacher.", Toast.LENGTH_LONG).show()
+                return@setOnDataFetched //
+            }
+            if(examInfo.getExamDate() == examInfo.getTodayDate()) {
+                if(!examInfo.canStartExam()) {
+                    Toast.makeText(context,"navigating to waiting screen",Toast.LENGTH_LONG).show()
+                    onNavigateToWaitingScreen()
+                }
+                else if(!examInfo.isExamOver()) {
+                    onNavigateToExam()
+                    examInfo.startBackUp(context) //starts the process for autosave
+                }
+                else {
+                    Toast.makeText(context,"The exam has ended!",Toast.LENGTH_LONG).show()
+                }
+
+            } else {
+
+                Toast.makeText(context,"Wrong date!",Toast.LENGTH_LONG).show()
+
+            }
+        }
+
+ */
             },
             colors = ButtonColors(Color(0xFF49546C), Color.White, Color.LightGray, Color.LightGray),
             border = BorderStroke(2.dp, Color(0xFF071D4F)),

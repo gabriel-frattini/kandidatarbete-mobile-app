@@ -58,6 +58,19 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                /*
+        LaunchedEffect(Unit) {
+            examInfo.setOnDataFetched {
+                isDataFetched = true
+                if (!examInfo.canStartExam()) {
+                    currentScreen = Screen.Waiting
+                } else {
+                    currentScreen = Screen.Overlay
+             }
+            }
+        }
+*/
+
                 when (currentScreen) {
                     Screen.Overlay -> {
                         if (isDataFetched) {
@@ -87,6 +100,16 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+                    /*
+                Screen.Waiting -> {
+                    WaitingScreen(
+                        examInfo = examInfo,
+                        onNavigateToExam = {
+                        currentScreen = Screen.Overlay
+                    }
+                )
+            }
+                    */
                 }
             }
         }
