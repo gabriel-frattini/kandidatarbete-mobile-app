@@ -26,6 +26,8 @@ class TentaViewModel {
     private var redoHistory = mutableMapOf<Int, Stack<List<CanvasObject>>>()
     private var redoLive = mutableMapOf<Int, Stack<List<CanvasObject>>>()
 
+    var answeredQuestions = mutableStateOf(setOf<Int>()) //För att markera frågor som besvarade/obesvarade
+
     var textMode = mutableStateOf(false)
     var strokeWidth = 2.dp
     var eraserWidth = 6.dp
@@ -47,8 +49,13 @@ class TentaViewModel {
 
     @Synchronized
     fun addObject(obj: CanvasObject) {
-            objects.add(obj)
-            questions[currentQuestion.intValue] = _objects.toList()
+        objects.add(obj)
+        questions[currentQuestion.intValue] = _objects.toList()
+
+        // Kontrollera om det finns objekt på frågan och markera den som besvarad om så är fallet
+        if (_objects.isNotEmpty()) {
+            answeredQuestions.value = answeredQuestions.value + currentQuestion.intValue
+        }
     }
 
     fun getAnswers(): MutableMap<Int, List<CanvasObject>> {
@@ -70,6 +77,10 @@ class TentaViewModel {
                 history[Q]?.pop()
             }
         }
+        // Kolla om det finns några objekt kvar, annars markera frågan som obesvarad
+        if (_objects.isEmpty()) {
+            answeredQuestions.value = answeredQuestions.value - currentQuestion.intValue
+        }
     }
 
     fun redo() {
@@ -88,6 +99,12 @@ class TentaViewModel {
             questions[currentQuestion.intValue] = _objects.toList()
             redoHistory[Q]?.pop()
             redoLive[Q]?.pop()
+        }
+        // Uppdatera answeredQuestions beroende på om det finns objekt kvar
+        if (_objects.isEmpty()) {
+            answeredQuestions.value = answeredQuestions.value - currentQuestion.intValue
+        } else {
+            answeredQuestions.value = answeredQuestions.value + currentQuestion.intValue
         }
     }
 
@@ -150,5 +167,12 @@ class TentaViewModel {
     fun removeObject(obj: CanvasObject) {
         _objects.remove(obj)
         questions[currentQuestion.intValue] = _objects.toList()
+
+        if (_objects.isEmpty()) {
+            answeredQuestions.value = answeredQuestions.value - currentQuestion.intValue
+        } else {
+            // Om det finns objekt kvar på frågan, lägg till den i answeredQuestions om den inte redan finns där
+            answeredQuestions.value = answeredQuestions.value + currentQuestion.intValue
+        }
     }
 }

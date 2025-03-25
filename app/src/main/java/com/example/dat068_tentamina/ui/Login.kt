@@ -42,10 +42,10 @@ import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
+fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
     val examId = remember { mutableStateOf(TextFieldValue("")) }
     val anonymousCode = remember { mutableStateOf(TextFieldValue("")) }
-    var context = LocalContext.current
+    val context = LocalContext.current
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -67,30 +67,27 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
             fontSize = 64.sp,
             lineHeight = 80.sp,
             textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold, // Gör texten fetstil
+            fontWeight = FontWeight.Bold,
             color = Color(0xFF071D4F),
             modifier = Modifier
                 .padding(16.dp)
                 .align(alignment = Alignment.CenterHorizontally)
         )
-        // Underrubrik
         Text(
             text = "Please enter the following information:",
-            fontSize = 25.sp, // Mindre än huvudrubriken
+            fontSize = 25.sp,
             lineHeight = 30.sp,
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF30436E),
             modifier = Modifier
-                .padding(bottom = 20.dp) // Avstånd till nästa komponent
+                .padding(bottom = 20.dp)
                 .align(alignment = Alignment.CenterHorizontally)
         )
         Row(
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-        )
-        {
+            modifier = Modifier.fillMaxWidth()
+        ) {
             val maxCharExamId = 6
             OutlinedTextField(
                 value = examId.value,
@@ -98,17 +95,17 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 label = { Text("Exam id") },
                 maxLines = 1,
                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                modifier = Modifier
-                    .padding(20.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = Color.White, // Insidan av textfält
-                    focusedBorderColor = Color.Black,
-                    unfocusedBorderColor = Color.Gray,
+                modifier = Modifier.padding(20.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Black,
+                    unfocusedIndicatorColor = Color.Gray,
                     focusedLabelColor = Color.Black,
                     unfocusedLabelColor = Color.Gray
                 )
-
             )
+
             val maxCharAnonymousCode = 15
             OutlinedTextField(
                 value = anonymousCode.value,
@@ -118,12 +115,12 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 label = { Text("Anonymous Code") },
                 maxLines = 1,
                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                modifier = Modifier
-                    .padding(20.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = Color.White,
-                    focusedBorderColor = Color.Black,
-                    unfocusedBorderColor = Color.Gray,
+                modifier = Modifier.padding(20.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Black,
+                    unfocusedIndicatorColor = Color.Gray,
                     focusedLabelColor = Color.Black,
                     unfocusedLabelColor = Color.Gray
                 )
@@ -145,18 +142,16 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 .padding(10.dp)
                 .requiredHeight(75.dp)
                 .requiredWidth(250.dp)
-
         ) {
             Text("Check in", fontSize = 25.sp)
         }
         ElevatedButton(
             onClick = {
-                // TODO: (Gabbe) Button for recovery mode, do we open a modal here to ask proctor to verify with code?
-                if ((examInfo.verifyBackupCredentials(
+                if (examInfo.verifyBackupCredentials(
                         exId = examId.component1().text,
                         aCode = anonymousCode.component1().text,
                         context = context
-                    ))
+                    )
                 ) {
                     examInfo.fetchData(
                         courseCode = examId.component1().text,
@@ -165,7 +160,6 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                     examInfo.enableRecoveryMode()
                     onNavigateToExam()
                 }
-
             },
             colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
             border = BorderStroke(2.dp, Color(0xFF30436E)),
@@ -176,7 +170,6 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 .requiredWidth(250.dp)
         ) {
             Text("Recover exam", fontSize = 25.sp)
-
         }
         Image(
             painter = painterResource(id = R.drawable.chalmers_logo),
@@ -185,8 +178,6 @@ fun Login(examInfo: ExamInfo,onNavigateToExam: () -> Unit) {
                 .padding(20.dp)
                 .fillMaxSize()
                 .align(alignment = Alignment.CenterHorizontally)
-          )
-
+        )
     }
-
 }
