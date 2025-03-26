@@ -195,7 +195,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
             drawRect(Color.White)
 
             // 2. Background (under strokes)
-            when (viewModel.backgroundType.value) {
+            when (viewModel.currentBackgroundType) {
                 BackgroundType.GRAPH -> drawGraphPaperPattern(size)
                 BackgroundType.LINED -> drawLinedPaperPattern(size)
                 BackgroundType.DOTTED -> drawDottedPattern(size)
@@ -205,15 +205,15 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
             // 3. User content
             viewModel.objects.forEach { it.draw(this) }
 
-            // 4. Redraw background on top to "restore" erased areas
-            when (viewModel.backgroundType.value) {
+            // 4. Redraw background on top to restore erased areas
+            when (viewModel.currentBackgroundType) {
                 BackgroundType.GRAPH -> drawGraphPaperPattern(size)
                 BackgroundType.LINED -> drawLinedPaperPattern(size)
                 BackgroundType.DOTTED -> drawDottedPattern(size)
                 else -> {}
             }
         }
-
+//Junyi
 
         if (viewModel.textMode.value && textOffset != Offset.Zero) {
             var adjustedOffset = Offset(
