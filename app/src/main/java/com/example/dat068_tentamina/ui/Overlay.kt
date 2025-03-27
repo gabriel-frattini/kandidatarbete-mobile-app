@@ -2,15 +2,12 @@ package com.example.dat068_tentamina.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
 
-import androidx.compose.foundation.clickable
+
 import ExamInfo
-import androidx.compose.foundation.background
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -50,7 +46,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.R
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlinx.coroutines.launch
@@ -60,30 +55,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.dat068_tentamina.MainActivity
 import PdfConverter
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.TabRowDefaults.Divider
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.TopAppBarDefaults
-import kotlin.math.sign
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolean , activity: MainActivity, signout: () -> Unit) {
-
-
+fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode: Boolean, activity: MainActivity, signout: () -> Unit) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    // State to track current tab
     var selectedTabIndex by remember { mutableStateOf(0) }
-    // List of tab titles
     val questionNumbers = viewModel.questions.keys.sorted()
     val tabs = questionNumbers.map { "Question $it" }
-
-    var showRichEditor by remember { mutableStateOf(examInfo.questions[viewModel.currentQuestion.intValue - 1].type == "text") }
-
+    val tabWidth = 150.dp
+    val selectedTabColor = Color(0xFFFAF8FF)
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -100,34 +98,31 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
                             IconButton(
                                 onClick = {
                                     scope.launch {
-                                        drawerState.apply {
-                                            if (isClosed) open() else close()
-                                        }
+                                        drawerState.apply { if (isClosed) open() else close() }
                                     }
                                 },
-                                modifier = Modifier.background(Color.White, shape = RoundedCornerShape(12.dp)) //Utseende på menyknappen
-                            ) {
+                                modifier = Modifier.background(Color(0xFFFAF8FF), shape = RoundedCornerShape(12.dp))                            ) {
                                 Icon(Icons.Filled.Menu, contentDescription = null)
                             }
                         },
                         title = {
                             Row(
                                 modifier = Modifier
-                                    .offset(y = 10.dp) //tabsen "sticker upp"
-                                    .horizontalScroll(rememberScrollState()), // Gör så att tabsen kan scrollas??? FUNKAR EJ ELLER?
-                                horizontalArrangement = Arrangement.Start, // Vänster-allignade tabs
+                                    .offset(y = 10.dp)
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.Start,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 tabs.forEachIndexed { index, title ->
                                     Box(
                                         modifier = Modifier
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                            .padding(horizontal = 4.dp, vertical = 4.dp)
+                                            .width(tabWidth)
                                             .background(
-                                                color = if (selectedTabIndex == index) Color.White
-                                                else Color(0xFFDFDFDF), // Bakgrundsfärg för icke-selectade flikar
+                                                color = if (selectedTabIndex == index) selectedTabColor else Color(0xFFDFDFDF),
                                                 shape = RoundedCornerShape(
                                                     topStart = 6.dp, topEnd = 6.dp,
-                                                    bottomStart = 0.dp, bottomEnd = 0.dp // Gör botten helt fyrkantig
+                                                    bottomStart = 0.dp, bottomEnd = 0.dp
                                                 )
                                             )
                                             .clickable {
@@ -138,18 +133,21 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
                                                     canvasHeight = 2400.dp
                                                 )
                                             }
-                                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                                        contentAlignment = Alignment.Center
                                     ) {
                                         Text(
                                             text = title,
-                                            color = if (selectedTabIndex == index) Color.Black else Color.Black.copy(alpha = 0.7f)
+                                            color = if (selectedTabIndex == index) Color.Black else Color.Black.copy(alpha = 0.7f),
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier.fillMaxWidth()
                                         )
                                     }
                                 }
                             }
                         },
                         colors = TopAppBarDefaults.mediumTopAppBarColors(
-                            containerColor = Color(0xFF49546C) // Färg för top bar
+                            containerColor = Color(0xFF49546C)
                         )
                     )
                 }
@@ -160,6 +158,7 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode : Boolea
         }
     }
 }
+
 
 @Composable
 fun ExamScreen(
@@ -249,41 +248,160 @@ fun ExampageToolbar(
     }
 }
 
-
 @Composable
-fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activity: MainActivity, examInfo: ExamInfo, signout: () -> Unit) {
+fun MenuScreen(
+    modifier: Modifier = Modifier,
+    viewModel: TentaViewModel,
+    activity: MainActivity,
+    examInfo: ExamInfo,
+    signout: () -> Unit
+) {
     val scrollState = rememberScrollState()
-    var submitDialog by remember { mutableStateOf(false)}
+    var submitDialog by remember { mutableStateOf(false) }
     var showInfoDialog by remember { mutableStateOf(false) }
 
+    val answeredQuestions by viewModel.answeredQuestions
 
-    if (showInfoDialog) {
-        // TODO: (Gabbe) Use `AlertDialog` to display error messages if something goes wrong
-        AlertDialog(
-            onDismissRequest = { showInfoDialog = false },
-            title = {Text("Student Information")},
-            text = {Text("Course: ${examInfo.course}\nAnonymous Code: ${examInfo.user} \nBirth ID: ${examInfo.personalID}")},
-            confirmButton = {},
-            dismissButton = {
-                Button(onClick = { showInfoDialog = false }) {
-                    Text("Back")
+    Column(
+        modifier = Modifier
+            .background(Color(0xFFF8F9FF))
+            .fillMaxHeight()
+            .requiredWidth(400.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .background(Color(0xFFBEC6D9))
+        ) {
+            IconButton(
+                onClick = { showInfoDialog = true },
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 40.dp, top = 16.dp)
+                    .size(50.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(Color(0xFFFAF8FF))
+                    .padding(5.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = "Profile Icon",
+                    modifier = Modifier.fillMaxSize(),
+                    tint = Color.Black
+                )
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Question Overview:",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+        }
+
+        Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(horizontal = 20.dp))
+
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 40.dp)
+        ) {
+            Column(
+                modifier = Modifier.verticalScroll(scrollState)
+            ) {
+                viewModel.questions.keys.forEach { questionNumber ->
+                    val isAnswered = answeredQuestions.contains(questionNumber)
+                    val textColor = if (isAnswered) Color(0xFF071D4F) else Color(0xFF7E7E7E)
+
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F9FF)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .requiredHeight(60.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxHeight(),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                Text(
+                                    text = "Question $questionNumber",
+                                    color = textColor,
+                                    fontSize = 20.sp
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier.padding(start = 8.dp),
+                                contentAlignment = Alignment.CenterEnd
+                            ) {
+                                if (isAnswered) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Check,
+                                        contentDescription = "Answered",
+                                        tint = Color(0xFF071D4F),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
-        )
+        }
+
+        Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(horizontal = 20.dp))
+
+        OutlinedButton(
+            onClick = { submitDialog = true },
+            modifier = Modifier
+                .padding(20.dp)
+                .width(200.dp)
+                .height(60.dp)
+                .align(Alignment.CenterHorizontally),
+            shape = RoundedCornerShape(30.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = Color.White,
+                contentColor = Color(0xFF071D4F),
+                disabledContentColor = Color.LightGray
+            ),
+            border = BorderStroke(2.dp, Color(0xFF071D4F))
+        ) {
+            Text(
+                text = "Submit Exam",
+                color = Color(0xFF071D4F),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+        }
     }
 
-
+    // Submit Dialog submit exam
     if (submitDialog) {
         AlertDialog(
             onDismissRequest = { submitDialog = false },
-            title = { Text("Submit exam") },
+            title = { Text("Submit Exam") },
             text = { Text("Are you sure you want to submit the exam?") },
             confirmButton = {
                 Button(onClick = {
                     val answers = viewModel.getAnswers()
-                    val pdfFile = PdfConverter.createPdfFromAnswers(answers, 2560, 1700, activity) // Adjust dimensions as needed
+                    val pdfFile = PdfConverter.createPdfFromAnswers(answers, 2560, 1700, activity)
                     examInfo.sendPdf(pdfFile)
                     signout()
+                    submitDialog = false
                 }) {
                     Text("Confirm")
                 }
@@ -295,117 +413,20 @@ fun MenuScreen(modifier: Modifier = Modifier, viewModel: TentaViewModel, activit
             }
         )
     }
-
-
-    Column(
-        verticalArrangement = Arrangement.Top,
-        modifier = Modifier
-            .background(Color.LightGray)
-            .fillMaxHeight()
-            .verticalScroll(scrollState)
-            .requiredWidth(500.dp)
-    ) {
-        // Information card
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .requiredHeight(100.dp)
-                .align(alignment = Alignment.CenterHorizontally)
-        ) {
-            IconButton(
-                onClick = { showInfoDialog = true},
-                modifier = Modifier
-                    .padding(10.dp)
-                    .fillMaxSize()
-                    .align(alignment = Alignment.CenterHorizontally)
-            ) {
-                Icon(
-                    Icons.Filled.Info, contentDescription = "Information",
-                    modifier = Modifier
-                        .size(100.dp, 100.dp)
-                        .align(alignment = Alignment.CenterHorizontally)
-                )
-            }
-        }
-
-
-        // List of questions
-        for ((key, value) in viewModel.questions) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .requiredHeight(100.dp)
-                    .align(alignment = Alignment.CenterHorizontally)
-            ) {
-                Button(
-                    onClick = {
-                        viewModel.changeQuestion(
-                            qNr = key,
-                            newObjects = viewModel.objects.toList(),
-                            canvasHeight = 2400.dp
-                        )
-                    },
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .fillMaxSize()
-                        .align(alignment = Alignment.CenterHorizontally)
-
-
-                ) {
-                    Text(
-                        text = "Question $key",
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .align(alignment = Alignment.CenterVertically)
-                    )
+    //Dialog för studentinformationen
+    if (showInfoDialog) {
+        AlertDialog(
+            onDismissRequest = { showInfoDialog = false },
+            title = { Text("Student Information") },
+            text = {
+                Text("Course: ${examInfo.course}\nAnonymous Code: ${examInfo.user} \nBirth ID: ${examInfo.personalID}")
+            },
+            confirmButton = {},
+            dismissButton = {
+                Button(onClick = { showInfoDialog = false }) {
+                    Text("Back")
                 }
             }
-        }
-
-
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF4CAF50)
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .requiredHeight(100.dp)
-                .align(alignment = Alignment.CenterHorizontally)
-                .padding(top = 10.dp)
-
-
-        ) {
-            Button(
-                onClick = {
-                    submitDialog = true
-                },
-
-
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4CAF50)
-                ),
-
-
-                modifier = Modifier
-                    .padding(10.dp)
-                    .fillMaxSize()
-                    .align(alignment = Alignment.CenterHorizontally)
-            ) {
-                Text(
-                    text = "Submit",
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.align(alignment = Alignment.CenterVertically)
-                )
-            }
-        }
+        )
     }
 }
-
-
