@@ -55,7 +55,7 @@ fun BackgroundPicker(viewModel: TentaViewModel) {
                     )
                 },
                 onClick = {
-                    viewModel.backgroundType.value = BackgroundType.BLANK
+                    viewModel.setBackgroundTypeForCurrentQuestion(BackgroundType.BLANK)
                     expanded = false
                 }
             )
@@ -68,7 +68,7 @@ fun BackgroundPicker(viewModel: TentaViewModel) {
                     )
                 },
                 onClick = {
-                    viewModel.backgroundType.value = BackgroundType.GRAPH
+                    viewModel.setBackgroundTypeForCurrentQuestion(BackgroundType.GRAPH)
                     expanded = false
                 }
             )
@@ -81,7 +81,7 @@ fun BackgroundPicker(viewModel: TentaViewModel) {
                     )
                 },
                 onClick = {
-                    viewModel.backgroundType.value = BackgroundType.LINED
+                    viewModel.setBackgroundTypeForCurrentQuestion(BackgroundType.LINED)
                     expanded = false
                 }
             )
@@ -94,7 +94,7 @@ fun BackgroundPicker(viewModel: TentaViewModel) {
                     )
                 },
                 onClick = {
-                    viewModel.backgroundType.value = BackgroundType.DOTTED
+                    viewModel.setBackgroundTypeForCurrentQuestion(BackgroundType.DOTTED)
                     expanded = false
                 }
             )

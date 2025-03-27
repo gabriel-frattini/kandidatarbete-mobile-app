@@ -4,10 +4,13 @@ import Stack
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.CanvasObject
+import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.collections.remove
@@ -34,7 +37,7 @@ class TentaViewModel {
     var eraser = false
     var currentQuestion = mutableIntStateOf(1)
     var currentCanvasHeight = mutableStateOf(2400.dp)
-    var backgroundType = mutableStateOf(BackgroundType.BLANK) //Junyi
+    val backgroundTypes = mutableStateMapOf<Int, BackgroundType>() //Junyi
     val objects: SnapshotStateList<CanvasObject> get() = _objects
     var questions = mutableMapOf<Int, List<CanvasObject>>()
     var height = mutableMapOf<Int, Dp>().apply {
@@ -45,7 +48,9 @@ class TentaViewModel {
     }
     var scrollPositions = mutableMapOf<Int, Int>()
     var questionChangeTrigger = mutableStateOf(0)
-
+    val currentBackgroundType: BackgroundType
+        get() = backgroundTypes[currentQuestion.intValue] ?: BackgroundType.BLANK
+//Junyi
 
     @Synchronized
     fun addObject(obj: CanvasObject) {
@@ -57,6 +62,10 @@ class TentaViewModel {
             answeredQuestions.value = answeredQuestions.value + currentQuestion.intValue
         }
     }
+
+    fun setBackgroundTypeForCurrentQuestion(type: BackgroundType) {
+        backgroundTypes[currentQuestion.intValue] = type
+    }//Junyi
 
     fun getAnswers(): MutableMap<Int, List<CanvasObject>> {
         return questions
