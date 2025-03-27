@@ -30,21 +30,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dat068_tentamina.R
-import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import java.time.LocalDate
 import ExamInfo
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
-    val examId = remember { mutableStateOf(TextFieldValue("")) }
-    val anonymousCode = remember { mutableStateOf(TextFieldValue("")) }
+    val examId = remember { mutableStateOf(TextFieldValue()) }
+    val anonymousCode = remember { mutableStateOf(TextFieldValue()) }
     val context = LocalContext.current
 
     Column(
