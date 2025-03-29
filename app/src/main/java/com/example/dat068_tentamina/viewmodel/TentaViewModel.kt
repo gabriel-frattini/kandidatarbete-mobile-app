@@ -4,10 +4,13 @@ import Stack
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.CanvasObject
+import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.collections.remove
@@ -26,13 +29,15 @@ class TentaViewModel {
     private var redoHistory = mutableMapOf<Int, Stack<List<CanvasObject>>>()
     private var redoLive = mutableMapOf<Int, Stack<List<CanvasObject>>>()
 
+    var answeredQuestions = mutableStateOf(setOf<Int>()) //För att markera frågor som besvarade/obesvarade
+
     var textMode = mutableStateOf(false)
     var strokeWidth = 2.dp
     var eraserWidth = 6.dp
     var eraser = false
     var currentQuestion = mutableIntStateOf(1)
     var currentCanvasHeight = mutableStateOf(2400.dp)
-    var backgroundType = mutableStateOf(BackgroundType.BLANK) //Junyi
+    val backgroundTypes = mutableStateMapOf<Int, BackgroundType>() //Junyi
     val objects: SnapshotStateList<CanvasObject> get() = _objects
     var questions = mutableMapOf<Int, List<CanvasObject>>()
     var height = mutableMapOf<Int, Dp>().apply {
@@ -43,13 +48,24 @@ class TentaViewModel {
     }
     var scrollPositions = mutableMapOf<Int, Int>()
     var questionChangeTrigger = mutableStateOf(0)
-
+    val currentBackgroundType: BackgroundType
+        get() = backgroundTypes[currentQuestion.intValue] ?: BackgroundType.BLANK
+//Junyi
 
     @Synchronized
     fun addObject(obj: CanvasObject) {
-            objects.add(obj)
-            questions[currentQuestion.intValue] = _objects.toList()
+        objects.add(obj)
+        questions[currentQuestion.intValue] = _objects.toList()
+
+        // Kontrollera om det finns objekt på frågan och markera den som besvarad om så är fallet
+        if (_objects.isNotEmpty()) {
+            answeredQuestions.value = answeredQuestions.value + currentQuestion.intValue
+        }
     }
+
+    fun setBackgroundTypeForCurrentQuestion(type: BackgroundType) {
+        backgroundTypes[currentQuestion.intValue] = type
+    }//Junyi
 
     fun getAnswers(): MutableMap<Int, List<CanvasObject>> {
         return questions
@@ -70,6 +86,10 @@ class TentaViewModel {
                 history[Q]?.pop()
             }
         }
+        // Kolla om det finns några objekt kvar, annars markera frågan som obesvarad
+        if (_objects.isEmpty()) {
+            answeredQuestions.value = answeredQuestions.value - currentQuestion.intValue
+        }
     }
 
     fun redo() {
@@ -88,6 +108,12 @@ class TentaViewModel {
             questions[currentQuestion.intValue] = _objects.toList()
             redoHistory[Q]?.pop()
             redoLive[Q]?.pop()
+        }
+        // Uppdatera answeredQuestions beroende på om det finns objekt kvar
+        if (_objects.isEmpty()) {
+            answeredQuestions.value = answeredQuestions.value - currentQuestion.intValue
+        } else {
+            answeredQuestions.value = answeredQuestions.value + currentQuestion.intValue
         }
     }
 
@@ -150,5 +176,12 @@ class TentaViewModel {
     fun removeObject(obj: CanvasObject) {
         _objects.remove(obj)
         questions[currentQuestion.intValue] = _objects.toList()
+
+        if (_objects.isEmpty()) {
+            answeredQuestions.value = answeredQuestions.value - currentQuestion.intValue
+        } else {
+            // Om det finns objekt kvar på frågan, lägg till den i answeredQuestions om den inte redan finns där
+            answeredQuestions.value = answeredQuestions.value + currentQuestion.intValue
+        }
     }
 }
