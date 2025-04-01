@@ -50,15 +50,30 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             .background(Color(0xFFBEC6D9))
             .fillMaxSize()
     ) {
-        Text(
-            text = LocalDate.now().toString(),
-            fontSize = 25.sp,
-            lineHeight = 25.sp,
-            textAlign = TextAlign.Right,
-            modifier = Modifier
-                .padding(20.dp)
-                .align(alignment = Alignment.End)
-        )
+        // make the two dates stay in the same row left and right
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = LocalDate.now().toString(),
+                fontSize = 25.sp,
+                lineHeight = 25.sp,
+                textAlign = TextAlign.Left,
+                modifier = Modifier
+                    .padding(20.dp)
+                    .align(alignment = Alignment.Start)
+            )
+            Text(
+                text = LocalDate.now().toString(),
+                fontSize = 25.sp,
+                lineHeight = 25.sp,
+                textAlign = TextAlign.Right,
+                modifier = Modifier
+                    .padding(20.dp)
+                    .align(alignment = Alignment.End)
+            )
+        }
         Text(
             text = "Exam Check-in",
             fontSize = 64.sp,
