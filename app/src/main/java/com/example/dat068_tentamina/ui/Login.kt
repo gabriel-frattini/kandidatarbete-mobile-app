@@ -40,8 +40,8 @@ import androidx.compose.ui.platform.LocalContext
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
-    val examId = remember { mutableStateOf(TextFieldValue()) }
-    val anonymousCode = remember { mutableStateOf(TextFieldValue()) }
+    val examId = remember { mutableStateOf(TextFieldValue("test_tenta")) }
+    val anonymousCode = remember { mutableStateOf(TextFieldValue("TEST_TENTA-7615-DUT")) }
     val context = LocalContext.current
     val recoveryCode = remember { mutableStateOf(TextFieldValue()) }
     val errorMessage = remember { mutableStateOf("") }
@@ -65,7 +65,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             OutlinedTextField(
                 value = recoveryCode.value,
                 onValueChange = { recoveryCode.value = it },
-                label = { Text("Recover exam") },
+                label = { Text("Recovery code") },
                 maxLines = 1,
                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                 modifier = Modifier
@@ -102,7 +102,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
                 border = BorderStroke(1.dp, Color(0xFF30436E)),
                 modifier = Modifier.padding(start = 8.dp)
             ) {
-                Text("Verify", fontSize = 16.sp)
+                Text("Recover", fontSize = 16.sp)
             }
         }
 
@@ -198,6 +198,20 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
         ) {
             Text("Check in", fontSize = 25.sp)
         }
+        OutlinedButton(
+            onClick = {
+                // switch to the recovery mode view
+            },
+            colors = ButtonColors(Color(0xFF49546C), Color.White, Color.LightGray, Color.LightGray),
+            border = BorderStroke(2.dp, Color(0xFF071D4F)),
+            modifier = Modifier
+                .align(alignment = Alignment.CenterHorizontally)
+                .padding(10.dp)
+                .requiredHeight(75.dp)
+                .requiredWidth(250.dp)
+        ) {
+            Text("Start recovery", fontSize = 25.sp)
+        }
         if (errorMessage.value.isNotEmpty()) {
             Text(
                 text = errorMessage.value,
@@ -212,5 +226,74 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
                 .fillMaxSize()
                 .align(alignment = Alignment.CenterHorizontally)
         )
+    }
+}
+
+
+// recovery mode view
+@Composable
+fun RecoveryMode() {
+    Box(
+        modifier = Modifier
+            .background(Color(0xFFBEC6D9))
+            .fillMaxSize()
+    ) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = "Recovery mode",
+                fontSize = 64.sp,
+                lineHeight = 80.sp,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF071D4F),
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+            Text(
+                text = "Please enter the recovery code",
+                fontSize = 25.sp,
+                lineHeight = 30.sp,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF30436E),
+                modifier = Modifier
+                    .padding(bottom = 20.dp)
+                    .align(alignment = Alignment.CenterHorizontally)
+            )
+            OutlinedTextField(
+                value = TextFieldValue(""),
+                onValueChange = {},
+                label = { Text("Recovery code") },
+                maxLines = 1,
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                modifier = Modifier.padding(20.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Black,
+                    unfocusedIndicatorColor = Color.Gray,
+                    focusedLabelColor = Color.Black,
+                    unfocusedLabelColor = Color.Gray
+                )
+            )
+            OutlinedButton(
+                onClick = {
+                    // verify the recovery code
+                },
+                colors = ButtonColors(Color(0xFF49546C), Color.White, Color.LightGray, Color.LightGray),
+                border = BorderStroke(2.dp, Color(0xFF071D4F)),
+                modifier = Modifier
+                    .align(alignment = Alignment.CenterHorizontally)
+                    .padding(10.dp)
+                    .requiredHeight(75.dp)
+                    .requiredWidth(250.dp)
+            ) {
+                Text("Recover", fontSize = 25.sp)
+            }
+        }
     }
 }

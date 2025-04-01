@@ -14,7 +14,7 @@ import java.io.IOException
 
 class ServerHandler {
     private val SCHEME = "http"
-    private val HOST = "10.0.21.205"
+    private val HOST = "192.168.1.194"
     private val PORT = 3000
     private val client = OkHttpClient()
 
@@ -61,7 +61,7 @@ class ServerHandler {
         })
     }
 
-    suspend fun getExam(courseCode: String, anonymousCode: String): JSONObject?  {
+    suspend fun getExam(courseCode: String, anonymousCode: String): JSONObject? {
         // Construct the URL with query parameters
         val url = HttpUrl.Builder()
             .scheme("http")
@@ -94,14 +94,16 @@ class ServerHandler {
             }
         }
     }
+
     suspend fun verifyRecoveryCode(recoveryCode: String): Boolean {
         // Construct the URL with query parameters
+        println(recoveryCode)
         val url = HttpUrl.Builder()
             .scheme(SCHEME)
             .host(HOST)
             .port(PORT)
-            .addPathSegment("verifyRecoveryCode") // Replace with your endpoint
-            .addQueryParameter("recoveryCode", recoveryCode)
+            .addPathSegment("verifyRecoveryCode")
+            .addQueryParameter("code", recoveryCode)
             .build()
 
         // Build the request
@@ -114,10 +116,13 @@ class ServerHandler {
         return withContext(Dispatchers.IO) { // Perform the network request on the IO dispatcher
             try {
                 val response = client.newCall(request).execute()
+                println(response.body?.string())
                 response.isSuccessful // Return true if the response is successful
             } catch (e: Exception) {
+                println(e)
                 e.printStackTrace()
                 false // Return false if an exception occurs
             }
         }
     }
+}
