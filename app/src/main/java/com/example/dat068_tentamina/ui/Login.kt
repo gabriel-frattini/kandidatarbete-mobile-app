@@ -58,47 +58,51 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             modifier = Modifier.fillMaxWidth()
         ) {
 
-        OutlinedTextField(
-            value = recoveryCode.value,
-            onValueChange = { recoveryCode.value = it },
-            label = { Text("Recover exam") },
-            maxLines = 1,
-            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-            trailingIcon = {
-                OutlinedButton(
-                    onClick = {
-                        examInfo.verifyRecoveryCode(
-                            recoveryCode = recoveryCode.value.text,
-                            onSuccess = {
-                                examInfo.fetchData(
-                                    courseCode = examId.component1().text,
-                                    anonymousCode = anonymousCode.component1().text
-                                )
-                                examInfo.enableRecoveryMode()
-                                onNavigateToExam()
-                            },
-                            onError = {
-                                errorMessage.value = "Invalid recovery code"
-                            }
-                        )
-                    },
-                    colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
-                    border = BorderStroke(1.dp, Color(0xFF30436E))
-                ) {
-                    Text("Verify", fontSize = 12.sp)
-                }
-            },
-            modifier = Modifier
-                .padding(20.dp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedIndicatorColor = Color.Black,
-                unfocusedIndicatorColor = Color.Gray,
-                focusedLabelColor = Color.Black,
-                unfocusedLabelColor = Color.Gray
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(20.dp)
+        ) {
+            OutlinedTextField(
+                value = recoveryCode.value,
+                onValueChange = { recoveryCode.value = it },
+                label = { Text("Recover exam") },
+                maxLines = 1,
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                modifier = Modifier.weight(1f),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Black,
+                    unfocusedIndicatorColor = Color.Gray,
+                    focusedLabelColor = Color.Black,
+                    unfocusedLabelColor = Color.Gray
+                )
             )
-        )
+
+            OutlinedButton(
+                onClick = {
+                    examInfo.verifyRecoveryCode(
+                        recoveryCode = recoveryCode.value.text,
+                        onSuccess = {
+                            examInfo.fetchData(
+                                courseCode = examId.component1().text,
+                                anonymousCode = anonymousCode.component1().text
+                            )
+                            examInfo.enableRecoveryMode()
+                            onNavigateToExam()
+                        },
+                        onError = {
+                            errorMessage.value = "Invalid recovery code"
+                        }
+                    )
+                },
+                colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
+                border = BorderStroke(1.dp, Color(0xFF30436E)),
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Text("Verify", fontSize = 16.sp)
+            }
+        }
 
             Text(
                 text = LocalDate.now().toString(),
