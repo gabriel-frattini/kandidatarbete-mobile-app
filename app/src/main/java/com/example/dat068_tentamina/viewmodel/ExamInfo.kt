@@ -204,6 +204,8 @@ class ExamInfo() : ViewModel() {
             }
         }
     }
+
+    fun verifyBackupCredentials(aCode: String, exId: String, context: Context): Boolean {
         Log.d("Backup", "Verifying backup credentials for anonymousCode: $aCode and examID: $exId")
 
         // Step 1: Check if a backup file exists
