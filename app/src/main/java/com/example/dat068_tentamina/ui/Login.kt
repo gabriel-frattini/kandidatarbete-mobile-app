@@ -50,7 +50,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
     val errorMessage = remember { mutableStateOf("") }
 
     if (isRecoveryMode.value) {
-        RecoveryMode()
+        RecoveryMode(onBackToLogin = { isRecoveryMode.value = false })
     } else {
         Column(
             verticalArrangement = Arrangement.Center,
@@ -109,6 +109,18 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
                 modifier = Modifier.padding(start = 8.dp)
             ) {
                 Text("Recover", fontSize = 16.sp)
+            }
+            OutlinedButton(
+                onClick = onBackToLogin,
+                colors = ButtonColors(Color(0xFF49546C), Color.White, Color.LightGray, Color.LightGray),
+                border = BorderStroke(2.dp, Color(0xFF071D4F)),
+                modifier = Modifier
+                    .align(alignment = Alignment.CenterHorizontally)
+                    .padding(10.dp)
+                    .requiredHeight(75.dp)
+                    .requiredWidth(250.dp)
+            ) {
+                Text("Back to Login", fontSize = 25.sp)
             }
         }
 
@@ -239,7 +251,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
 
 // recovery mode view
 @Composable
-fun RecoveryMode() {
+fun RecoveryMode(onBackToLogin: () -> Unit) {
     Box(
         modifier = Modifier
             .background(Color(0xFFBEC6D9))
