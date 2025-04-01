@@ -142,21 +142,52 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
         ) {
             Text("Check in", fontSize = 25.sp)
         }
-        ElevatedButton(
+        val recoveryCode = remember { mutableStateOf(TextFieldValue()) }
+        val errorMessage = remember { mutableStateOf("") }
+
+        OutlinedTextField(
+            value = recoveryCode.value,
+            onValueChange = { recoveryCode.value = it },
+            label = { Text("Recover exam") },
+            maxLines = 1,
+            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+            modifier = Modifier
+                .padding(20.dp)
+                .align(alignment = Alignment.CenterHorizontally),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Black,
+                unfocusedIndicatorColor = Color.Gray,
+                focusedLabelColor = Color.Black,
+                unfocusedLabelColor = Color.Gray
+            )
+        )
+
+        if (errorMessage.value.isNotEmpty()) {
+            Text(
+                text = errorMessage.value,
+                color = Color.Red,
+                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+            )
+        }
+
+        OutlinedButton(
             onClick = {
-                if (examInfo.verifyBackupCredentials(
-                        exId = examId.component1().text,
-                        aCode = anonymousCode.component1().text,
-                        context = context
-                    )
-                ) {
-                    examInfo.fetchData(
-                        courseCode = examId.component1().text,
-                        anonymousCode = anonymousCode.component1().text
-                    )
-                    examInfo.enableRecoveryMode()
-                    onNavigateToExam()
-                }
+                examInfo.verifyRecoveryCode(
+                    recoveryCode = recoveryCode.value.text,
+                    onSuccess = {
+                        examInfo.fetchData(
+                            courseCode = examId.component1().text,
+                            anonymousCode = anonymousCode.component1().text
+                        )
+                        examInfo.enableRecoveryMode()
+                        onNavigateToExam()
+                    },
+                    onError = {
+                        errorMessage.value = "Invalid recovery code"
+                    }
+                )
             },
             colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
             border = BorderStroke(2.dp, Color(0xFF30436E)),
@@ -166,7 +197,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
                 .requiredHeight(75.dp)
                 .requiredWidth(250.dp)
         ) {
-            Text("Recover exam", fontSize = 25.sp)
+            Text("Verify Recovery Code", fontSize = 25.sp)
         }
         Image(
             painter = painterResource(id = R.drawable.chalmers_logo),

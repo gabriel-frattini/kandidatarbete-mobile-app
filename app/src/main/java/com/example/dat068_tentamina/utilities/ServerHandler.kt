@@ -94,4 +94,30 @@ class ServerHandler {
             }
         }
     }
-}
+    suspend fun verifyRecoveryCode(recoveryCode: String): Boolean {
+        // Construct the URL with query parameters
+        val url = HttpUrl.Builder()
+            .scheme(SCHEME)
+            .host(HOST)
+            .port(PORT)
+            .addPathSegment("verifyRecoveryCode") // Replace with your endpoint
+            .addQueryParameter("recoveryCode", recoveryCode)
+            .build()
+
+        // Build the request
+        val request = Request.Builder()
+            .url(url)
+            .get()
+            .build()
+
+        // Execute the request
+        return withContext(Dispatchers.IO) { // Perform the network request on the IO dispatcher
+            try {
+                val response = client.newCall(request).execute()
+                response.isSuccessful // Return true if the response is successful
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false // Return false if an exception occurs
+            }
+        }
+    }
