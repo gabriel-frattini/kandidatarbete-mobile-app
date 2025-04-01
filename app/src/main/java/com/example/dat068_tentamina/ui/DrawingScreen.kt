@@ -149,9 +149,11 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                     }
                                 }
                             }
-                        )
-
-                        detectTapGestures { offset ->
+                        )}
+                    }.pointerInput(isScrollMode) {
+                        if(!isScrollMode) {
+                        detectTapGestures (
+                            onTap = { offset ->
                             if (viewModel.textMode.value) {
                                 val tappedTextBox = findTappedTextBox(viewModel, offset)
                                 if (tappedTextBox != null) {
@@ -187,7 +189,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                     }
                                 }
                             }
-                        }
+                        })
                     }
                 }
         ) {
