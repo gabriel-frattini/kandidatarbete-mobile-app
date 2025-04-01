@@ -68,7 +68,9 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
                 label = { Text("Recover exam") },
                 maxLines = 1,
                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .padding(20.dp)
+                    .requiredWidth(250.dp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
