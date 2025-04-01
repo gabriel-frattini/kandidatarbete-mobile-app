@@ -151,6 +151,30 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             label = { Text("Recover exam") },
             maxLines = 1,
             textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+            trailingIcon = {
+                OutlinedButton(
+                    onClick = {
+                        examInfo.verifyRecoveryCode(
+                            recoveryCode = recoveryCode.value.text,
+                            onSuccess = {
+                                examInfo.fetchData(
+                                    courseCode = examId.component1().text,
+                                    anonymousCode = anonymousCode.component1().text
+                                )
+                                examInfo.enableRecoveryMode()
+                                onNavigateToExam()
+                            },
+                            onError = {
+                                errorMessage.value = "Invalid recovery code"
+                            }
+                        )
+                    },
+                    colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
+                    border = BorderStroke(1.dp, Color(0xFF30436E))
+                ) {
+                    Text("Verify", fontSize = 12.sp)
+                }
+            },
             modifier = Modifier
                 .padding(20.dp)
                 .align(alignment = Alignment.CenterHorizontally),
@@ -170,34 +194,6 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
                 color = Color.Red,
                 modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
             )
-        }
-
-        OutlinedButton(
-            onClick = {
-                examInfo.verifyRecoveryCode(
-                    recoveryCode = recoveryCode.value.text,
-                    onSuccess = {
-                        examInfo.fetchData(
-                            courseCode = examId.component1().text,
-                            anonymousCode = anonymousCode.component1().text
-                        )
-                        examInfo.enableRecoveryMode()
-                        onNavigateToExam()
-                    },
-                    onError = {
-                        errorMessage.value = "Invalid recovery code"
-                    }
-                )
-            },
-            colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
-            border = BorderStroke(2.dp, Color(0xFF30436E)),
-            modifier = Modifier
-                .align(alignment = Alignment.CenterHorizontally)
-                .padding(10.dp)
-                .requiredHeight(75.dp)
-                .requiredWidth(250.dp)
-        ) {
-            Text("Verify Recovery Code", fontSize = 25.sp)
         }
         Image(
             painter = painterResource(id = R.drawable.chalmers_logo),
