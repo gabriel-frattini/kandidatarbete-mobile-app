@@ -21,6 +21,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,18 +42,22 @@ import androidx.compose.ui.platform.LocalContext
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
+    val isRecoveryMode = remember { mutableStateOf(false) }
     val examId = remember { mutableStateOf(TextFieldValue("test_tenta")) }
     val anonymousCode = remember { mutableStateOf(TextFieldValue("TEST_TENTA-7615-DUT")) }
     val context = LocalContext.current
     val recoveryCode = remember { mutableStateOf(TextFieldValue()) }
     val errorMessage = remember { mutableStateOf("") }
 
-    Column(
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .background(Color(0xFFBEC6D9))
-            .fillMaxSize()
-    ) {
+    if (isRecoveryMode.value) {
+        RecoveryMode()
+    } else {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .background(Color(0xFFBEC6D9))
+                .fillMaxSize()
+        ) {
         // make the two dates stay in the same row left and right
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -200,7 +206,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
         }
         OutlinedButton(
             onClick = {
-                // switch to the recovery mode view
+                isRecoveryMode.value = true
             },
             colors = ButtonColors(Color(0xFF49546C), Color.White, Color.LightGray, Color.LightGray),
             border = BorderStroke(2.dp, Color(0xFF071D4F)),
@@ -226,6 +232,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
                 .fillMaxSize()
                 .align(alignment = Alignment.CenterHorizontally)
         )
+        }
     }
 }
 
