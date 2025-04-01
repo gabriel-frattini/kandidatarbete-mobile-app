@@ -51,6 +51,7 @@ import com.example.dat068_tentamina.model.TextBox
 import com.example.dat068_tentamina.viewmodel.BackgroundType
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlin.math.max
+import com.mohamedrejeb.richeditor.model.RichTextState
 
 @SuppressLint("RememberReturnType")
 @Composable
