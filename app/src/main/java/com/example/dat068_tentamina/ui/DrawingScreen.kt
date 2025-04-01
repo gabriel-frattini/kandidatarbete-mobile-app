@@ -340,11 +340,16 @@ private fun createTextBox(
     textMeasurer: androidx.compose.ui.text.TextMeasurer
 ) {
     val measuredText = textMeasurer.measure(AnnotatedString(textValue), softWrap = true)
+    val richTextState = RichTextState().apply {
+        setMarkdown(textValue)
+    }
     viewModel.addObject(
         TextBox(
             position = textOffset,
             text = textValue,
-            textLayout = measuredText
+            textLayout = measuredText,
+            richText = richTextState,
+            richTextContent = textValue
         )
     )
 }
