@@ -69,7 +69,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
                 maxLines = 1,
                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                 modifier = Modifier
-                    .padding(20.dp)
+                    .padding(0.dp)
                     .requiredWidth(250.dp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
