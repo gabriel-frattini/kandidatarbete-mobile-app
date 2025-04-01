@@ -43,6 +43,8 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
     val examId = remember { mutableStateOf(TextFieldValue()) }
     val anonymousCode = remember { mutableStateOf(TextFieldValue()) }
     val context = LocalContext.current
+    val recoveryCode = remember { mutableStateOf(TextFieldValue()) }
+    val errorMessage = remember { mutableStateOf("") }
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -55,15 +57,49 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = LocalDate.now().toString(),
-                fontSize = 25.sp,
-                lineHeight = 25.sp,
-                textAlign = TextAlign.Left,
-                modifier = Modifier
-                    .padding(20.dp)
-                    .align(alignment = Alignment.Start)
+
+        OutlinedTextField(
+            value = recoveryCode.value,
+            onValueChange = { recoveryCode.value = it },
+            label = { Text("Recover exam") },
+            maxLines = 1,
+            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+            trailingIcon = {
+                OutlinedButton(
+                    onClick = {
+                        examInfo.verifyRecoveryCode(
+                            recoveryCode = recoveryCode.value.text,
+                            onSuccess = {
+                                examInfo.fetchData(
+                                    courseCode = examId.component1().text,
+                                    anonymousCode = anonymousCode.component1().text
+                                )
+                                examInfo.enableRecoveryMode()
+                                onNavigateToExam()
+                            },
+                            onError = {
+                                errorMessage.value = "Invalid recovery code"
+                            }
+                        )
+                    },
+                    colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
+                    border = BorderStroke(1.dp, Color(0xFF30436E))
+                ) {
+                    Text("Verify", fontSize = 12.sp)
+                }
+            },
+            modifier = Modifier
+                .padding(20.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Black,
+                unfocusedIndicatorColor = Color.Gray,
+                focusedLabelColor = Color.Black,
+                unfocusedLabelColor = Color.Gray
             )
+        )
+
             Text(
                 text = LocalDate.now().toString(),
                 fontSize = 25.sp,
@@ -71,7 +107,6 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
                 textAlign = TextAlign.Right,
                 modifier = Modifier
                     .padding(20.dp)
-                    .align(alignment = Alignment.End)
             )
         }
         Text(
@@ -157,57 +192,10 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
         ) {
             Text("Check in", fontSize = 25.sp)
         }
-        val recoveryCode = remember { mutableStateOf(TextFieldValue()) }
-        val errorMessage = remember { mutableStateOf("") }
-
-        OutlinedTextField(
-            value = recoveryCode.value,
-            onValueChange = { recoveryCode.value = it },
-            label = { Text("Recover exam") },
-            maxLines = 1,
-            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-            trailingIcon = {
-                OutlinedButton(
-                    onClick = {
-                        examInfo.verifyRecoveryCode(
-                            recoveryCode = recoveryCode.value.text,
-                            onSuccess = {
-                                examInfo.fetchData(
-                                    courseCode = examId.component1().text,
-                                    anonymousCode = anonymousCode.component1().text
-                                )
-                                examInfo.enableRecoveryMode()
-                                onNavigateToExam()
-                            },
-                            onError = {
-                                errorMessage.value = "Invalid recovery code"
-                            }
-                        )
-                    },
-                    colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
-                    border = BorderStroke(1.dp, Color(0xFF30436E))
-                ) {
-                    Text("Verify", fontSize = 12.sp)
-                }
-            },
-            modifier = Modifier
-                .padding(20.dp)
-                .align(alignment = Alignment.CenterHorizontally),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedIndicatorColor = Color.Black,
-                unfocusedIndicatorColor = Color.Gray,
-                focusedLabelColor = Color.Black,
-                unfocusedLabelColor = Color.Gray
-            )
-        )
-
         if (errorMessage.value.isNotEmpty()) {
             Text(
                 text = errorMessage.value,
-                color = Color.Red,
-                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                color = Color.Red
             )
         }
         Image(
