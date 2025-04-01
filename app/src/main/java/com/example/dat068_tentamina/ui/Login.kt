@@ -324,9 +324,7 @@ fun RecoveryMode(onBackToLogin: () -> Unit) {
                 )
             )
             OutlinedButton(
-                onClick = {
-                    // verify the recovery code
-                },
+                onClick = onBackToLogin,
                 colors = ButtonColors(Color(0xFF49546C), Color.White, Color.LightGray, Color.LightGray),
                 border = BorderStroke(2.dp, Color(0xFF071D4F)),
                 modifier = Modifier
@@ -335,7 +333,7 @@ fun RecoveryMode(onBackToLogin: () -> Unit) {
                     .requiredHeight(75.dp)
                     .requiredWidth(250.dp)
             ) {
-                Text("Recover", fontSize = 25.sp)
+                Text("Back to Login", fontSize = 25.sp)
             }
         }
     }
