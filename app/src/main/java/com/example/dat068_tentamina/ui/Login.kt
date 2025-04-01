@@ -83,7 +83,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             color = Color(0xFF071D4F),
             modifier = Modifier
                 .padding(16.dp)
-                .align(alignment = Alignment.CenterHorizontally)
+                .align(Alignment.CenterHorizontally)
         )
         Text(
             text = "Please enter the following information:",
