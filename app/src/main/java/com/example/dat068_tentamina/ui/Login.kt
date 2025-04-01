@@ -135,6 +135,18 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
         ) {
             Text("Back to Login", fontSize = 25.sp)
         }
+        OutlinedButton(
+            onClick = onBackToLogin,
+            colors = ButtonColors(Color(0xFF49546C), Color.White, Color.LightGray, Color.LightGray),
+            border = BorderStroke(2.dp, Color(0xFF071D4F)),
+            modifier = Modifier
+                .align(alignment = Alignment.CenterHorizontally)
+                .padding(10.dp)
+                .requiredHeight(75.dp)
+                .requiredWidth(250.dp)
+        ) {
+            Text("Back to Login", fontSize = 25.sp)
+        }
 
             Text(
                 text = LocalDate.now().toString(),
