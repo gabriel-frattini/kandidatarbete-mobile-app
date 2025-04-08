@@ -313,6 +313,10 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
                 )
                 viewModel.addObject(newTextBox)
             }
+        } else {
+            if (textBox != null) {
+                viewModel.removeObject(textBox)
+            }
         }
     }
 
