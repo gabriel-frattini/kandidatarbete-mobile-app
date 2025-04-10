@@ -21,6 +21,7 @@ import com.example.dat068_tentamina.model.serializable.SerializableLine
 import com.example.dat068_tentamina.model.Question
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toColor
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toOffset
+import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toRichTextState
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toSerializable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -129,7 +130,9 @@ class ExamInfo() : ViewModel() {
                             TextBox(
                                 position = serializedObject.position.toOffset(),
                                 textLayout = textMeasurer.measure(AnnotatedString(serializedObject.text)),
-                                text = serializedObject.text
+                                text = serializedObject.text,
+                                richText = serializedObject.richText?.toRichTextState(),
+                                richTextContent = serializedObject.richTextContent,
                             )
                         }
                         else -> {
@@ -163,7 +166,7 @@ class ExamInfo() : ViewModel() {
         scope.launch {
             while (isActive) { // Ensures the coroutine can be canceled
                 updateStorageObject(context)
-                delay(30 * 1000L) // 30 second delay
+                delay(5 * 1000L) // 5 second delay
                 Log.d("ExamInfo", "{${tentaViewModel.getAnswers()}}")
             }
         }

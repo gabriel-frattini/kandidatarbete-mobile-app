@@ -54,9 +54,9 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
 
 @Composable
 fun RecoveryView(onBackToLogin: () -> Unit, onNavigateToExam: () -> Unit, examInfo: ExamInfo) {
-    val examId = remember { mutableStateOf(TextFieldValue()) }
-    val anonymousCode = remember { mutableStateOf(TextFieldValue()) }
-    val recoveryCode = remember { mutableStateOf(TextFieldValue()) }
+    val examId = remember { mutableStateOf(TextFieldValue("hej123")) }
+    val anonymousCode = remember { mutableStateOf(TextFieldValue("HEJ123-8457-ENH")) }
+    val recoveryCode = remember { mutableStateOf(TextFieldValue("hej123-7504-dvu")) }
     val errorMessage = remember { mutableStateOf("") }
         Column(
             verticalArrangement = Arrangement.Center,
@@ -211,8 +211,8 @@ fun RecoveryView(onBackToLogin: () -> Unit, onNavigateToExam: () -> Unit, examIn
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginView(examInfo: ExamInfo, onNavigateToExam: () -> Unit, onNavigateToRecovery: () -> Unit) {
-    val examId = remember { mutableStateOf(TextFieldValue()) }
-    val anonymousCode = remember { mutableStateOf(TextFieldValue()) }
+    val examId = remember { mutableStateOf(TextFieldValue("hej123")) }
+    val anonymousCode = remember { mutableStateOf(TextFieldValue("HEJ123-8457-ENH")) }
     val context = LocalContext.current
         Column(
             verticalArrangement = Arrangement.Center,
