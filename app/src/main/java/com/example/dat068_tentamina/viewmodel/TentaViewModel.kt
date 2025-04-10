@@ -22,6 +22,7 @@ enum class BackgroundType {
     BLANK, GRAPH, LINED, DOTTED
 }  //Junyi
 
+
 class TentaViewModel {
     private var _objects = mutableStateListOf<CanvasObject>()
 

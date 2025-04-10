@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.toArgb
 import com.example.dat068_tentamina.model.CanvasObject
 import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
+import com.example.dat068_tentamina.viewmodel.BackgroundType
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -22,7 +23,7 @@ class PdfConverter {
         private var reusableBitmap: Bitmap? = null
 
         fun createPdfFromAnswers(
-            answers: MutableMap<Int, List<CanvasObject>>,
+            answers: Map<Int, Pair<List<CanvasObject>, BackgroundType>>, //Junyi
             pageWidth: Int,
             pageHeight: Int,
             context: Context
@@ -34,7 +35,8 @@ class PdfConverter {
             // Create a reusable bitmap
             reusableBitmap = Bitmap.createBitmap(pageWidth, pageHeight, Bitmap.Config.ARGB_8888)
 
-            answers.forEach { (_, drawingObjects) ->
+            answers.forEach { (_, pair) -> //Junyi
+                val (drawingObjects, backgroundType) = pair //Junyi
                 var scrollOffset = 0f
                 val totalHeight = getTotalHeight(drawingObjects, context, pageWidth)
 
@@ -46,6 +48,7 @@ class PdfConverter {
                     // Render the portion of CanvasObjects visible within the current page's viewport
                     val bitmap = createBitmapFromCanvasObject(
                         drawingObjects = drawingObjects,
+                        backgroundType = backgroundType,
                         width = pageWidth,
                         height = pageHeight,
                         context = context,
@@ -80,6 +83,7 @@ class PdfConverter {
 
         fun createBitmapFromCanvasObject(
             drawingObjects: List<CanvasObject>,
+            backgroundType: BackgroundType,
             width: Int,
             height: Int,
             context: Context,
@@ -93,6 +97,13 @@ class PdfConverter {
             // Clear the bitmap before drawing
             canvas.drawColor(android.graphics.Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR)
 
+            //Draw the background pattern
+            when (backgroundType) {
+                BackgroundType.GRAPH -> drawGraphPattern(canvas, width, height)
+                BackgroundType.LINED -> drawLinedPattern(canvas, width, height)
+                BackgroundType.DOTTED -> drawDottedPattern(canvas, width, height)
+                else -> {} // Blank
+            }//Junyi
             // Reserve space for metadata
             val metaHeightPx = 50f
 
@@ -192,6 +203,12 @@ class PdfConverter {
                     }
                 }
             }
+            when (backgroundType) {
+                BackgroundType.GRAPH -> drawGraphPattern(canvas, width, height)
+                BackgroundType.LINED -> drawLinedPattern(canvas, width, height)
+                BackgroundType.DOTTED -> drawDottedPattern(canvas, width, height)
+                else -> {} // Blank
+            }//Junyi
 
             return bitmap
         }
@@ -211,5 +228,44 @@ class PdfConverter {
                 }
             } ?: 0f
         }
+        fun drawGraphPattern(canvas: android.graphics.Canvas, width: Int, height: Int) {
+            val paint = Paint().apply {
+                color = android.graphics.Color.LTGRAY
+                strokeWidth = 1f
+            }
+            val step = 50
+            for (x in 0..width step step) {
+                canvas.drawLine(x.toFloat(), 0f, x.toFloat(), height.toFloat(), paint)
+            }
+            for (y in 0..height step step) {
+                canvas.drawLine(0f, y.toFloat(), width.toFloat(), y.toFloat(), paint)
+            }
+        }
+
+        fun drawLinedPattern(canvas: android.graphics.Canvas, width: Int, height: Int) {
+            val paint = Paint().apply {
+                color = android.graphics.Color.LTGRAY
+                strokeWidth = 1f
+            }
+            val step = 50
+            for (y in 0..height step step) {
+                canvas.drawLine(0f, y.toFloat(), width.toFloat(), y.toFloat(), paint)
+            }
+        }
+
+        fun drawDottedPattern(canvas: android.graphics.Canvas, width: Int, height: Int) {
+            val paint = Paint().apply {
+                color = android.graphics.Color.LTGRAY
+                style = Paint.Style.FILL
+            }
+            val step = 50
+            val radius = 3f
+            for (x in 0..width step step) {
+                for (y in 0..height step step) {
+                    canvas.drawCircle(x.toFloat(), y.toFloat(), radius, paint)
+                } //Junyi
+            }
+        }
+
     }
 }

@@ -3,6 +3,7 @@ package com.example.dat068_tentamina.ui
 
 import ExamInfo
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -34,10 +35,16 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.AnnotatedString
@@ -68,10 +75,7 @@ fun RichTextStyleButton(
 ) {
     IconButton(
         modifier = Modifier
-            // Workaround to prevent the rich editor
-            // from losing focus when clicking on the button
-            // (Happens only on Desktop)
-            .focusProperties { canFocus = false },
+            .focusProperties { canFocus = true },
         onClick = onClick,
         colors = IconButtonDefaults.iconButtonColors(
             contentColor = if (isSelected) {
@@ -96,6 +100,7 @@ fun RichTextStyleButton(
                 )
         )
     }
+
 }
 
 
@@ -265,6 +270,8 @@ fun RichTextStyleRow(
 @Composable
 fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode : Boolean) {
     var richTextState = rememberRichTextState()
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
     val textMeasurer = rememberTextMeasurer()
 
     // Sync initial content from TextBox when ViewModel changes (e.g., on question change)
@@ -313,12 +320,21 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
                 )
                 viewModel.addObject(newTextBox)
             }
+        } else {
+            if (textBox != null) {
+                viewModel.removeObject(textBox)
+            }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .focusable(true)
             .padding(16.dp)
     ) {
         Spacer(Modifier.height(48.dp))
@@ -328,17 +344,30 @@ fun RichEditorScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMod
             state = richTextState,
         )
 
-        RichTextEditor(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(vertical = 16.dp),
-            state = richTextState,
-                        singleLine = false,
-            colors = RichTextEditorDefaults.richTextEditorColors(
-                containerColor = Color.White,
-                focusedIndicatorColor = Color.White,
-                unfocusedIndicatorColor = Color.White,
-            ),
+                .focusRequester(focusRequester)
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused) {
+                            keyboardController?.show()
+                        } else {
+                            focusRequester.requestFocus()
+                        }
+                    }
+            ) {
+            RichTextEditor(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 16.dp),
+                state = richTextState,
+                            singleLine = false,
+                colors = RichTextEditorDefaults.richTextEditorColors(
+                    containerColor = Color.White,
+                    focusedIndicatorColor = Color.White,
+                    unfocusedIndicatorColor = Color.White,
+                )
         )
+    }
     }
 }
