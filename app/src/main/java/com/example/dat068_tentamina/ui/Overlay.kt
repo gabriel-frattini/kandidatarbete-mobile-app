@@ -21,8 +21,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Undo
+import androidx.compose.material.icons.filled.Redo
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -81,9 +81,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.Modifier
-
-
-
+import com.example.dat068_tentamina.viewmodel.BackgroundType
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -408,7 +406,7 @@ fun ExampageToolbar(
                 viewModel.undo()
             }) {
                 Icon(
-                    Icons.Filled.ArrowBack,
+                    Icons.Filled.Undo,
                     contentDescription = "Undo"
                 )
             }
@@ -417,7 +415,7 @@ fun ExampageToolbar(
                 viewModel.redo()
             }) {
                 Icon(
-                    Icons.Filled.ArrowForward,
+                    Icons.Filled.Redo,
                     contentDescription = "Redo"
                 )
             }
@@ -584,8 +582,12 @@ fun MenuScreen(
             text = { Text("Are you sure you want to submit the exam?") },
             confirmButton = {
                 Button(onClick = {
-                    val answers = viewModel.getAnswers()
-                    val pdfFile = PdfConverter.createPdfFromAnswers(answers, 2560, 1700, activity)
+                    val answersWithBackground = viewModel.getAnswers().mapValues { (questionId, objects) ->
+                        val background = viewModel.backgroundTypes[questionId] ?: BackgroundType.BLANK
+                        objects to background
+                    }
+                    val pdfFile = PdfConverter.createPdfFromAnswers(answersWithBackground, 2560, 1700, activity)
+
                     examInfo.sendPdf(pdfFile)
                     signout()
                     submitDialog = false

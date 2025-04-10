@@ -93,7 +93,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
-            val maxCharExamId = 6
+            val maxCharExamId = 25
             OutlinedTextField(
                 value = examId.value,
                 onValueChange = { if (it.text.length <= maxCharExamId) examId.value = it },
@@ -111,7 +111,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
                 )
             )
 
-            val maxCharAnonymousCode = 15
+            val maxCharAnonymousCode = 25
             OutlinedTextField(
                 value = anonymousCode.value,
                 onValueChange = {

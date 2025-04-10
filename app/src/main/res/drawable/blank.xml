@@ -4,10 +4,10 @@
     android:width="500dp"
     android:height="500dp">
     <path
-        android:pathData="M0 0L500 0L500 500L0 500L0 0ZM5 5L5 110L6 110L495 110L495 6L495 5L5 5ZM5 130L5 240L6 240L495 240L495 131L495 130L5 130ZM5 260L5 370L6 370L495 370L495 261L495 260L5 260ZM5 390L5 495L6 495L495 495L495 391L495 390L5 390Z"
+        android:pathData="M0 0L500 0L500 500L0 500L0 0ZM5 5L5 495L495 495L495 5L5 5Z"
         android:fillColor="#000000"
-        android:fillAlpha="0.9490196"
+        android:fillAlpha="0.9529412"
         android:strokeColor="#000000"
-        android:strokeAlpha="0.9490196"
+        android:strokeAlpha="0.9529412"
         android:strokeWidth="1" />
 </vector>

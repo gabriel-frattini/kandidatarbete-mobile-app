@@ -51,6 +51,7 @@ import com.example.dat068_tentamina.model.TextBox
 import com.example.dat068_tentamina.viewmodel.BackgroundType
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlin.math.max
+import com.mohamedrejeb.richeditor.model.RichTextState
 
 @SuppressLint("RememberReturnType")
 @Composable
@@ -116,80 +117,86 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                 .height(canvasHeight)
                 //.background(Color.White) --> Junyi
 
-        )
+        ){
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(isScrollMode) {
+                .then(
                     if (!isScrollMode) {
-                        detectDragGestures(
-                            onDragStart = {
-                                if (!viewModel.textMode.value) viewModel.saveHistory()
-                            },
-                            onDrag = { change, dragAmount ->
-                                if (!viewModel.textMode.value) {
-                                    change.consume()
-                                    val start = change.position - dragAmount
-                                    val end = change.position
+                        Modifier
+                            .pointerInput(Unit) {
+                                detectDragGestures(
+                                    onDragStart = {
+                                        if (!viewModel.textMode.value) viewModel.saveHistory()
+                                    },
+                                    onDrag = { change, dragAmount ->
+                                        if (!viewModel.textMode.value) {
+                                            change.consume()
+                                            val start = change.position - dragAmount
+                                            val end = change.position
 
-                                    if (isInBounds(start, size) && isInBounds(end, size)) {
-                                        val newLine = Line(
-                                            start = start,
-                                            end = end,
-                                            strokeWidth = if (viewModel.eraser) viewModel.eraserWidth else viewModel.strokeWidth,
-                                            color = if (viewModel.eraser) Color.White else Color.Black
-                                        ).apply {
-                                            if (viewModel.eraser) cap = StrokeCap.Square
+                                            if (isInBounds(start, size) && isInBounds(end, size)) {
+                                                val newLine = Line(
+                                                    start = start,
+                                                    end = end,
+                                                    strokeWidth = if (viewModel.eraser) viewModel.eraserWidth else viewModel.strokeWidth,
+                                                    color = if (viewModel.eraser) Color.White else Color.Black
+                                                ).apply {
+                                                    if (viewModel.eraser) cap = StrokeCap.Square
+                                                }
+
+                                                viewModel.addObject(newLine)
+                                                expandCanvasIfNeeded(newLine, density, canvasHeight) {
+                                                    canvasHeight = it
+                                                }
+                                            }
                                         }
+                                    }
+                                )
+                            }
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onTap = { offset ->
+                                        if (viewModel.textMode.value) {
+                                            val tappedTextBox = findTappedTextBox(viewModel, offset)
+                                            if (tappedTextBox != null) {
+                                                viewModel.removeObject(tappedTextBox)
+                                                viewModel.saveHistory()
+                                                textOffset = tappedTextBox.position
+                                                textValue = tappedTextBox.text
+                                            } else if (textValue.isEmpty()) {
+                                                textOffset = offset
+                                            } else {
+                                                createTextBox(viewModel, textValue, textOffset, textMeasurer)
+                                                textValue = ""
+                                                textOffset = Offset.Zero
+                                                viewModel.textMode.value = false
+                                                viewModel.eraser = false
+                                            }
+                                        } else {
+                                            val tappedTextBox = findTappedTextBox(viewModel, offset)
+                                            if (tappedTextBox == null) {
+                                                val dotLine = Line(
+                                                    start = offset,
+                                                    end = offset,
+                                                    strokeWidth = if (viewModel.eraser) viewModel.eraserWidth else viewModel.strokeWidth,
+                                                    color = if (viewModel.eraser) Color.White else Color.Black
+                                                ).apply {
+                                                    if (viewModel.eraser) cap = StrokeCap.Square
+                                                }
 
-                                        viewModel.addObject(newLine)
-                                        expandCanvasIfNeeded(newLine, density, canvasHeight) {
-                                            canvasHeight = it
+                                                viewModel.saveHistory()
+                                                viewModel.addObject(dotLine)
+                                                expandCanvasIfNeeded(dotLine, density, canvasHeight) {
+                                                    canvasHeight = it
+                                                }
+                                            }
                                         }
                                     }
-                                }
+                                )
                             }
-                        )
-
-                        detectTapGestures { offset ->
-                            if (viewModel.textMode.value) {
-                                val tappedTextBox = findTappedTextBox(viewModel, offset)
-                                if (tappedTextBox != null) {
-                                    viewModel.removeObject(tappedTextBox)
-                                    viewModel.saveHistory()
-                                    textOffset = tappedTextBox.position
-                                    textValue = tappedTextBox.text
-                                } else if (textValue.isEmpty()) {
-                                    textOffset = offset
-                                } else {
-                                    createTextBox(viewModel, textValue, textOffset, textMeasurer)
-                                    textValue = ""
-                                    textOffset = Offset.Zero
-                                    viewModel.textMode.value = false
-                                    viewModel.eraser = false
-                                }
-                            } else {
-                                val tappedTextBox = findTappedTextBox(viewModel, offset)
-                                if (tappedTextBox == null) {
-                                    val dotLine = Line(
-                                        start = offset,
-                                        end = offset,
-                                        strokeWidth = if (viewModel.eraser) viewModel.eraserWidth else viewModel.strokeWidth,
-                                        color = if (viewModel.eraser) Color.White else Color.Black
-                                    ).apply {
-                                        if (viewModel.eraser) cap = StrokeCap.Square
-                                    }
-
-                                    viewModel.saveHistory()
-                                    viewModel.addObject(dotLine)
-                                    expandCanvasIfNeeded(dotLine, density, canvasHeight) {
-                                        canvasHeight = it
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                    } else Modifier
+                )
         ) {
             // 1. Base white
             drawRect(Color.White)
@@ -212,6 +219,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                 BackgroundType.DOTTED -> drawDottedPattern(size)
                 else -> {}
             }
+        }
         }
 //Junyi
 
@@ -338,11 +346,16 @@ private fun createTextBox(
     textMeasurer: androidx.compose.ui.text.TextMeasurer
 ) {
     val measuredText = textMeasurer.measure(AnnotatedString(textValue), softWrap = true)
+    val richTextState = RichTextState().apply {
+        setMarkdown(textValue)
+    }
     viewModel.addObject(
         TextBox(
             position = textOffset,
             text = textValue,
-            textLayout = measuredText
+            textLayout = measuredText,
+            richText = richTextState,
+            richTextContent = textValue
         )
     )
 }
