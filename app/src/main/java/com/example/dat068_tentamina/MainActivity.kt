@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     examInfo.setOnDataFetched {
 
-                        examInfo.setTestExamData("", "15:17", "16:00")
+                        //examInfo.setTestExamData("2025-04-10", "15:17", "16:00")
 
                         val examDate = examInfo.getExamDate()
                         val examStartTime = examInfo.getExamStartTime()
@@ -101,10 +101,12 @@ class MainActivity : ComponentActivity() {
                         }
 
                         if (examDate.isEmpty()) {
-                            alertDialogTitle = "Exam Info"
-                            alertDialogMessage = "Exam data is missing! Please check with the teacher."
+                            //alertDialogTitle = "Exam Info"
+                            //alertDialogMessage = "Exam data is missing! Please check with the teacher."
                             //alertDialogConfirmAction = {  }
-                            showAlertDialog = true
+                            //showAlertDialog = true
+                            //return@setOnDataFetched
+                            currentScreen = Screen.Overlay
                             return@setOnDataFetched
                         }
 
