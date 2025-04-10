@@ -122,9 +122,10 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode: Boolean
                 delay(delayMillis)
             }
         }
-        show15MinWarning = true
-        delay(5000L)
-        show15MinWarning = false
+        //kommentera bort ifall du använder tid. Antigen från tp eller från set metoden i main.
+        //show15MinWarning = true
+        //delay(5000L)
+        //show15MinWarning = false
     }
 
 
@@ -166,7 +167,7 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode: Boolean
             }
         }
 
-        examOverDialogVisible = true
+        //examOverDialogVisible = true kommentera bort ifall du använder tid. Antigen från tp eller från set metoden i main.
     }
 
 
