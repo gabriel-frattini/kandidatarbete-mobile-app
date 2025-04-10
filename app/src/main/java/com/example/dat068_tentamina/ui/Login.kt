@@ -36,12 +36,20 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
+import androidx.compose.runtime.LaunchedEffect
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+
+
 fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
-    val examId = remember { mutableStateOf(TextFieldValue()) }
-    val anonymousCode = remember { mutableStateOf(TextFieldValue()) }
+    val examId = remember { mutableStateOf(TextFieldValue("test_tenta")) }
+    val anonymousCode = remember { mutableStateOf(TextFieldValue("TEST_TENTA-7615-DUT")) }
     val context = LocalContext.current
 
     Column(
@@ -57,7 +65,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             textAlign = TextAlign.Right,
             modifier = Modifier
                 .padding(20.dp)
-                .align(alignment = Alignment.End)
+                .align(Alignment.End)
         )
         Text(
             text = "Exam Check-in",
@@ -68,7 +76,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             color = Color(0xFF071D4F),
             modifier = Modifier
                 .padding(16.dp)
-                .align(alignment = Alignment.CenterHorizontally)
+                .align(Alignment.CenterHorizontally)
         )
         Text(
             text = "Please enter the following information:",
@@ -79,7 +87,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             color = Color(0xFF30436E),
             modifier = Modifier
                 .padding(bottom = 20.dp)
-                .align(alignment = Alignment.CenterHorizontally)
+                .align(Alignment.CenterHorizontally)
         )
         Row(
             horizontalArrangement = Arrangement.Center,
@@ -125,17 +133,16 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
         }
         OutlinedButton(
             onClick = {
+                // Endast trigga fetchData, callbacken i MainActivity hanterar resten
                 examInfo.fetchData(
-                    courseCode = examId.component1().text,
-                    anonymousCode = anonymousCode.component1().text
+                    courseCode = examId.value.text,
+                    anonymousCode = anonymousCode.value.text
                 )
-                onNavigateToExam()
-                examInfo.startBackUp(context)
             },
             colors = ButtonColors(Color(0xFF49546C), Color.White, Color.LightGray, Color.LightGray),
             border = BorderStroke(2.dp, Color(0xFF071D4F)),
             modifier = Modifier
-                .align(alignment = Alignment.CenterHorizontally)
+                .align(Alignment.CenterHorizontally)
                 .padding(10.dp)
                 .requiredHeight(75.dp)
                 .requiredWidth(250.dp)
@@ -161,7 +168,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
             border = BorderStroke(2.dp, Color(0xFF30436E)),
             modifier = Modifier
-                .align(alignment = Alignment.CenterHorizontally)
+                .align(Alignment.CenterHorizontally)
                 .padding(10.dp)
                 .requiredHeight(75.dp)
                 .requiredWidth(250.dp)
@@ -174,7 +181,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             modifier = Modifier
                 .padding(20.dp)
                 .fillMaxSize()
-                .align(alignment = Alignment.CenterHorizontally)
+                .align(Alignment.CenterHorizontally)
         )
     }
 }
