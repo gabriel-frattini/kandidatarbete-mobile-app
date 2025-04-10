@@ -43,7 +43,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.example.dat068_tentamina.R
@@ -74,6 +74,16 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
+import java.util.Calendar
+import java.util.TimeZone
+import androidx.compose.material3.Surface
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import androidx.compose.ui.Modifier
+
+
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,19 +95,100 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode: Boolean
     val questionNumbers = viewModel.questions.keys.sorted()
     val tabs = questionNumbers.map { "Question $it" }
 
-    /*
-        Checking every 30 seconds if the exam has ended, if so we call submitExam
-        LaunchedEffect(Unit) {
-            while (true) {
-                delay(30 * 1000L)
-                if (examInfo.isExamOver()) {
-                    submitExam(viewModel, examInfo, activity, signout)
-                    break
-                }
+
+
+    var examOverDialogVisible by remember { mutableStateOf(false) }
+
+    var show15MinWarning by remember { mutableStateOf(false) }
+
+
+    LaunchedEffect(examInfo.getExamEndTime()) {
+
+        val examEndTimeStr = examInfo.getExamEndTime()
+        val timeParts = examEndTimeStr.split(":")
+        if (timeParts.size == 2) {
+            val examEndHour = timeParts[0].toIntOrNull() ?: 0
+            val examEndMinute = timeParts[1].toIntOrNull() ?: 0
+
+            val examEndCalendar = Calendar.getInstance(TimeZone.getTimeZone("Europe/Stockholm")).apply {
+                set(Calendar.HOUR_OF_DAY, examEndHour)
+                set(Calendar.MINUTE, examEndMinute)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+
+            examEndCalendar.add(Calendar.MINUTE, -15)
+            val now = Calendar.getInstance(TimeZone.getTimeZone("Europe/Stockholm"))
+            val delayMillis = examEndCalendar.timeInMillis - now.timeInMillis
+            if (delayMillis > 0) {
+                delay(delayMillis)
+            }
+        }
+        show15MinWarning = true
+        delay(5000L)
+        show15MinWarning = false
+    }
+
+
+    if (show15MinWarning) {
+        androidx.compose.ui.window.Popup(alignment = Alignment.Center) {
+            Surface(
+                color = Color.Yellow,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    "Only 15 minutes remaining!",
+                    modifier = Modifier.padding(8.dp),
+                    color = Color.Black
+                )
+            }
+        }
+    }
+
+
+    LaunchedEffect(examInfo.getExamEndTime()) {
+
+        val timeParts = examInfo.getExamEndTime().split(":")
+        if (timeParts.size == 2) {
+            val examEndHour = timeParts[0].toIntOrNull() ?: 0
+            val examEndMinute = timeParts[1].toIntOrNull() ?: 0
+
+
+            val examEndCalendar = Calendar.getInstance(TimeZone.getTimeZone("Europe/Stockholm")).apply {
+                set(Calendar.HOUR_OF_DAY, examEndHour)
+                set(Calendar.MINUTE, examEndMinute)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            val now = Calendar.getInstance(TimeZone.getTimeZone("Europe/Stockholm"))
+            val delayMillis = examEndCalendar.timeInMillis - now.timeInMillis
+            if (delayMillis > 0) {
+                delay(delayMillis)
             }
         }
 
- */
+        examOverDialogVisible = true
+    }
+
+
+    if (examOverDialogVisible) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text("Exam Ended") },
+            text = { Text("The exam has ended. Please submit your exam.") },
+            confirmButton = {
+                Button(onClick = {
+                    submitExam(viewModel, examInfo, activity, signout)
+                    examOverDialogVisible = false
+                }) {
+                    Text("Submit")
+                }
+            }
+        )
+    }
+
+
 
 
     val tabWidth = 150.dp
@@ -179,9 +270,9 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode: Boolean
     }
 }
 
-/*
 
-Automatically submit the exam at a certain time.
+
+//Automatically submit the exam at a certain time.
 
 fun submitExam(viewModel: TentaViewModel, examInfo: ExamInfo, activity: MainActivity, signout: () -> Unit) {
     //val answers = viewModel.getAnswers()
@@ -191,10 +282,60 @@ fun submitExam(viewModel: TentaViewModel, examInfo: ExamInfo, activity: MainActi
 
     Toast.makeText(activity, "Exam has been submitted!", Toast.LENGTH_LONG).show()
 
-    signout()  //
+    signout()
 }
 
- */
+@Composable
+fun ExamTimer(examInfo: ExamInfo, modifier: Modifier = Modifier) {
+
+    var remainingTime by remember { mutableStateOf(0L) }
+
+    LaunchedEffect(examInfo.getExamDate(), examInfo.getExamEndTime()) {
+
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).apply {
+            timeZone = TimeZone.getTimeZone("Europe/Stockholm")
+        }
+
+        val examDate = examInfo.getExamDate()
+        val examEndTime = examInfo.getExamEndTime()
+        val examEndDateTimeStr = "$examDate $examEndTime"
+
+
+        val examEndDate: Date? = try {
+            sdf.parse(examEndDateTimeStr)
+        } catch (e: Exception) {
+            null
+        }
+
+        while (true) {
+            val now = System.currentTimeMillis()
+            remainingTime = (examEndDate?.time ?: now) - now
+            if (remainingTime < 0L) {
+                remainingTime = 0L
+                break
+            }
+            delay(1000L)
+        }
+    }
+
+    val seconds = (remainingTime / 1000) % 60
+    val minutes = (remainingTime / (1000 * 60)) % 60
+    val hours = remainingTime / (1000 * 60 * 60)
+    val timeStr = String.format("%02d:%02d:%02d", hours, minutes, seconds)
+
+    Surface(
+        modifier = modifier,
+        color = Color.White,
+        shape = RoundedCornerShape(30.dp),
+        border = BorderStroke(2.dp, Color(0xFF071D4F))
+    ) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(text = timeStr, color = Color(0xFF071D4F))
+        }
+    }
+}
+
+
 
 @Composable
 fun ExamScreen(
@@ -304,6 +445,7 @@ fun MenuScreen(
             .fillMaxHeight()
             .requiredWidth(400.dp)
     ) {
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -400,6 +542,15 @@ fun MenuScreen(
         }
 
         Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(horizontal = 20.dp))
+
+        ExamTimer(
+            examInfo = examInfo,
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .align(Alignment.CenterHorizontally)
+                .width(200.dp)
+                .height(60.dp)
+        )
 
         OutlinedButton(
             onClick = { submitDialog = true },

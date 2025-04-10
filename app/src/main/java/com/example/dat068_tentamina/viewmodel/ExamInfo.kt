@@ -57,6 +57,14 @@ class ExamInfo() : ViewModel() {
     val scope = CoroutineScope(Dispatchers.Default + job)
     val recoveryMode: StateFlow<Boolean> get() = _recoveryMode
 
+    //Just for testning values for the hardcoded exam in Login.
+    fun setTestExamData(date: String, startTime: String, endTime: String) {
+        examDate = date
+        examStartTime = startTime
+        examEndTime = endTime
+    }
+
+
 
     fun getTodayDate(): String {
         return SimpleDateFormat("yyyy-MM-dd",Locale.getDefault()).format(Date())
@@ -93,6 +101,8 @@ class ExamInfo() : ViewModel() {
     fun getExamStartTime(): String = examStartTime
 
     fun getExamEndTime(): String = examEndTime
+
+
 
 
     fun enableRecoveryMode() {
@@ -300,6 +310,7 @@ class ExamInfo() : ViewModel() {
                         questionLength = questions.size
                     }
 
+
                     if(it.has("examDate")) {
                         examDate = it.getString("examDate")
                     } else { //just debug
@@ -311,6 +322,8 @@ class ExamInfo() : ViewModel() {
                     if(it.has("examEndTime")) {
                         examEndTime = it.getString("examEndTime")
                     }
+
+
                     // TODO: (Gabbe) We want to get Exam start time & end time here and show it somewhere
                     // Then have a listener that listens to when time is up. See `startPerodicallyUpdatingExternalStorage`
                     tentaViewModel = TentaViewModel().apply {

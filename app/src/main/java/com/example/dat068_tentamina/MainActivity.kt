@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -17,59 +16,160 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import com.example.dat068_tentamina.ui.theme.DAT068TentaminaTheme
 import com.example.dat068_tentamina.ui.Overlay
 import com.example.dat068_tentamina.ui.Login
+import com.example.dat068_tentamina.ui.WaitingScreen
+import com.example.dat068_tentamina.ui.theme.DAT068TentaminaTheme
+import com.example.dat068_tentamina.ui.LoadingScreen
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import com.example.dat068_tentamina.ui.CustomAlertDialog
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+
+import kotlinx.coroutines.launch
+
+
+
 
 sealed class Screen {
     object Overlay : Screen()
     object Login : Screen()
+    object Waiting : Screen()
 }
 
 class MainActivity : ComponentActivity() {
 
-    private val activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            setupDevicePolicy()
-        } else {
-            Toast.makeText(this, "Device admin not activated", Toast.LENGTH_SHORT).show()
+    private val activityResultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                setupDevicePolicy()
+            } else {
+                Toast.makeText(this, "Device admin not activated", Toast.LENGTH_SHORT).show()
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         enableImmersiveMode()
         setupDevicePolicy()
 
         setContent {
             DAT068TentaminaTheme {
-                var examInfo = remember { ExamInfo() }
+
+                val examInfo = remember { ExamInfo() }
                 val recoveryMode by examInfo.recoveryMode.collectAsState()
                 var isDataFetched by remember { mutableStateOf(false) }
                 var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) }
 
-                // Callback for when data is fetched
+                var showAlertDialog by remember { mutableStateOf(false) }
+                var alertDialogTitle by remember { mutableStateOf("") }
+                var alertDialogMessage by remember { mutableStateOf("") }
+                var alertDialogConfirmAction by remember { mutableStateOf<() -> Unit>({}) }
+
+
+
                 LaunchedEffect(Unit) {
                     examInfo.setOnDataFetched {
+
+                        examInfo.setTestExamData("", "15:17", "16:00")
+
+                        val examDate = examInfo.getExamDate()
+                        val examStartTime = examInfo.getExamStartTime()
+                        val examEndTime = examInfo.getExamEndTime()
+
+
+
+
+                        if (examStartTime.isEmpty() || examEndTime.isEmpty()) {
+                            /*
+                            If we use the real exam logic, the rest are for testing
+                            alertDialogTitle = "Exam Info"
+                            alertDialogMessage = "Exam time information is missing. Cannot log in."
+                            alertDialogConfirmAction = {  }
+                            showAlertDialog = true
+                            return@setOnDataFetched
+                            Uncomment and comment the code under
+                             */
+
+                            currentScreen = Screen.Overlay
+                            return@setOnDataFetched
+                        }
+
+                        if (examDate.isEmpty()) {
+                            alertDialogTitle = "Exam Info"
+                            alertDialogMessage = "Exam data is missing! Please check with the teacher."
+                            //alertDialogConfirmAction = {  }
+                            showAlertDialog = true
+                            return@setOnDataFetched
+                        }
+
+                        if (examDate == examInfo.getTodayDate()) {
+                            if (!examInfo.canStartExam()) {
+                                currentScreen = Screen.Waiting
+                            } else if (!examInfo.isExamOver()) {
+                                currentScreen = Screen.Overlay
+
+                                launch(Dispatchers.IO) {
+                                    examInfo.startBackUp(this@MainActivity)
+                                }
+                            }
+
+                            /*
+
+                        if (examDate == examInfo.getTodayDate()) {
+
+                            if (!examInfo.canStartExam()) {
+                                currentScreen = Screen.Waiting
+                            }
+
+                            else if (!examInfo.isExamOver()) {
+
+                                currentScreen = Screen.Overlay
+
+                                launch(Dispatchers.IO) {
+                                    examInfo.startBackUp(this@MainActivity)
+                                }
+                            }
+                             */
+
+                            else {
+
+                                alertDialogTitle = "Exam Ended"
+                                alertDialogMessage = "The exam has ended!"
+                                //alertDialogConfirmAction = { }
+                                showAlertDialog = true
+                            }
+                        } else {
+                            // Om datumet inte stämmer, navigera ändå till tentamen
+                            /*
+                            alertDialogTitle = "Exam Info"
+                            alertDialogMessage = "Exam data does not match today's date."
+                            alertDialogConfirmAction = {  }
+                            showAlertDialog = true
+                             */
+                            currentScreen = Screen.Overlay
+                        }
                         isDataFetched = true
-                        currentScreen = Screen.Overlay
                     }
                 }
 
-                /*
-        LaunchedEffect(Unit) {
-            examInfo.setOnDataFetched {
-                isDataFetched = true
-                if (!examInfo.canStartExam()) {
-                    currentScreen = Screen.Waiting
-                } else {
-                    currentScreen = Screen.Overlay
-             }
-            }
-        }
-*/
+
+                CustomAlertDialog(
+                    showDialog = showAlertDialog,
+                    title = alertDialogTitle,
+                    message = alertDialogMessage,
+                    onConfirm = {
+                        showAlertDialog = false
+                        alertDialogConfirmAction()
+                    },
+                    onDismissRequest = { showAlertDialog = false }
+                )
+
 
                 when (currentScreen) {
                     Screen.Overlay -> {
@@ -87,29 +187,27 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         } else {
-                            LoadingScreen()
+                            LoadingScreen{isDataFetched = true}
                         }
                     }
                     Screen.Login -> {
                         Login(
                             examInfo = examInfo,
                             onNavigateToExam = {
-                                // Lock the app when navigating to the exam
-                                lockApp()
+
                                 currentScreen = Screen.Overlay
                             }
                         )
                     }
-                    /*
-                Screen.Waiting -> {
-                    WaitingScreen(
-                        examInfo = examInfo,
-                        onNavigateToExam = {
-                        currentScreen = Screen.Overlay
+                    Screen.Waiting -> {
+                        WaitingScreen(
+                            examInfo = examInfo,
+                            onNavigateToExam = {
+                                currentScreen = Screen.Overlay
+                                examInfo.startBackUp(this)
+                            }
+                        )
                     }
-                )
-            }
-                    */
                 }
             }
         }
@@ -130,14 +228,17 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun setupDevicePolicy() {
-        val devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val devicePolicyManager =
+            getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val adminComponent = ComponentName(this, MyDeviceAdminReceiver::class.java)
 
         if (!devicePolicyManager.isAdminActive(adminComponent)) {
-            // Request to activate device admin if it's not already active
             val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
             intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
-            intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Please activate device admin to control device features.")
+            intent.putExtra(
+                DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+                "Please activate device admin to control device features."
+            )
             activityResultLauncher.launch(intent)
         } else {
             Toast.makeText(this, "Device admin is already active.", Toast.LENGTH_SHORT).show()
@@ -146,18 +247,12 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun setupDevicePolicyLogic() {
-        val devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val devicePolicyManager =
+            getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val adminComponent = ComponentName(this, MyDeviceAdminReceiver::class.java)
-
-        /* Purely for testing
-
-        // Example: Disable the camera
-        devicePolicyManager.setCameraDisabled(adminComponent, true)
-        Toast.makeText(this, "Camera has been disabled.", Toast.LENGTH_SHORT).show()
-        */
+        // Ytterligare policy-logik vid behov
     }
 
-    // Method to lock the app (enter Lock Task Mode)
     private fun lockApp() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
@@ -168,7 +263,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Method to unlock the app (exit Lock Task Mode)
     private fun unlockApp() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             stopLockTask()
@@ -177,7 +271,3 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun LoadingScreen() {
-    Text(text = "Loading...")
-}

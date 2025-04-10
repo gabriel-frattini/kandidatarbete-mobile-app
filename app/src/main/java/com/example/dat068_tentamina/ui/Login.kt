@@ -36,12 +36,20 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
+import androidx.compose.runtime.LaunchedEffect
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+
+
 fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
-    val examId = remember { mutableStateOf(TextFieldValue()) }
-    val anonymousCode = remember { mutableStateOf(TextFieldValue()) }
+    val examId = remember { mutableStateOf(TextFieldValue("test_tenta")) }
+    val anonymousCode = remember { mutableStateOf(TextFieldValue("TEST_TENTA-7615-DUT")) }
     val context = LocalContext.current
 
     Column(
@@ -57,7 +65,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             textAlign = TextAlign.Right,
             modifier = Modifier
                 .padding(20.dp)
-                .align(alignment = Alignment.End)
+                .align(Alignment.End)
         )
         Text(
             text = "Exam Check-in",
@@ -68,7 +76,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             color = Color(0xFF071D4F),
             modifier = Modifier
                 .padding(16.dp)
-                .align(alignment = Alignment.CenterHorizontally)
+                .align(Alignment.CenterHorizontally)
         )
         Text(
             text = "Please enter the following information:",
@@ -79,7 +87,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             color = Color(0xFF30436E),
             modifier = Modifier
                 .padding(bottom = 20.dp)
-                .align(alignment = Alignment.CenterHorizontally)
+                .align(Alignment.CenterHorizontally)
         )
         Row(
             horizontalArrangement = Arrangement.Center,
@@ -125,64 +133,16 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
         }
         OutlinedButton(
             onClick = {
+                // Endast trigga fetchData, callbacken i MainActivity hanterar resten
                 examInfo.fetchData(
-                    courseCode = examId.component1().text,
-                    anonymousCode = anonymousCode.component1().text
+                    courseCode = examId.value.text,
+                    anonymousCode = anonymousCode.value.text
                 )
-                onNavigateToExam()
-                examInfo.startBackUp(context)
-
-
-
-        //Just the time, uncomment to include time-logic in the exam
-
-        examInfo.setOnDataFetched {
-            val examDate = examInfo.getExamDate() ?: ""
-            val examStartTime = examInfo.getExamStartTime() ?: ""
-            val examEndTime = examInfo.getExamEndTime() ?: ""
-
-            val format = SimpleDateFormat("HH:mm", Locale.getDefault())
-            format.timeZone = TimeZone.getTimeZone("Europe/Stockholm")
-
-            val currentTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-            currentTimeFormat.timeZone = TimeZone.getTimeZone("Europe/Stockholm") // Ställer in tidszon även här
-
-            val currentTimeStr = currentTimeFormat.format(Date())
-
-            //Just to show the time, can remove later
-            Toast.makeText(context,"Current time: $currentTimeStr, Exam starts at: $examStartTime", Toast.LENGTH_LONG).show()
-
-            if (examDate.isEmpty() || examStartTime.isEmpty() || examEndTime.isEmpty()) {
-                Toast.makeText(context, "Exam data is missing! Please check with the teacher.", Toast.LENGTH_LONG).show()
-                return@setOnDataFetched //
-            }
-            if(examInfo.getExamDate() == examInfo.getTodayDate()) {
-                if(!examInfo.canStartExam()) {
-                    Toast.makeText(context,"navigating to waiting screen",Toast.LENGTH_LONG).show()
-                    onNavigateToWaitingScreen()
-                }
-                else if(!examInfo.isExamOver()) {
-                    onNavigateToExam()
-                    examInfo.startBackUp(context) //starts the process for autosave
-                }
-                else {
-                    Toast.makeText(context,"The exam has ended!",Toast.LENGTH_LONG).show()
-                }
-
-            } else {
-
-                onNavigateToExam()
-                //Toast.makeText(context,"Wrong date!",Toast.LENGTH_LONG).show()
-
-            }
-        }
-
-
             },
             colors = ButtonColors(Color(0xFF49546C), Color.White, Color.LightGray, Color.LightGray),
             border = BorderStroke(2.dp, Color(0xFF071D4F)),
             modifier = Modifier
-                .align(alignment = Alignment.CenterHorizontally)
+                .align(Alignment.CenterHorizontally)
                 .padding(10.dp)
                 .requiredHeight(75.dp)
                 .requiredWidth(250.dp)
@@ -208,7 +168,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
             border = BorderStroke(2.dp, Color(0xFF30436E)),
             modifier = Modifier
-                .align(alignment = Alignment.CenterHorizontally)
+                .align(Alignment.CenterHorizontally)
                 .padding(10.dp)
                 .requiredHeight(75.dp)
                 .requiredWidth(250.dp)
@@ -221,7 +181,7 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
             modifier = Modifier
                 .padding(20.dp)
                 .fillMaxSize()
-                .align(alignment = Alignment.CenterHorizontally)
+                .align(Alignment.CenterHorizontally)
         )
     }
 }
