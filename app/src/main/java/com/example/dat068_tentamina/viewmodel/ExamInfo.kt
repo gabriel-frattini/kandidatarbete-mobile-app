@@ -241,7 +241,8 @@ class ExamInfo() : ViewModel() {
         onDataFetched = callback
     }
 
-    fun fetchData(courseCode: String, anonymousCode: String) {
+    fun fetchData(courseCode: String, anonymousCode: String): Boolean {
+        var success = true
         viewModelScope.launch {
             try {
                 val result = apiHelper.getExam(courseCode, anonymousCode)
@@ -252,8 +253,8 @@ class ExamInfo() : ViewModel() {
                     user = info.getString("anonymousCode")
                     personalID = info.getString("birthID")
                     if (it.has("Error")) {
-                        println("Error in response: ${it.getString("Error")}")
-                        return@let
+                        Log.d("GET Request", "Error: ${it.getString("Error")}")
+                        success = false
                     }
                     var questionLength = 1
                     // Check if "questions" exists and is an array
@@ -269,8 +270,6 @@ class ExamInfo() : ViewModel() {
                         }
                         questionLength = questions.size
                     }
-                    // TODO: (Gabbe) We want to get Exam start time & end time here and show it somewhere
-                    // Then have a listener that listens to when time is up. See `startPerodicallyUpdatingExternalStorage`
                     tentaViewModel = TentaViewModel().apply {
                         addQuestions(questionLength)
                     }
@@ -279,8 +278,10 @@ class ExamInfo() : ViewModel() {
                 } ?: Log.d("GET Request", "Failed to fetch exam")
             } catch (e: Exception) {
                 println("Error during GET request: ${e.message}")
+                success = false
             }
         }
+        return success
     }
 
 

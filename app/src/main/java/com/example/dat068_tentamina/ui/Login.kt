@@ -161,12 +161,16 @@ fun RecoveryView(onBackToLogin: () -> Unit, onNavigateToExam: () -> Unit, examIn
                         recoveryCode = recoveryCode.value.text,
                         courseCode = examId.value.text,
                         onSuccess = {
-                            examInfo.fetchData(
+                             val success = examInfo.fetchData(
                                 courseCode = examId.value.text,
                                 anonymousCode = anonymousCode.value.text
                             )
-                            examInfo.enableRecoveryMode()
-                            onNavigateToExam()
+                            if(success) {
+                                examInfo.enableRecoveryMode()
+                                onNavigateToExam()
+                            } else {
+                                errorMessage.value = "An error occurred"
+                            }
                         },
                         onError = {
                             errorMessage.value = "Invalid recovery code"
@@ -213,6 +217,7 @@ fun RecoveryView(onBackToLogin: () -> Unit, onNavigateToExam: () -> Unit, examIn
 fun LoginView(examInfo: ExamInfo, onNavigateToExam: () -> Unit, onNavigateToRecovery: () -> Unit) {
     val examId = remember { mutableStateOf(TextFieldValue("hej123")) }
     val anonymousCode = remember { mutableStateOf(TextFieldValue("HEJ123-8457-ENH")) }
+    val errorMessage = remember { mutableStateOf("") }
     val context = LocalContext.current
         Column(
             verticalArrangement = Arrangement.Center,
@@ -295,12 +300,16 @@ fun LoginView(examInfo: ExamInfo, onNavigateToExam: () -> Unit, onNavigateToReco
             }
             OutlinedButton(
                 onClick = {
-                    examInfo.fetchData(
+                    val success = examInfo.fetchData(
                         courseCode = examId.component1().text,
                         anonymousCode = anonymousCode.component1().text
                     )
-                    onNavigateToExam()
-                    examInfo.startBackUp(context)
+                    if (success) {
+                        onNavigateToExam()
+                        examInfo.startBackUp(context)
+                    } else {
+                        errorMessage.value = "An error occurred"
+                    }
                 },
                 colors = ButtonColors(Color(0xFF49546C), Color.White, Color.LightGray, Color.LightGray),
                 border = BorderStroke(2.dp, Color(0xFF071D4F)),
