@@ -14,7 +14,7 @@ import java.io.IOException
 
 class ServerHandler {
     private val SCHEME = "http"
-    private val HOST = "192.168.1.194"
+    private val HOST = "172.20.10.3"
     private val PORT = 3000
     private val client = OkHttpClient()
 
@@ -95,7 +95,7 @@ class ServerHandler {
         }
     }
 
-    suspend fun verifyRecoveryCode(recoveryCode: String): Boolean {
+    suspend fun verifyRecoveryCode(courseCode: String, recoveryCode: String): Boolean {
         // Construct the URL with query parameters
         println(recoveryCode)
         val url = HttpUrl.Builder()
@@ -103,7 +103,8 @@ class ServerHandler {
             .host(HOST)
             .port(PORT)
             .addPathSegment("verifyRecoveryCode")
-            .addQueryParameter("code", recoveryCode)
+            .addQueryParameter("courseCode", courseCode)
+            .addQueryParameter("recoveryCode", recoveryCode)
             .build()
 
         // Build the request

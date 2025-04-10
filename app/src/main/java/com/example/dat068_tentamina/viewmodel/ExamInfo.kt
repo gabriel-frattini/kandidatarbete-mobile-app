@@ -194,9 +194,9 @@ class ExamInfo() : ViewModel() {
         }
     }
 
-    fun verifyRecoveryCode(recoveryCode: String, onSuccess: () -> Unit, onError: () -> Unit) {
+    fun verifyRecoveryCode(recoveryCode: String, courseCode: String, onSuccess: () -> Unit, onError: () -> Unit) {
         viewModelScope.launch {
-            val isValid = apiHelper.verifyRecoveryCode(recoveryCode)
+            val isValid = apiHelper.verifyRecoveryCode(recoveryCode, courseCode)
             if (isValid) {
                 onSuccess()
             } else {
