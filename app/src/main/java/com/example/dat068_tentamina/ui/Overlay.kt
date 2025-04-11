@@ -56,8 +56,10 @@ import androidx.compose.runtime.setValue
 import com.example.dat068_tentamina.MainActivity
 import PdfConverter
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
@@ -71,6 +73,10 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import com.example.dat068_tentamina.viewmodel.BackgroundType
+import androidx.compose.material3.Checkbox
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -281,6 +287,7 @@ fun MenuScreen(
                     .align(Alignment.TopStart)
                     .padding(start = 40.dp, top = 16.dp)
                     .size(50.dp)
+                    .border(2.dp, Color(0xFF003366), RoundedCornerShape(50))
                     .clip(RoundedCornerShape(50))
                     .background(Color(0xFFFAF8FF))
                     .padding(5.dp)
@@ -392,23 +399,71 @@ fun MenuScreen(
 
     // Submit Dialog submit exam
     if (submitDialog) {
+        var isChecked by remember { mutableStateOf(false) }
+        val totalQuestionsNr = viewModel.questions.size
+        val answeredQuestions = viewModel.answeredQuestions.value.size
+        val unansweredCount  = totalQuestionsNr - answeredQuestions
+
+
         AlertDialog(
             onDismissRequest = { submitDialog = false },
             title = { Text("Submit Exam") },
-            text = { Text("Are you sure you want to submit the exam?") },
+            text = {
+                Column {
+                    if (unansweredCount > 0) {
+                        Text(
+                            "You have ($unansweredCount) unanswered question${if (unansweredCount > 1) "s" else ""}. Are you sure you want to submit?",
+                            //color = Color.Black,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                    else{
+                        Text("All questions are answered. Do you want to submit?")
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = isChecked,
+                            onCheckedChange = { isChecked = it }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "I understand that by submitting this, I am submitting the entire exam, and once submitted, I will not be able to edit my answers",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            },
             confirmButton = {
                 Button(onClick = {
-                    val answersWithBackground = viewModel.getAnswers().mapValues { (questionId, objects) ->
-                        val background = viewModel.backgroundTypes[questionId] ?: BackgroundType.BLANK
-                        objects to background
-                    }
-                    val pdfFile = PdfConverter.createPdfFromAnswers(answersWithBackground, 2560, 1700, activity)
+                    val answersWithBackground =
+                        viewModel.getAnswers().mapValues { (questionId, objects) ->
+                            val background =
+                                viewModel.backgroundTypes[questionId] ?: BackgroundType.BLANK
+                            objects to background
+                        }
+                    val pdfFile = PdfConverter.createPdfFromAnswers(
+                        answersWithBackground,
+                        2560,
+                        1700,
+                        activity
+                    )
 
                     examInfo.sendPdf(pdfFile)
                     signout()
                     submitDialog = false
-                }) {
-                    Text("Confirm")
+                },
+                enabled = isChecked,
+                    colors = ButtonDefaults.buttonColors(
+                        disabledContentColor = Color(0xFF555555)
+                    )
+                ){
+                    Text("Submit")
                 }
             },
             dismissButton = {
