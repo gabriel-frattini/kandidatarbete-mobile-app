@@ -21,6 +21,7 @@ import com.example.dat068_tentamina.model.serializable.SerializableLine
 import com.example.dat068_tentamina.model.Question
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toColor
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toOffset
+import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toRichTextState
 import com.example.dat068_tentamina.utilities.CanvasObjectSerializationUtils.toSerializable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +47,7 @@ class ExamInfo() : ViewModel() {
     private val _recoveryMode = MutableStateFlow(false)
     private lateinit var tentaViewModel: TentaViewModel
     private var onDataFetched: (() -> Unit)? = null
+    private var onError: ((statusCode: Int) -> Unit)? = null
     private var examDate = ""
     private var examStartTime = ""
     private var examEndTime = ""
@@ -183,7 +185,9 @@ class ExamInfo() : ViewModel() {
                             TextBox(
                                 position = serializedObject.position.toOffset(),
                                 textLayout = textMeasurer.measure(AnnotatedString(serializedObject.text)),
-                                text = serializedObject.text
+                                text = serializedObject.text,
+                                richText = serializedObject.richText?.toRichTextState(),
+                                richTextContent = serializedObject.richTextContent,
                             )
                         }
                         else -> {
@@ -210,14 +214,11 @@ class ExamInfo() : ViewModel() {
         startPerodicallyUpdatingExternalStorage(scope, context)
     }
 
-    // TODO: (Gabbe) This method is a good example of how we could check if the exam end time has passed
-    // in the while loop we would check if time is up, if so; submit the exam and redirect`user
-    // We could also set up the reminder modal if 15 minutes are remaining
     private fun startPerodicallyUpdatingExternalStorage(scope: CoroutineScope, context : Context) {
         scope.launch {
             while (isActive) { // Ensures the coroutine can be canceled
                 updateStorageObject(context)
-                delay(30 * 1000L) // 30 second delay
+                delay(5 * 1000L) // 5 second delay
                 Log.d("ExamInfo", "{${tentaViewModel.getAnswers()}}")
             }
         }
@@ -248,7 +249,18 @@ class ExamInfo() : ViewModel() {
         }
     }
 
-    fun verifyBackupCredentials(aCode: String, exId: String, context : Context): Boolean {
+    fun verifyRecoveryCode(courseCode: String, recoveryCode: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            val (statusCode, _) = apiHelper.verifyRecoveryCode(courseCode, recoveryCode)
+            if(statusCode == 200) {
+                onSuccess()
+            } else {
+                onError?.invoke(statusCode)
+            }
+        }
+    }
+
+    fun verifyBackupCredentials(aCode: String, exId: String, context: Context): Boolean {
         Log.d("Backup", "Verifying backup credentials for anonymousCode: $aCode and examID: $exId")
 
         // Step 1: Check if a backup file exists
@@ -281,59 +293,68 @@ class ExamInfo() : ViewModel() {
         onDataFetched = callback
     }
 
-    fun fetchData(courseCode: String, anonymousCode: String) {
+    fun setOnError(callback: (statusCode: Int) -> Unit) {
+        onError = callback
+    }
+
+    fun fetchData(courseCode: String, anonymousCode: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
-                val result = apiHelper.getExam(courseCode, anonymousCode)
-                result?.let {
-                    Log.d("GET Request", "JSON: $it")
-                    course = it.getString("examID")
-                    val info = it.getJSONObject("anonymousCode")
-                    user = info.getString("anonymousCode")
-                    personalID = info.getString("birthID")
-                    if (it.has("Error")) {
-                        println("Error in response: ${it.getString("Error")}")
-                        return@let
-                    }
-                    var questionLength = 1
-                    // Check if "questions" exists and is an array
-                    if (it.has("questions") && it.get("questions") is JSONArray) {
-                        val json = it.getJSONArray("questions")
-                        questions.clear() // Ensure previous data is removed
+                val (statusCode, result) = apiHelper.getExam(courseCode, anonymousCode)
+                if (result == null) {
+                    Log.d("GET Request", "Failed to fetch exam")
+                    onError?.invoke(statusCode)
+                } else {
+                    Log.d("GET Request", "JSON: $result")
+                    if (result.has("Error")) {
+                        onError?.invoke(statusCode)
 
-                        for (i in 0 until json.length()) {
-                            val text = json.getJSONObject(i).getString("text")
-                            val type = json.getJSONObject(i).getString("type")
-                            val question = Question(i, text, type)
-                            questions.add(question)
+                    } else {
+                        course = result.getString("examID")
+                        val info = result.getJSONObject("anonymousCode")
+                        user = info.getString("anonymousCode")
+                        personalID = info.getString("birthID")
+                        var questionLength = 1
+                        // Check if "questions" exists and is an array
+                        if (result.has("questions") && result.get("questions") is JSONArray) {
+                            val json = result.getJSONArray("questions")
+                            questions.clear() // Ensure previous data is removed
+
+                            for (i in 0 until json.length()) {
+                                val text = json.getJSONObject(i).getString("text")
+                                val type = json.getJSONObject(i).getString("type")
+                                val question = Question(i, text, type)
+                                questions.add(question)
+                            }
+                            questionLength = questions.size
                         }
-                        questionLength = questions.size
-                    }
 
 
-                    if(it.has("examDate")) {
-                        examDate = it.getString("examDate")
-                    } else { //just debug
-                        Log.d("DEBUG", "examDate is missing!")
+                        if(result.has("examDate")) {
+                            examDate = result.getString("examDate")
+                        } else { //just debug
+                            Log.d("DEBUG", "examDate is missing!")
+                        }
+                        if(result.has("examStartTime")) {
+                            examStartTime = result.getString("examStartTime")
+                        }
+                        if(result.has("examEndTime")) {
+                            examEndTime = result.getString("examEndTime")
+                        }
+                        // TODO: (Gabbe) We want to get Exam start time & end time here and show result somewhere
+                        // Then have a listener that listens to when time is up. See `startPerodicallyUpdatingExternalStorage`
+                        tentaViewModel = TentaViewModel().apply {
+                            addQuestions(questionLength)
+                        }
+                        // Notify data fetched
+                        onSuccess()
+                        onDataFetched?.invoke()
                     }
-                    if(it.has("examStartTime")) {
-                        examStartTime = it.getString("examStartTime")
-                    }
-                    if(it.has("examEndTime")) {
-                        examEndTime = it.getString("examEndTime")
-                    }
-
-
-                    // TODO: (Gabbe) We want to get Exam start time & end time here and show it somewhere
-                    // Then have a listener that listens to when time is up. See `startPerodicallyUpdatingExternalStorage`
-                    tentaViewModel = TentaViewModel().apply {
-                        addQuestions(questionLength)
-                    }
-                    // Notify data fetched
-                    onDataFetched?.invoke()
-                } ?: Log.d("GET Request", "Failed to fetch exam")
+                }
             } catch (e: Exception) {
+                e.printStackTrace()
                 println("Error during GET request: ${e.message}")
+                onError?.invoke(500)
             }
         }
     }
@@ -355,4 +376,3 @@ class ExamInfo() : ViewModel() {
         course = ""
     }
 }
-
