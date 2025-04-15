@@ -251,10 +251,12 @@ class ExamInfo() : ViewModel() {
 
     fun verifyRecoveryCode(courseCode: String, recoveryCode: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
-            val isValid = apiHelper.verifyRecoveryCode(courseCode, recoveryCode)
-            if (isValid) {
+            val (statusCode, _) = apiHelper.verifyRecoveryCode(courseCode, recoveryCode)
+            if(statusCode == 200) {
                 onSuccess()
-            } 
+            } else {
+                onError?.invoke(statusCode)
+            }
         }
     }
 
@@ -295,20 +297,17 @@ class ExamInfo() : ViewModel() {
         onError = callback
     }
 
-    fun fetchData(courseCode: String, anonymousCode: String) {
+    fun fetchData(courseCode: String, anonymousCode: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
-                val response = apiHelper.getExam(courseCode, anonymousCode)
-                val body = response?.body
-                if (body == null) {
+                val (statusCode, result) = apiHelper.getExam(courseCode, anonymousCode)
+                if (result == null) {
                     Log.d("GET Request", "Failed to fetch exam")
-                    onError?.invoke(response?.code ?: 500)
+                    onError?.invoke(statusCode)
                 } else {
-                    val result = JSONObject(body.string())
                     Log.d("GET Request", "JSON: $result")
                     if (result.has("Error")) {
-                        println("Error in response: ${result.getString("Error")}")
-                        onError?.invoke(response.code)
+                        onError?.invoke(statusCode)
 
                     } else {
                         course = result.getString("examID")
@@ -348,10 +347,12 @@ class ExamInfo() : ViewModel() {
                             addQuestions(questionLength)
                         }
                         // Notify data fetched
+                        onSuccess()
                         onDataFetched?.invoke()
                     }
                 }
             } catch (e: Exception) {
+                e.printStackTrace()
                 println("Error during GET request: ${e.message}")
                 onError?.invoke(500)
             }

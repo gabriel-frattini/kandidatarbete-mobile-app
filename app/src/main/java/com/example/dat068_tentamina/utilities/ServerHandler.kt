@@ -61,7 +61,7 @@ class ServerHandler {
         })
     }
 
-    suspend fun getExam(courseCode: String, anonymousCode: String): Response? {
+    suspend fun getExam(courseCode: String, anonymousCode: String): Pair<Int, JSONObject?> {
         // Construct the URL with query parameters
         val url = HttpUrl.Builder()
             .scheme("http")
@@ -78,19 +78,24 @@ class ServerHandler {
             .get()
             .build()
 
-        // Execute the request
         return withContext(Dispatchers.IO) { // Perform the network request on the IO dispatcher
             try {
                 val response = client.newCall(request).execute()
-                 response
+                if (response.isSuccessful) {
+                    val jsonString = response.body?.string() // Get the response body as a string
+                    val jsonObj = jsonString?.let { JSONObject(it) } // Parse the string into a JSONObject
+                    Pair(response.code, jsonObj) // Return the response code and the parsed JSON object
+                } else {
+                    Pair(response.code, null) // Handle non-successful HTTP responses
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
-                null // Handle exceptions
+                Pair(500, null) // Handle exceptions
             }
         }
     }
 
-    suspend fun verifyRecoveryCode(courseCode: String, recoveryCode: String): Boolean {
+    suspend fun verifyRecoveryCode(courseCode: String, recoveryCode: String): Pair<Int, JSONObject?> {
         // Construct the URL with query parameters
         val url = HttpUrl.Builder()
             .scheme(SCHEME)
@@ -113,17 +118,14 @@ class ServerHandler {
                 val response = client.newCall(request).execute()
                 if (response.isSuccessful) {
                     val jsonString = response.body?.string() // Get the response body as a string
-                    val jsonObject = JsonParser.parseString(jsonString).asJsonObject // Parse the string into a JsonObject
-                    val verified = jsonObject.get("verified").asBoolean // Extract the "verified" field
-                    println("Verified: $verified") // Print the value of "verified"
-                    verified // Return the value of "verified"
+                    val jsonObj = jsonString?.let { JSONObject(it) } // Parse the string into a JSONObject
+                    Pair(response.code, jsonObj) // Return the response code and the parsed JSON object
                 } else {
-                    false // Handle non-successful HTTP responses
+                    Pair(response.code, null) // Handle non-successful HTTP responses
                 }
             } catch (e: Exception) {
-                println(e)
                 e.printStackTrace()
-                false // Return false if an exception occurs
+                Pair(500, null) // Handle exceptions
             }
         }
     }

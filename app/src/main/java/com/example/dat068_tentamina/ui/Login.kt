@@ -69,7 +69,7 @@ fun LoginView(examInfo: ExamInfo, onNavigateToExam: () -> Unit, onNavigateToReco
     LaunchedEffect(Unit) {
         // setOnError callback that takes a lambda function with a status parameter
         examInfo.setOnError { status ->
-            if (status == 400) {
+            if (status == 404) {
                 errorTitle.value = "Invalid course code or anonymous code"
                 errorMessage.value = "Double check your course code and anonymous code"
             } else if (status == 409) {
@@ -124,7 +124,7 @@ fun LoginView(examInfo: ExamInfo, onNavigateToExam: () -> Unit, onNavigateToReco
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
-            val maxCharExamId = 25
+            val maxCharExamId = 15
             OutlinedTextField(
                 value = examId.value,
                 onValueChange = { if (it.text.length <= maxCharExamId) examId.value = it },
@@ -142,7 +142,7 @@ fun LoginView(examInfo: ExamInfo, onNavigateToExam: () -> Unit, onNavigateToReco
                 )
             )
 
-            val maxCharAnonymousCode = 25
+            val maxCharAnonymousCode = 30
             OutlinedTextField(
                 value = anonymousCode.value,
                 onValueChange = {
@@ -167,7 +167,10 @@ fun LoginView(examInfo: ExamInfo, onNavigateToExam: () -> Unit, onNavigateToReco
                 // Endast trigga fetchData, callbacken i MainActivity hanterar resten
                 examInfo.fetchData(
                     courseCode = examId.value.text,
-                    anonymousCode = anonymousCode.value.text
+                    anonymousCode = anonymousCode.value.text,
+                    onSuccess = {
+                        examInfo.startBackUp(context)
+                    },
                 )
             },
             colors = ButtonColors(Color(0xFF49546C), Color.White, Color.LightGray, Color.LightGray),
@@ -228,6 +231,9 @@ fun RecoveryView(onBackToLogin: () -> Unit, onNavigateToExam: () -> Unit, examIn
             if (status == 400) {
                 errorTitle.value = "Invalid recovery code"
                 errorMessage.value = "Double check that you are using the correct recovery code for this exam"
+            } else if (status == 404) {
+                errorTitle.value = "Invalid course code or anonymous code"
+                errorMessage.value = "Double check your course code and anonymous code"
             } else if (status == 409) {
                 errorTitle.value = "Exam already submitted"
                 errorMessage.value = "You have already submitted this exam"
@@ -279,7 +285,7 @@ fun RecoveryView(onBackToLogin: () -> Unit, onNavigateToExam: () -> Unit, examIn
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
-            val maxCharExamId = 6
+            val maxCharExamId = 15
             OutlinedTextField(
                 value = examId.value,
                 onValueChange = { if (it.text.length <= maxCharExamId) examId.value = it },
@@ -297,7 +303,7 @@ fun RecoveryView(onBackToLogin: () -> Unit, onNavigateToExam: () -> Unit, examIn
                 )
             )
 
-            val maxCharAnonymousCode = 15
+            val maxCharAnonymousCode = 30
             OutlinedTextField(
                 value = anonymousCode.value,
                 onValueChange = {
@@ -347,9 +353,11 @@ fun RecoveryView(onBackToLogin: () -> Unit, onNavigateToExam: () -> Unit, examIn
                          }
                          examInfo.fetchData(
                             courseCode = examId.value.text,
-                            anonymousCode = anonymousCode.value.text
+                            anonymousCode = anonymousCode.value.text,
+                            onSuccess = {
+                                examInfo.enableRecoveryMode()
+                            },
                         )
-                        examInfo.enableRecoveryMode()
                     },
                 )
 
