@@ -1,5 +1,6 @@
 package com.example.dat068_tentamina.ui
 
+import com.example.dat068_tentamina.ui.CustomAlertDialog
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.Image
@@ -45,12 +46,42 @@ import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-
-
 fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
-    val examId = remember { mutableStateOf(TextFieldValue("test_tenta")) }
-    val anonymousCode = remember { mutableStateOf(TextFieldValue("TEST_TENTA-7615-DUT")) }
+    val isRecoveryMode = remember { mutableStateOf(false) }
+
+    if (isRecoveryMode.value) {
+        RecoveryView(onBackToLogin = { isRecoveryMode.value = false }, onNavigateToExam = onNavigateToExam, examInfo = examInfo)
+    } else {
+        LoginView(examInfo = examInfo, onNavigateToExam = onNavigateToExam, onNavigateToRecovery = { isRecoveryMode.value = true })
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LoginView(examInfo: ExamInfo, onNavigateToExam: () -> Unit, onNavigateToRecovery: () -> Unit) {
+    val examId = remember { mutableStateOf(TextFieldValue("")) }
+    val anonymousCode = remember { mutableStateOf(TextFieldValue("")) }
+    val showAlertDialog = remember { mutableStateOf(false) }
+    val errorTitle = remember { mutableStateOf("") }
+    val errorMessage = remember { mutableStateOf("") }
     val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        // setOnError callback that takes a lambda function with a status parameter
+        examInfo.setOnError { status ->
+            if (status == 400) {
+                errorTitle.value = "Invalid course code or anonymous code"
+                errorMessage.value = "Double check your course code and anonymous code"
+            } else if (status == 409) {
+                errorTitle.value = "Exam already submitted"
+                errorMessage.value = "You have already submitted this exam"
+            } else {
+                errorTitle.value = "Unexpected error"
+                errorMessage.value = "An unexpected error occurred. Please contact administratator."
+            }
+            showAlertDialog.value = true
+        }
+    }
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -146,35 +177,23 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
                 .padding(10.dp)
                 .requiredHeight(75.dp)
                 .requiredWidth(250.dp)
+
         ) {
             Text("Check in", fontSize = 25.sp)
         }
         ElevatedButton(
-            onClick = {
-                if (examInfo.verifyBackupCredentials(
-                        exId = examId.component1().text,
-                        aCode = anonymousCode.component1().text,
-                        context = context
-                    )
-                ) {
-                    examInfo.fetchData(
-                        courseCode = examId.component1().text,
-                        anonymousCode = anonymousCode.component1().text
-                    )
-                    examInfo.enableRecoveryMode()
-                    onNavigateToExam()
-                }
-            },
-            colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
-            border = BorderStroke(2.dp, Color(0xFF30436E)),
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(10.dp)
-                .requiredHeight(75.dp)
-                .requiredWidth(250.dp)
+                onClick = onNavigateToRecovery,
+                colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
+                border = BorderStroke(2.dp, Color(0xFF30436E)),
+                modifier = Modifier
+                    .align(alignment = Alignment.CenterHorizontally)
+                    .padding(10.dp)
+                    .requiredHeight(75.dp)
+                    .requiredWidth(250.dp)
         ) {
             Text("Recover exam", fontSize = 25.sp)
         }
+
         Image(
             painter = painterResource(id = R.drawable.chalmers_logo),
             contentDescription = "The Chalmers logo",
@@ -184,4 +203,196 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
                 .align(Alignment.CenterHorizontally)
         )
     }
+    CustomAlertDialog(
+        showDialog = showAlertDialog.value,
+        title = errorTitle.value,
+        message = errorMessage.value,
+        onConfirm = {
+            showAlertDialog.value = false
+            
+        },
+        onDismissRequest = { showAlertDialog.value = false }
+    )
+}
+
+@Composable
+fun RecoveryView(onBackToLogin: () -> Unit, onNavigateToExam: () -> Unit, examInfo: ExamInfo) {
+    val examId = remember { mutableStateOf(TextFieldValue("")) }
+    val anonymousCode = remember { mutableStateOf(TextFieldValue("")) }
+    val recoveryCode = remember { mutableStateOf(TextFieldValue("")) }
+    val errorMessage = remember { mutableStateOf("") }
+    val errorTitle = remember { mutableStateOf("") }
+    val showAlertDialog = remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        examInfo.setOnError { status ->
+            if (status == 400) {
+                errorTitle.value = "Invalid recovery code"
+                errorMessage.value = "Double check that you are using the correct recovery code for this exam"
+            } else if (status == 409) {
+                errorTitle.value = "Exam already submitted"
+                errorMessage.value = "You have already submitted this exam"
+            } else {
+                errorTitle.value = "Unexpected error"
+                errorMessage.value = "An unexpected error occurred. Please contact administratator."
+            }
+            showAlertDialog.value = true
+        }
+    }
+    Column(
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .background(Color(0xFFBEC6D9))
+            .fillMaxSize()
+    ) {
+        Text(
+            text = LocalDate.now().toString(),
+            fontSize = 25.sp,
+            lineHeight = 25.sp,
+            textAlign = TextAlign.Right,
+            modifier = Modifier
+                .padding(20.dp)
+                .align(alignment = Alignment.End)
+        )
+        Text(
+            text = "Exam Recovery",
+            fontSize = 64.sp,
+            lineHeight = 80.sp,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF071D4F),
+            modifier = Modifier
+                .padding(16.dp)
+                .align(alignment = Alignment.CenterHorizontally)
+        )
+        Text(
+            text = "Please enter the following information:",
+            fontSize = 25.sp,
+            lineHeight = 30.sp,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF30436E),
+            modifier = Modifier
+                .padding(bottom = 20.dp)
+                .align(alignment = Alignment.CenterHorizontally)
+        )
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            val maxCharExamId = 6
+            OutlinedTextField(
+                value = examId.value,
+                onValueChange = { if (it.text.length <= maxCharExamId) examId.value = it },
+                label = { Text("Exam id") },
+                maxLines = 1,
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                modifier = Modifier.padding(20.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Black,
+                    unfocusedIndicatorColor = Color.Gray,
+                    focusedLabelColor = Color.Black,
+                    unfocusedLabelColor = Color.Gray
+                )
+            )
+
+            val maxCharAnonymousCode = 15
+            OutlinedTextField(
+                value = anonymousCode.value,
+                onValueChange = {
+                    if (it.text.length <= maxCharAnonymousCode) anonymousCode.value = it
+                },
+                label = { Text("Anonymous Code") },
+                maxLines = 1,
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                modifier = Modifier.padding(20.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Black,
+                    unfocusedIndicatorColor = Color.Gray,
+                    focusedLabelColor = Color.Black,
+                    unfocusedLabelColor = Color.Gray
+                )
+            )
+            OutlinedTextField(
+                value = recoveryCode.value,
+                onValueChange = {
+                    if (it.text.length <= maxCharAnonymousCode) recoveryCode.value = it
+                },
+                label = { Text("Recovery Code") },
+                maxLines = 1,
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                modifier = Modifier.padding(20.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Black,
+                    unfocusedIndicatorColor = Color.Gray,
+                    focusedLabelColor = Color.Black,
+                    unfocusedLabelColor = Color.Gray
+                )
+            )
+        }
+        OutlinedButton(
+            onClick = {
+                    examInfo.verifyRecoveryCode(
+                    courseCode = examId.value.text,
+                    recoveryCode = recoveryCode.value.text,
+                    onSuccess = {
+                         examInfo.setOnError {
+                             errorMessage.value = "You have already submitted this exam"
+                             showAlertDialog.value = true
+                         }
+                         examInfo.fetchData(
+                            courseCode = examId.value.text,
+                            anonymousCode = anonymousCode.value.text
+                        )
+                        examInfo.enableRecoveryMode()
+                    },
+                )
+
+            },
+            colors = ButtonColors(Color(0xFF49546C), Color.White, Color.LightGray, Color.LightGray),
+            border = BorderStroke(2.dp, Color(0xFF071D4F)),
+            modifier = Modifier
+                .align(alignment = Alignment.CenterHorizontally)
+                .padding(10.dp)
+                .requiredHeight(75.dp)
+                .requiredWidth(250.dp)
+        ) {
+            Text("Recover", fontSize = 25.sp)
+        }
+        ElevatedButton(
+            onClick = onBackToLogin,
+            colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
+            border = BorderStroke(2.dp, Color(0xFF30436E)),
+            modifier = Modifier
+                .align(alignment = Alignment.CenterHorizontally)
+                .padding(10.dp)
+                .requiredHeight(75.dp)
+                .requiredWidth(250.dp)
+        ) {
+            Text("Back to login", fontSize = 25.sp)
+        }
+        Image(
+            painter = painterResource(id = R.drawable.chalmers_logo),
+            contentDescription = "The Chalmers logo",
+            modifier = Modifier
+                .padding(20.dp)
+                .fillMaxSize()
+                .align(alignment = Alignment.CenterHorizontally)
+        )
+    }
+    CustomAlertDialog(
+        showDialog = showAlertDialog.value,
+        title = errorTitle.value,
+        message = errorMessage.value,
+        onConfirm = {
+            showAlertDialog.value = false
+            
+        },
+        onDismissRequest = { showAlertDialog.value = false }
+    )
 }

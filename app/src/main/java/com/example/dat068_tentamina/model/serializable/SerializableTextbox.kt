@@ -8,5 +8,7 @@ data class SerializableTextbox(
     var position: SerializableOffset,
     var text: String,
     var color: String,
-    var fontSize: Float
+    var fontSize: Float,
+    var richText: String? = null,
+    var richTextContent: String = ""
 ) : SerializableCanvasObject()
