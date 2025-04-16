@@ -35,6 +35,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
@@ -52,6 +53,7 @@ import com.example.dat068_tentamina.viewmodel.BackgroundType
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
 import kotlin.math.max
 import com.mohamedrejeb.richeditor.model.RichTextState
+import kotlin.math.abs
 
 @SuppressLint("RememberReturnType")
 @Composable
@@ -68,6 +70,11 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
     var context = LocalContext.current
 
     var canvasHeight by remember { mutableStateOf(viewModel.currentCanvasHeight.value) }
+
+    val isMarkAreaMode = viewModel.mark.value;
+    var isMoveMode by remember { mutableStateOf(false) }
+    var markAreaStart by remember { mutableStateOf<Offset?>(null) }
+    var markAreaEnd by remember { mutableStateOf<Offset?>(null) }
 
 
     // Trigger recovery mode only once
@@ -124,35 +131,86 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                 .then(
                     if (!isScrollMode) {
                         Modifier
-                            .pointerInput(Unit) {
-                                detectDragGestures(
-                                    onDragStart = {
-                                        if (!viewModel.textMode.value) viewModel.saveHistory()
-                                    },
-                                    onDrag = { change, dragAmount ->
-                                        if (!viewModel.textMode.value) {
+                            .pointerInput(isMarkAreaMode, isMoveMode) {
+                                if (isMarkAreaMode && !isMoveMode) {
+                                    detectDragGestures(
+                                        onDragStart = { start ->
+                                            markAreaStart = start
+                                            markAreaEnd = start
+                                        },
+                                        onDrag = { change, _ ->
                                             change.consume()
-                                            val start = change.position - dragAmount
-                                            val end = change.position
-
-                                            if (isInBounds(start, size) && isInBounds(end, size)) {
-                                                val newLine = Line(
-                                                    start = start,
-                                                    end = end,
-                                                    strokeWidth = if (viewModel.eraser) viewModel.eraserWidth else viewModel.strokeWidth,
-                                                    color = if (viewModel.eraser) Color.White else Color.Black
-                                                ).apply {
-                                                    if (viewModel.eraser) cap = StrokeCap.Square
+                                            markAreaEnd = change.position
+                                        },
+                                        onDragEnd = {
+                                            markAreaStart?.let {
+                                                markAreaEnd?.let { it1 ->
+                                                    viewModel.findObjectsInsideArea(
+                                                        it,
+                                                        it1
+                                                    )
                                                 }
+                                            }
+                                            isMoveMode = true;
+                                        }
+                                    )
+                                } else if (isMoveMode) {
+                                    detectDragGestures(
+                                        onDragStart = {
+                                            viewModel.saveHistory()
+                                        },
+                                        onDrag = { _, dragAmount ->
+                                            markAreaStart = Offset(
+                                                x = markAreaStart!!.x + dragAmount.x,
+                                                y = markAreaStart!!.y + dragAmount.y
+                                            );
+                                            markAreaEnd = Offset(
+                                                x = markAreaEnd!!.x + dragAmount.x,
+                                                y = markAreaEnd!!.y + dragAmount.y
+                                            );
 
-                                                viewModel.addObject(newLine)
-                                                expandCanvasIfNeeded(newLine, density, canvasHeight) {
-                                                    canvasHeight = it
+                                            viewModel.moveObjects(dragAmount)
+                                        }
+                                    )
+                                } else {
+
+                                    detectDragGestures(
+                                        onDragStart = {
+                                            if (!viewModel.textMode.value) viewModel.saveHistory()
+                                        },
+                                        onDrag = { change, dragAmount ->
+                                            if (!viewModel.textMode.value) {
+                                                change.consume()
+                                                val start = change.position - dragAmount
+                                                val end = change.position
+
+                                                if (isInBounds(start, size) && isInBounds(
+                                                        end,
+                                                        size
+                                                    )
+                                                ) {
+                                                    val newLine = Line(
+                                                        start = start,
+                                                        end = end,
+                                                        strokeWidth = if (viewModel.eraser) viewModel.eraserWidth else viewModel.strokeWidth,
+                                                        color = if (viewModel.eraser) Color.White else Color.Black
+                                                    ).apply {
+                                                        if (viewModel.eraser) cap = StrokeCap.Square
+                                                    }
+
+                                                    viewModel.addObject(newLine)
+                                                    expandCanvasIfNeeded(
+                                                        newLine,
+                                                        density,
+                                                        canvasHeight
+                                                    ) {
+                                                        canvasHeight = it
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
                             .pointerInput(Unit) {
                                 detectTapGestures(
@@ -167,7 +225,12 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                             } else if (textValue.isEmpty()) {
                                                 textOffset = offset
                                             } else {
-                                                createTextBox(viewModel, textValue, textOffset, textMeasurer)
+                                                createTextBox(
+                                                    viewModel,
+                                                    textValue,
+                                                    textOffset,
+                                                    textMeasurer
+                                                )
                                                 textValue = ""
                                                 textOffset = Offset.Zero
                                                 viewModel.textMode.value = false
@@ -187,7 +250,11 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
 
                                                 viewModel.saveHistory()
                                                 viewModel.addObject(dotLine)
-                                                expandCanvasIfNeeded(dotLine, density, canvasHeight) {
+                                                expandCanvasIfNeeded(
+                                                    dotLine,
+                                                    density,
+                                                    canvasHeight
+                                                ) {
                                                     canvasHeight = it
                                                 }
                                             }
@@ -211,6 +278,26 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
 
             // 3. User content
             viewModel.objects.forEach { it.draw(this) }
+            
+            if (isMarkAreaMode && markAreaStart != null && markAreaEnd != null) {
+                drawRect(
+                    color = Color.Blue.copy(alpha = 0.3f),
+                    topLeft = Offset(
+                        x = minOf(markAreaStart!!.x, markAreaEnd!!.x),
+                        y = minOf(markAreaStart!!.y, markAreaEnd!!.y)
+                    ),
+                    size = Size(
+                        width = abs(markAreaEnd!!.x - markAreaStart!!.x),
+                        height = abs(markAreaEnd!!.y - markAreaStart!!.y)
+                    )
+                )
+            } else if (!viewModel.mark.value) {
+                // reset start & end to initial 'null' values for the blue rectangle
+                // thus it will not be drawn next time tool is selected
+                isMoveMode = false;
+                markAreaStart = null;
+                markAreaEnd = null;
+            }
 
             // 4. Redraw background on top to restore erased areas
             when (viewModel.currentBackgroundType) {

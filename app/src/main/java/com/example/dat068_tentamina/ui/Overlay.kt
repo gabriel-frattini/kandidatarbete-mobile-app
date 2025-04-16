@@ -388,6 +388,17 @@ fun ExampageToolbar(
                 )
             }
 
+            // Mark Area
+            IconButton(onClick = {
+                viewModel.mark.value = !viewModel.mark.value
+            }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.highlight_alt),
+                    contentDescription = "highlight_alt",
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+
             // Eraser size picker
             IconButton(onClick = {}) {
                 SizePicker(viewModel, "eraser")

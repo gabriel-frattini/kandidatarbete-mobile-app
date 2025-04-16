@@ -9,8 +9,8 @@ import androidx.compose.ui.unit.dp
 
 
 data class Line (
-    val start: Offset,
-    val end: Offset,
+    var start: Offset,
+    var end: Offset,
     var color: Color = Color.Black,
     var strokeWidth: Dp = 1.dp,
     var cap: StrokeCap = StrokeCap.Round
@@ -31,5 +31,15 @@ data class Line (
                 center = start
             )
         }
+    }
+
+    fun deepCopy(): CanvasObject {
+        return Line(
+            start = Offset(start.x, start.y),
+            end = Offset(end.x, end.y),
+            color = Color(color.value),
+            strokeWidth = strokeWidth,
+            cap = cap
+        )
     }
 }

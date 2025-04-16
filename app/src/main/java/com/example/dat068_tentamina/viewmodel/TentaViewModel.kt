@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlin.collections.remove
 import kotlin.text.set
 import android.util.Log
+import androidx.compose.ui.geometry.Rect
 import com.example.dat068_tentamina.model.TextBox
 
 enum class BackgroundType {
@@ -36,6 +37,8 @@ class TentaViewModel {
     var strokeWidth = 2.dp
     var eraserWidth = 6.dp
     var eraser = false
+    var mark = mutableStateOf(false)
+    var elementIndexes = mutableListOf<Int>()
     var currentQuestion = mutableIntStateOf(1)
     var currentCanvasHeight = mutableStateOf(2400.dp)
     val backgroundTypes = mutableStateMapOf<Int, BackgroundType>() //Junyi
@@ -61,6 +64,47 @@ class TentaViewModel {
         // Kontrollera om det finns objekt på frågan och markera den som besvarad om så är fallet
         if (_objects.isNotEmpty()) {
             answeredQuestions.value = answeredQuestions.value + currentQuestion.intValue
+        }
+    }
+
+    fun findObjectsInsideArea(start: Offset, end: Offset) {
+        val left = minOf(start.x, end.x)
+        val right = maxOf(start.x, end.x)
+        val top = minOf(start.y, end.y)
+        val bottom = maxOf(start.y, end.y)
+
+        val selectionRect = Rect(left, top, right, bottom)
+        elementIndexes = mutableListOf()
+
+        questions[currentQuestion.intValue]?.forEachIndexed { i, obj ->
+            if (obj is Line) {
+                val isLineInside = selectionRect.contains(obj.start) && selectionRect.contains(obj.end)
+
+                if (isLineInside) {
+                    elementIndexes.add(i)
+                }
+            }
+        }
+    }
+
+    fun moveObjects(amount: Offset) {
+        elementIndexes.forEach{index ->
+            if (!questions[currentQuestion.intValue].isNullOrEmpty()) {
+                moveObject(questions[currentQuestion.intValue]!![index], amount, index)
+            }
+        }
+    }
+
+    private fun moveObject(obj: CanvasObject, amount: Offset, index: Int) {
+        if (obj is Line) {
+            // deepCopy, cause references to obj might exist in history, and if we
+            // change start & end on obj only, all references will be affected which is bad
+            val newObj = obj.deepCopy() as Line
+            newObj.start = obj.start + amount
+            newObj.end = obj.end + amount
+
+            _objects[index] = newObj
+            questions[currentQuestion.intValue] = _objects.toList()
         }
     }
 
