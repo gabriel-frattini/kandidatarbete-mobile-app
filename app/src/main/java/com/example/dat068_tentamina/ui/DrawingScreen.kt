@@ -102,6 +102,16 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
             )
         }
     }
+
+    // Reset Mark Area when switching questions
+    DisposableEffect(viewModel.currentQuestion.intValue) {
+        onDispose {
+            isMoveMode = false;
+            markAreaStart = null;
+            markAreaEnd = null;
+        }
+    }
+
     LaunchedEffect(viewModel.currentQuestion.intValue) {
         val savedScroll = viewModel.getScrollPosition(viewModel.currentQuestion.intValue)
         if (verticalScrollState.value != savedScroll) {
