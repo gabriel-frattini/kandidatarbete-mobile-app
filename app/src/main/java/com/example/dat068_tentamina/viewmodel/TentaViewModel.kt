@@ -67,6 +67,12 @@ class TentaViewModel {
         }
     }
 
+    fun deleteAll() {
+        saveHistory()
+        _objects.clear()
+        questions[currentQuestion.intValue] = emptyList()
+    }
+
     fun findObjectsInsideArea(start: Offset, end: Offset) {
         val left = minOf(start.x, end.x)
         val right = maxOf(start.x, end.x)
@@ -117,19 +123,17 @@ class TentaViewModel {
     }
 
     fun undo() {
-        if (_objects.isNotEmpty()) {
-            val Q = currentQuestion.intValue;
-            val previousState = history[Q]?.getCurrValue()
-            if (previousState != null) {
-                redoHistory[Q]?.append(previousState)
-                redoLive[Q]?.append(_objects.toList())
+        val Q = currentQuestion.intValue;
+        val previousState = history[Q]?.getCurrValue()
+        if (previousState != null) {
+            redoHistory[Q]?.append(previousState)
+            redoLive[Q]?.append(_objects.toList())
 
-                _objects.clear()
-                _objects.addAll(previousState)
+            _objects.clear()
+            _objects.addAll(previousState)
 
-                questions[currentQuestion.intValue] = _objects.toList()
-                history[Q]?.pop()
-            }
+            questions[currentQuestion.intValue] = _objects.toList()
+            history[Q]?.pop()
         }
         // Kolla om det finns några objekt kvar, annars markera frågan som obesvarad
         if (_objects.isEmpty()) {

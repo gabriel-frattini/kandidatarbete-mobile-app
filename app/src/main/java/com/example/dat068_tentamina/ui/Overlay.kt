@@ -64,7 +64,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.TabRowDefaults.Divider
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.TopAppBarDefaults
-import kotlin.math.sign
 import android.widget.Toast
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
@@ -395,6 +394,17 @@ fun ExampageToolbar(
                 Icon(
                     painter = painterResource(id = R.drawable.highlight_alt),
                     contentDescription = "highlight_alt",
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+
+            // Delete All
+            IconButton(onClick = {
+                viewModel.deleteAll()
+            }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.delete),
+                    contentDescription = "delete",
                     modifier = Modifier.size(30.dp)
                 )
             }
