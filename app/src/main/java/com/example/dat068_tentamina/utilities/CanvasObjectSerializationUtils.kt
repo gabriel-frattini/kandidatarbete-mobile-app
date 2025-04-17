@@ -10,6 +10,7 @@ import com.example.dat068_tentamina.model.serializable.SerializableTextbox
 import com.example.dat068_tentamina.model.serializable.SerializableLine
 import com.example.dat068_tentamina.model.serializable.SerializableOffset
 import androidx.compose.ui.text.TextLayoutResult
+import com.mohamedrejeb.richeditor.model.RichTextState
 
 
 data class SerializableTextLayoutResult(
@@ -31,7 +32,9 @@ object CanvasObjectSerializationUtils {
                 position = this.position.toSerializable(), // Convert Offset
                 text = this.text,
                 color = this.color.toString(),
-                fontSize = this.fontSize.value
+                fontSize = this.fontSize.value,
+                richText = this.richText?.toMarkdown(),
+                richTextContent = this.richTextContent,
             )
             is Line -> SerializableLine(
                 start = this.start.toSerializable(),
@@ -69,5 +72,8 @@ object CanvasObjectSerializationUtils {
         return Color(components[0], components[1], components[2], components[3])
     }
 
+    fun String.toRichTextState(): RichTextState {
+        return RichTextState().setMarkdown(this)
+    }
 
 }
