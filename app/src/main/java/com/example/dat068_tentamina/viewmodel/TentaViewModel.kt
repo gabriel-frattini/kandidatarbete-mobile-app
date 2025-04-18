@@ -37,8 +37,33 @@ class TentaViewModel {
     var strokeWidth = 2.dp
     var eraserWidth = 6.dp
     var eraser = false
-    var mark = mutableStateOf(false)
-    var elementIndexes = mutableListOf<Int>()
+
+    // elementIndexes is shared between MoveMode and Copy feature
+    // for easier duplication(deepCopy) of marked lines
+    private var elementIndexes = mutableListOf<Int>()
+    private var _mark = mutableStateOf(false)
+    var mark: Boolean
+        get() = _mark.value
+        set(value) {
+            _mark.value = value
+            if (!value) {
+                copyModeAvailable = false
+            }
+        }
+
+    // use copy feature
+    var copy = mutableStateOf(false)
+    // enable/disable copy-button & feature
+    private var _copyModeAvailable = mutableStateOf(false)
+    var copyModeAvailable: Boolean
+        get() = _copyModeAvailable.value
+        set(value) {
+            _copyModeAvailable.value = value
+            if (!value) {
+                copy.value = false
+            }
+        }
+
     var currentQuestion = mutableIntStateOf(1)
     var currentCanvasHeight = mutableStateOf(2400.dp)
     val backgroundTypes = mutableStateMapOf<Int, BackgroundType>() //Junyi
@@ -55,6 +80,37 @@ class TentaViewModel {
     val currentBackgroundType: BackgroundType
         get() = backgroundTypes[currentQuestion.intValue] ?: BackgroundType.BLANK
 //Junyi
+
+    fun copy() {
+        copy.value = true
+    }
+
+    fun copyObjects(offset: Offset, start: Offset, end: Offset) {
+        // check if copy is true here to avoid doing this twice
+        if (copy.value) {
+            findObjectsInsideArea(start, end)
+            duplicateObjects(offset)
+            moveObjects(offset)
+        }
+    }
+
+    private fun duplicateObjects(offset: Offset) {
+        if (copy.value) {
+            elementIndexes.forEach { index ->
+                if (!questions[currentQuestion.intValue].isNullOrEmpty()) {
+                    val obj = questions[currentQuestion.intValue]!![index];
+                    if (obj is Line) {
+                        val duplicate = obj.deepCopy() as Line
+                        duplicate.start -= offset * 2f;
+                        duplicate.end -= offset * 2f;
+
+                        addObject(duplicate)
+                        elementIndexes[index] = objects.lastIndex
+                    }
+                }
+            }
+        }
+    }
 
     @Synchronized
     fun addObject(obj: CanvasObject) {
