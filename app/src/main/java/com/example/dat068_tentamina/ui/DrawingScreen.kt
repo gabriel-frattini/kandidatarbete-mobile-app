@@ -71,10 +71,11 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
 
     var canvasHeight by remember { mutableStateOf(viewModel.currentCanvasHeight.value) }
 
-    val isMarkAreaMode = viewModel.mark.value;
+    val isMarkAreaMode = viewModel.mark;
     var isMoveMode by remember { mutableStateOf(false) }
     var markAreaStart by remember { mutableStateOf<Offset?>(null) }
     var markAreaEnd by remember { mutableStateOf<Offset?>(null) }
+    var saveInMoveMode = true
 
 
     // Trigger recovery mode only once
@@ -106,9 +107,11 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
     // Reset Mark Area when switching questions
     DisposableEffect(viewModel.currentQuestion.intValue) {
         onDispose {
+            viewModel.mark = false
             isMoveMode = false;
             markAreaStart = null;
             markAreaEnd = null;
+            saveInMoveMode = true;
         }
     }
 
@@ -123,6 +126,26 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
         if (newHeight > canvasHeight) {
             canvasHeight = newHeight
             viewModel.updateCanvasHeight(newHeight)
+        }
+    }
+
+    DisposableEffect(viewModel.copy.value) {
+        onDispose {
+            if (viewModel.copy.value) {
+                // move the marked area to the top-left corner to clarify copy was done
+                val left = minOf(markAreaStart!!.x, markAreaEnd!!.x)
+                val top = minOf(markAreaStart!!.y, markAreaEnd!!.y)
+                val topLeft = Offset(left, top)
+
+                val copyStart = markAreaStart
+                val copyEnd = markAreaEnd
+
+                markAreaStart = markAreaStart!! - topLeft
+                markAreaEnd = markAreaEnd!! - topLeft
+
+                viewModel.saveHistory()
+                viewModel.copyObjects(topLeft, copyStart!!, copyEnd!!)
+            }
         }
     }
 
@@ -162,12 +185,16 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                                 }
                                             }
                                             isMoveMode = true;
+                                            viewModel.copyModeAvailable = true
                                         }
                                     )
                                 } else if (isMoveMode) {
                                     detectDragGestures(
                                         onDragStart = {
-                                            viewModel.saveHistory()
+                                            if (saveInMoveMode && !viewModel.copy.value) {
+                                                viewModel.saveHistory()
+                                                saveInMoveMode = false
+                                            }
                                         },
                                         onDrag = { _, dragAmount ->
                                             markAreaStart = Offset(
@@ -183,7 +210,6 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                         }
                                     )
                                 } else {
-
                                     detectDragGestures(
                                         onDragStart = {
                                             if (!viewModel.textMode.value) viewModel.saveHistory()
@@ -301,7 +327,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                         height = abs(markAreaEnd!!.y - markAreaStart!!.y)
                     )
                 )
-            } else if (!viewModel.mark.value) {
+            } else if (!viewModel.mark) {
                 // reset start & end to initial 'null' values for the blue rectangle
                 // thus it will not be drawn next time tool is selected
                 isMoveMode = false;

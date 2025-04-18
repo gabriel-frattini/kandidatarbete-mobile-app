@@ -389,11 +389,24 @@ fun ExampageToolbar(
 
             // Mark Area
             IconButton(onClick = {
-                viewModel.mark.value = !viewModel.mark.value
+                viewModel.mark = !viewModel.mark
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.highlight_alt),
                     contentDescription = "highlight_alt",
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+
+            // Copy Area
+            IconButton(
+                enabled = viewModel.copyModeAvailable,
+                onClick = {
+                    viewModel.copy()
+            }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.content_copy),
+                    contentDescription = "content_copy",
                     modifier = Modifier.size(30.dp)
                 )
             }
