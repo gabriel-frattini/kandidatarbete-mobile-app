@@ -131,20 +131,17 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
 
     DisposableEffect(viewModel.copy.value) {
         onDispose {
-            if (viewModel.copy.value) {
+            if (viewModel.copy.value && viewModel.elementIndexes.isNotEmpty()) {
                 // move the marked area to the top-left corner to clarify copy was done
                 val left = minOf(markAreaStart!!.x, markAreaEnd!!.x)
                 val top = minOf(markAreaStart!!.y, markAreaEnd!!.y)
                 val topLeft = Offset(left, top)
 
-                val copyStart = markAreaStart
-                val copyEnd = markAreaEnd
+                viewModel.saveHistory()
+                viewModel.copyObjects(topLeft, markAreaStart!!, markAreaEnd!!)
 
                 markAreaStart = markAreaStart!! - topLeft
                 markAreaEnd = markAreaEnd!! - topLeft
-
-                viewModel.saveHistory()
-                viewModel.copyObjects(topLeft, copyStart!!, copyEnd!!)
             }
         }
     }
@@ -317,7 +314,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
             
             if (isMarkAreaMode && markAreaStart != null && markAreaEnd != null) {
                 drawRect(
-                    color = Color.Blue.copy(alpha = 0.3f),
+                    color = Color.Gray.copy(alpha = 0.3f),
                     topLeft = Offset(
                         x = minOf(markAreaStart!!.x, markAreaEnd!!.x),
                         y = minOf(markAreaStart!!.y, markAreaEnd!!.y)
