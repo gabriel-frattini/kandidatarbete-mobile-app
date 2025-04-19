@@ -106,6 +106,12 @@ class TentaViewModel {
 
                     addObject(duplicate)
                     newElementIndexes.add(objects.lastIndex)
+                } else if (obj is TextBox) {
+                    val duplicate = obj.deepCopy() as TextBox
+                    duplicate.position -= offset;
+
+                    addObject(duplicate)
+                    newElementIndexes.add(objects.lastIndex)
                 }
             }
             elementIndexes = newElementIndexes
