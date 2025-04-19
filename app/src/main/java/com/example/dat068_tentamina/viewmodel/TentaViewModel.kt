@@ -85,30 +85,30 @@ class TentaViewModel {
         copy.value = true
     }
 
-    fun copyObjects(offset: Offset, start: Offset, end: Offset) {
+    fun copyObjects(topLeft: Offset, markAreaStart: Offset, markAreaEnd: Offset) {
         // check if copy is true here to avoid doing this twice
         if (copy.value) {
-            findObjectsInsideArea(start, end)
-            duplicateObjects(offset)
-            moveObjects(offset)
+            findObjectsInsideArea(markAreaStart, markAreaEnd)
+            duplicateObjects(topLeft)
         }
     }
 
     private fun duplicateObjects(offset: Offset) {
         if (copy.value) {
+            val newElementIndexes = mutableListOf<Int>()
             elementIndexes.forEach { index ->
-                if (!questions[currentQuestion.intValue].isNullOrEmpty()) {
-                    val obj = questions[currentQuestion.intValue]!![index];
-                    if (obj is Line) {
-                        val duplicate = obj.deepCopy() as Line
-                        duplicate.start -= offset * 2f;
-                        duplicate.end -= offset * 2f;
+                val obj = questions[currentQuestion.intValue]!![index]
 
-                        addObject(duplicate)
-                        elementIndexes[index] = objects.lastIndex
-                    }
+                if (obj is Line) {
+                    val duplicate = obj.deepCopy() as Line
+                    duplicate.start -= offset;
+                    duplicate.end -= offset;
+
+                    addObject(duplicate)
+                    newElementIndexes.add(objects.lastIndex)
                 }
             }
+            elementIndexes = newElementIndexes
         }
     }
 

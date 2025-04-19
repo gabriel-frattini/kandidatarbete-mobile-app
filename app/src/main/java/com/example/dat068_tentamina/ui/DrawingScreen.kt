@@ -137,14 +137,11 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                 val top = minOf(markAreaStart!!.y, markAreaEnd!!.y)
                 val topLeft = Offset(left, top)
 
-                val copyStart = markAreaStart
-                val copyEnd = markAreaEnd
+                viewModel.saveHistory()
+                viewModel.copyObjects(topLeft, markAreaStart!!, markAreaEnd!!)
 
                 markAreaStart = markAreaStart!! - topLeft
                 markAreaEnd = markAreaEnd!! - topLeft
-
-                viewModel.saveHistory()
-                viewModel.copyObjects(topLeft, copyStart!!, copyEnd!!)
             }
         }
     }
