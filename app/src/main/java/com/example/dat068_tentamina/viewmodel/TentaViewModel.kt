@@ -40,7 +40,8 @@ class TentaViewModel {
 
     // elementIndexes is shared between MoveMode and Copy feature
     // for easier duplication(deepCopy) of marked lines
-    private var elementIndexes = mutableListOf<Int>()
+    var elementIndexes = mutableListOf<Int>()
+        private set
     private var _mark = mutableStateOf(false)
     var mark: Boolean
         get() = _mark.value

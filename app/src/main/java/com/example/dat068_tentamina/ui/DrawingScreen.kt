@@ -131,7 +131,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
 
     DisposableEffect(viewModel.copy.value) {
         onDispose {
-            if (viewModel.copy.value) {
+            if (viewModel.copy.value && viewModel.elementIndexes.isNotEmpty()) {
                 // move the marked area to the top-left corner to clarify copy was done
                 val left = minOf(markAreaStart!!.x, markAreaEnd!!.x)
                 val top = minOf(markAreaStart!!.y, markAreaEnd!!.y)
