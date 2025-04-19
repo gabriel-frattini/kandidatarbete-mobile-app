@@ -317,7 +317,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
             
             if (isMarkAreaMode && markAreaStart != null && markAreaEnd != null) {
                 drawRect(
-                    color = Color.Blue.copy(alpha = 0.3f),
+                    color = Color.Gray.copy(alpha = 0.3f),
                     topLeft = Offset(
                         x = minOf(markAreaStart!!.x, markAreaEnd!!.x),
                         y = minOf(markAreaStart!!.y, markAreaEnd!!.y)

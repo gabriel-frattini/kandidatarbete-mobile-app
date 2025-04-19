@@ -38,6 +38,18 @@ data class TextBox(
         )
     }
 
+    fun deepCopy(): CanvasObject {
+        return TextBox(
+            position = Offset(position.x, position.y),
+            text = text,
+            textLayout = textLayout,
+            color = color,
+            fontSize = fontSize,
+            richText = richText,
+            richTextContent = richTextContent
+        )
+    }
+
 }
 
 

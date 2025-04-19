@@ -124,9 +124,11 @@ class TentaViewModel {
     }
 
     fun deleteAll() {
-        saveHistory()
-        _objects.clear()
-        questions[currentQuestion.intValue] = emptyList()
+        if (_objects.isNotEmpty()) {
+            saveHistory()
+            _objects.clear()
+            questions[currentQuestion.intValue] = emptyList()
+        }
     }
 
     fun findObjectsInsideArea(start: Offset, end: Offset) {
@@ -143,6 +145,16 @@ class TentaViewModel {
                 val isLineInside = selectionRect.contains(obj.start) && selectionRect.contains(obj.end)
 
                 if (isLineInside) {
+                    elementIndexes.add(i)
+                }
+            } else if (obj is TextBox) {
+                val topLeft = obj.position
+                val sizePx = obj.textLayout.size
+                val bottomRight = Offset(topLeft.x + sizePx.width, topLeft.y + sizePx.height)
+
+                val isTextBoxInside = selectionRect.contains(topLeft) && selectionRect.contains(bottomRight)
+
+                if (isTextBoxInside) {
                     elementIndexes.add(i)
                 }
             }
@@ -162,8 +174,14 @@ class TentaViewModel {
             // deepCopy, cause references to obj might exist in history, and if we
             // change start & end on obj only, all references will be affected which is bad
             val newObj = obj.deepCopy() as Line
-            newObj.start = obj.start + amount
-            newObj.end = obj.end + amount
+            newObj.start += amount
+            newObj.end += amount
+
+            _objects[index] = newObj
+            questions[currentQuestion.intValue] = _objects.toList()
+        } else if (obj is TextBox) {
+            val newObj = obj.deepCopy() as TextBox
+            newObj.position += amount
 
             _objects[index] = newObj
             questions[currentQuestion.intValue] = _objects.toList()
