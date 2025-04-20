@@ -1,6 +1,10 @@
 package com.example.dat068_tentamina.utilities
 
+import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
@@ -12,13 +16,14 @@ import org.json.JSONObject
 import java.io.File
 import java.io.IOException
 
+
 class ServerHandler {
     private val SCHEME = "http"
-    private val HOST = "10.0.73.66"
+    private val HOST = "192.168.0.18"
     private val PORT = 3000
     private val client = OkHttpClient()
 
-    fun sendPdfToServer(pdfFile: File, course: String, username: String) {
+    fun sendPdfToServer(context: Context, pdfFile: File, course: String, username: String) {
         // Create the multipart body
         val requestBody = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
@@ -49,13 +54,22 @@ class ServerHandler {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("SubmitExam", "Failed to send PDF", e)
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(context, "Failed to submit the exam.", Toast.LENGTH_LONG).show()
+                }
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
                     Log.d("SubmitExam", "PDF submitted successfully")
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(context, "Exam submitted successfully!", Toast.LENGTH_LONG).show()
+                    }
                 } else {
                     Log.e("SubmitExam", "Server returned an error: ${response.message}")
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(context, "Server error: ${response.message}", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         })

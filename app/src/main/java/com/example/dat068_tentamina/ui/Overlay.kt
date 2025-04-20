@@ -623,7 +623,7 @@ fun MenuScreen(
                     }
                     val pdfFile = PdfConverter.createPdfFromAnswers(answersWithBackground, 2560, 1700, activity)
 
-                    examInfo.sendPdf(pdfFile)
+                    examInfo.sendPdf(context = activity, pdfFile = pdfFile)
                     signout()
                     submitDialog = false
                 }) {
