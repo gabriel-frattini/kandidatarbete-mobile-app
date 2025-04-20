@@ -432,6 +432,11 @@ fun ExampageToolbar(
                 SizePicker(viewModel)
             }
 
+            // Shape picker
+            IconButton(onClick = {}) {
+                ShapePicker(viewModel)
+            }
+
             IconButton(onClick = {}) {
                 BackgroundPicker(viewModel) //Junyi
             }
