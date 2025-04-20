@@ -362,10 +362,15 @@ class ExamInfo() : ViewModel() {
         }
     }
 
-
-    fun sendPdf(context: Context, pdfFile: File) {
-        apiHelper.sendPdfToServer(context, pdfFile, course, user)
+    fun sendPdf(
+        context: Context,
+        pdfFile: File,
+        onSuccess: () -> Unit,
+        onFailure: () -> Unit
+    ) {
+        apiHelper.sendPdfToServer(context, pdfFile, course, user, onSuccess, onFailure)
     }
+
 
     fun getTentaModel() : TentaViewModel{
         return tentaViewModel

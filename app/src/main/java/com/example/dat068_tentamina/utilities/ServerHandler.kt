@@ -23,7 +23,15 @@ class ServerHandler {
     private val PORT = 3000
     private val client = OkHttpClient()
 
-    fun sendPdfToServer(context: Context, pdfFile: File, course: String, username: String) {
+    fun sendPdfToServer(
+        context: Context,
+        pdfFile: File,
+        course: String,
+        username: String,
+        onSuccess: () -> Unit,
+        onFailure: () -> Unit
+    )
+    {
         // Create the multipart body
         val requestBody = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
@@ -55,7 +63,7 @@ class ServerHandler {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("SubmitExam", "Failed to send PDF", e)
                 Handler(Looper.getMainLooper()).post {
-                    Toast.makeText(context, "Failed to submit the exam.", Toast.LENGTH_LONG).show()
+                    onFailure()
                 }
             }
 
@@ -63,12 +71,12 @@ class ServerHandler {
                 if (response.isSuccessful) {
                     Log.d("SubmitExam", "PDF submitted successfully")
                     Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(context, "Exam submitted successfully!", Toast.LENGTH_LONG).show()
+                        onSuccess()
                     }
                 } else {
                     Log.e("SubmitExam", "Server returned an error: ${response.message}")
                     Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(context, "Server error: ${response.message}", Toast.LENGTH_LONG).show()
+                        onFailure()
                     }
                 }
             }
