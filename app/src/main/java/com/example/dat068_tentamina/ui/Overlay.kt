@@ -74,9 +74,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import com.example.dat068_tentamina.viewmodel.BackgroundType
 import androidx.compose.material3.Checkbox
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
+import androidx.compose.material.icons.filled.Warning
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -315,7 +313,11 @@ fun MenuScreen(
             )
         }
 
-        Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(horizontal = 20.dp))
+        Divider(
+            color = Color.LightGray,
+            thickness = 1.dp,
+            modifier = Modifier.padding(horizontal = 20.dp)
+        )
 
         Box(
             modifier = Modifier
@@ -371,7 +373,11 @@ fun MenuScreen(
             }
         }
 
-        Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(horizontal = 20.dp))
+        Divider(
+            color = Color.LightGray,
+            thickness = 1.dp,
+            modifier = Modifier.padding(horizontal = 20.dp)
+        )
 
         OutlinedButton(
             onClick = { submitDialog = true },
@@ -382,19 +388,20 @@ fun MenuScreen(
                 .align(Alignment.CenterHorizontally),
             shape = RoundedCornerShape(30.dp),
             colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = Color.White,
-                contentColor = Color(0xFF071D4F),
+                containerColor = Color(0xFF49546C), // Samma mörkblå bakgrund som första knappen
+                contentColor = Color.White,         // Vit text
                 disabledContentColor = Color.LightGray
             ),
-            border = BorderStroke(2.dp, Color(0xFF071D4F))
+            border = BorderStroke(2.dp, Color(0xFF071D4F)) // Samma mörkblå kant
         ) {
             Text(
                 text = "Submit Exam",
-                color = Color(0xFF071D4F),
+                color = Color.White, // Matchar innehållet med vit färg
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
         }
+
     }
 
     // Submit Dialog submit exam
@@ -402,26 +409,29 @@ fun MenuScreen(
         var isChecked by remember { mutableStateOf(false) }
         val totalQuestionsNr = viewModel.questions.size
         val answeredQuestions = viewModel.answeredQuestions.value.size
-        val unansweredCount  = totalQuestionsNr - answeredQuestions
+        val unansweredCount = totalQuestionsNr - answeredQuestions
 
 
         AlertDialog(
             onDismissRequest = { submitDialog = false },
-            title = { Text("Submit Exam") },
+            title = { Text("Submit exam", style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFF071D4F),fontWeight = FontWeight.Bold),fontSize = 24.sp)},
             text = {
                 Column {
                     if (unansweredCount > 0) {
                         Text(
-                            "You have ($unansweredCount) unanswered question${if (unansweredCount > 1) "s" else ""}. Are you sure you want to submit?",
-                            //color = Color.Black,
+                            "You have ($unansweredCount) unanswered question${if (unansweredCount > 1) "s" else ""}. Are you sure you want to submit your exam?",
                             style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold
+                                color = Color(0xFF333333),
+                                fontWeight = FontWeight.SemiBold
                             )
                         )
                         Spacer(modifier = Modifier.height(12.dp))
-                    }
-                    else{
-                        Text("All questions are answered. Do you want to submit?")
+                    } else {
+                        Text("All questions are answered. Are you sure you want to submit your exam?",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = Color(0xFF333333),
+                                fontWeight = FontWeight.SemiBold
+                            ))
                         Spacer(modifier = Modifier.height(12.dp))
                     }
                     Row(
@@ -433,47 +443,87 @@ fun MenuScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "I understand that by submitting this, I am submitting the entire exam, and once submitted, I will not be able to edit my answers",
-                            style = MaterialTheme.typography.bodyMedium
+                            text = "I understand that submitting will finalize my exam",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = Color(0xFF071D4F)
+                            )
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Warning,
+                            contentDescription = "Warning",
+                            tint = Color.Black,
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .padding(4.dp)
+                                .padding(start = 8.dp)
+                        )
+                        Text(
+                            text = "NOTE: After submission, you won’t be able to edit your answers",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = Color(0xFF555555)
+                            ),
+                            modifier = Modifier.padding(start = 4.dp)
                         )
                     }
                 }
             },
             confirmButton = {
-                Button(onClick = {
-                    val answersWithBackground =
-                        viewModel.getAnswers().mapValues { (questionId, objects) ->
-                            val background =
-                                viewModel.backgroundTypes[questionId] ?: BackgroundType.BLANK
-                            objects to background
-                        }
-                    val pdfFile = PdfConverter.createPdfFromAnswers(
-                        answersWithBackground,
-                        2560,
-                        1700,
-                        activity
-                    )
+                Button(
+                    onClick = {
+                        val answersWithBackground =
+                            viewModel.getAnswers().mapValues { (questionId, objects) ->
+                                val background =
+                                    viewModel.backgroundTypes[questionId] ?: BackgroundType.BLANK
+                                objects to background
+                            }
+                        val pdfFile = PdfConverter.createPdfFromAnswers(
+                            answersWithBackground,
+                            2560,
+                            1700,
+                            activity
+                        )
 
-                    examInfo.sendPdf(pdfFile)
-                    signout()
-                    submitDialog = false
-                },
-                enabled = isChecked,
+                        examInfo.sendPdf(pdfFile)
+                        signout()
+                        submitDialog = false
+                    },
+                    enabled = isChecked,
                     colors = ButtonDefaults.buttonColors(
-                        disabledContentColor = Color(0xFF555555)
+                        containerColor = if (isChecked) Color(0xFF49546C) else Color.LightGray,
+                        contentColor = if (isChecked) Color.White else Color(0xFF555555)
+                    ),
+                    border = BorderStroke(2.dp, if (isChecked) Color(0xFF071D4F) else Color(0xFF555555))
+                ) {
+                    Text("Submit",
+                        color = if (isChecked) Color.White else Color(0xFF555555)
                     )
-                ){
-                    Text("Submit")
                 }
             },
             dismissButton = {
-                Button(onClick = { submitDialog = false }) {
-                    Text("Cancel")
+                OutlinedButton(
+                    onClick = { submitDialog = false },
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color.White,
+                        contentColor = Color(0xFF071D4F),
+                        disabledContentColor = Color.LightGray
+                    ),
+                    border = BorderStroke(2.dp, Color(0xFF071D4F))
+                ) {
+                    Text(
+                        text = "Cancel",
+                        color = Color(0xFF071D4F)
+                    )
                 }
             }
         )
     }
-    //Dialog för studentinformationen
+
+    // Dialog för studentinformationen
     if (showInfoDialog) {
         AlertDialog(
             onDismissRequest = { showInfoDialog = false },
@@ -483,8 +533,19 @@ fun MenuScreen(
             },
             confirmButton = {},
             dismissButton = {
-                Button(onClick = { showInfoDialog = false }) {
-                    Text("Back")
+                OutlinedButton(
+                    onClick = { showInfoDialog = false },
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color.White,
+                        contentColor = Color(0xFF071D4F),
+                        disabledContentColor = Color.LightGray
+                    ),
+                    border = BorderStroke(2.dp, Color(0xFF071D4F))
+                ) {
+                    Text(
+                        text = "Back",
+                        color = Color(0xFF071D4F)
+                    )
                 }
             }
         )
