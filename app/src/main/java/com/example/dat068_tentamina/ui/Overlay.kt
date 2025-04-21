@@ -396,8 +396,9 @@ fun MenuScreen(
         ) {
             Text(
                 text = "Submit Exam",
-                color = Color.White, // Matchar innehållet med vit färg
-                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
         }
@@ -444,7 +445,7 @@ fun MenuScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "I understand that submitting will finalize my exam",
-                            style = MaterialTheme.typography.bodyMedium.copy(
+                            style = MaterialTheme.typography.bodyLarge.copy(
                                 color = Color(0xFF071D4F)
                             )
                         )
@@ -464,7 +465,7 @@ fun MenuScreen(
                         )
                         Text(
                             text = "NOTE: After submission, you won’t be able to edit your answers",
-                            style = MaterialTheme.typography.bodySmall.copy(
+                            style = MaterialTheme.typography.bodyMedium.copy(
                                 color = Color(0xFF555555)
                             ),
                             modifier = Modifier.padding(start = 4.dp)
@@ -497,10 +498,10 @@ fun MenuScreen(
                         containerColor = if (isChecked) Color(0xFF49546C) else Color.LightGray,
                         contentColor = if (isChecked) Color.White else Color(0xFF555555)
                     ),
-                    border = BorderStroke(2.dp, if (isChecked) Color(0xFF071D4F) else Color(0xFF555555))
+                    border = BorderStroke(2.dp, if (isChecked) Color(0xFF071D4F) else Color(0xFFA1A1A1))
                 ) {
                     Text("Submit",
-                        color = if (isChecked) Color.White else Color(0xFF555555)
+                        color = if (isChecked) Color.White else Color(0xFFA1A1A1)
                     )
                 }
             },
@@ -527,7 +528,7 @@ fun MenuScreen(
     if (showInfoDialog) {
         AlertDialog(
             onDismissRequest = { showInfoDialog = false },
-            title = { Text("Student Information") },
+            title = { Text("Student information", style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFF071D4F),fontWeight = FontWeight.Bold),fontSize = 24.sp) },
             text = {
                 Text("Course: ${examInfo.course}\nAnonymous Code: ${examInfo.user} \nBirth ID: ${examInfo.personalID}")
             },
