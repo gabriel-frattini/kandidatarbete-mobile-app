@@ -43,6 +43,11 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,21 +88,32 @@ fun LoginView(examInfo: ExamInfo, onNavigateToExam: () -> Unit, onNavigateToReco
         }
     }
 
+Box(
+    modifier = Modifier
+        .fillMaxSize()
+        .background(
+            Brush.linearGradient(
+                colors = listOf(Color(0xFF49546C),Color(0xFFBEC6D9), Color.White),
+                start = Offset(0f, 0f),
+                end = Offset(2000f, 2000f)
+            )
+        )
+) {
+    Text(
+        text = LocalDate.now().toString(),
+        fontSize = 25.sp,
+        lineHeight = 25.sp,
+        textAlign = TextAlign.Right,
+        modifier = Modifier
+            .padding(top = 20.dp, end = 20.dp)
+            .align(Alignment.TopEnd)
+    )
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
-            .background(Color(0xFFBEC6D9))
             .fillMaxSize()
     ) {
-        Text(
-            text = LocalDate.now().toString(),
-            fontSize = 25.sp,
-            lineHeight = 25.sp,
-            textAlign = TextAlign.Right,
-            modifier = Modifier
-                .padding(20.dp)
-                .align(Alignment.End)
-        )
+
         Text(
             text = "Exam Check-in",
             fontSize = 64.sp,
@@ -185,37 +201,38 @@ fun LoginView(examInfo: ExamInfo, onNavigateToExam: () -> Unit, onNavigateToReco
             Text("Check in", fontSize = 25.sp)
         }
         ElevatedButton(
-                onClick = onNavigateToRecovery,
-                colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
-                border = BorderStroke(2.dp, Color(0xFF30436E)),
-                modifier = Modifier
-                    .align(alignment = Alignment.CenterHorizontally)
-                    .padding(10.dp)
-                    .requiredHeight(75.dp)
-                    .requiredWidth(250.dp)
+            onClick = onNavigateToRecovery,
+            colors = ButtonColors(Color.White, Color(0xFF30436E), Color.LightGray, Color.LightGray),
+            border = BorderStroke(2.dp, Color(0xFF30436E)),
+            modifier = Modifier
+                .align(alignment = Alignment.CenterHorizontally)
+                .padding(10.dp)
+                .requiredHeight(75.dp)
+                .requiredWidth(250.dp)
         ) {
             Text("Recover exam", fontSize = 25.sp)
         }
-
-        Image(
-            painter = painterResource(id = R.drawable.chalmers_logo),
-            contentDescription = "The Chalmers logo",
-            modifier = Modifier
-                .padding(20.dp)
-                .fillMaxSize()
-                .align(Alignment.CenterHorizontally)
-        )
     }
-    CustomAlertDialog(
-        showDialog = showAlertDialog.value,
-        title = errorTitle.value,
-        message = errorMessage.value,
-        onConfirm = {
-            showAlertDialog.value = false
-            
-        },
-        onDismissRequest = { showAlertDialog.value = false }
+    Image(
+        painter = painterResource(id = R.drawable.chalmers_logo),
+        contentDescription = "The Chalmers logo",
+        modifier = Modifier
+            .size(300.dp)
+            .align(Alignment.BottomEnd)
+            .padding(20.dp)
     )
+}
+
+CustomAlertDialog(
+    showDialog = showAlertDialog.value,
+    title = errorTitle.value,
+    message = errorMessage.value,
+    onConfirm = {
+        showAlertDialog.value = false
+
+    },
+    onDismissRequest = { showAlertDialog.value = false }
+)
 }
 
 @Composable
@@ -244,21 +261,32 @@ fun RecoveryView(onBackToLogin: () -> Unit, onNavigateToExam: () -> Unit, examIn
             showAlertDialog.value = true
         }
     }
+
+Box(
+    modifier = Modifier
+        .fillMaxSize()
+        .background(
+            Brush.linearGradient(
+                colors = listOf(Color(0xFF49546C),Color(0xFFBEC6D9), Color.White),
+                start = Offset(0f, 0f),
+                end = Offset(2000f, 2000f)
+            )
+        )
+) {
+    Text(
+        text = LocalDate.now().toString(),
+        fontSize = 25.sp,
+        lineHeight = 25.sp,
+        textAlign = TextAlign.Right,
+        modifier = Modifier
+            .padding(top = 20.dp, end = 20.dp)
+            .align(Alignment.TopEnd)
+    )
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
-            .background(Color(0xFFBEC6D9))
             .fillMaxSize()
     ) {
-        Text(
-            text = LocalDate.now().toString(),
-            fontSize = 25.sp,
-            lineHeight = 25.sp,
-            textAlign = TextAlign.Right,
-            modifier = Modifier
-                .padding(20.dp)
-                .align(alignment = Alignment.End)
-        )
         Text(
             text = "Exam Recovery",
             fontSize = 64.sp,
@@ -343,15 +371,15 @@ fun RecoveryView(onBackToLogin: () -> Unit, onNavigateToExam: () -> Unit, examIn
         }
         OutlinedButton(
             onClick = {
-                    examInfo.verifyRecoveryCode(
+                examInfo.verifyRecoveryCode(
                     courseCode = examId.value.text,
                     recoveryCode = recoveryCode.value.text,
                     onSuccess = {
-                         examInfo.setOnError {
-                             errorMessage.value = "You have already submitted this exam"
-                             showAlertDialog.value = true
-                         }
-                         examInfo.fetchData(
+                        examInfo.setOnError {
+                            errorMessage.value = "You have already submitted this exam"
+                            showAlertDialog.value = true
+                        }
+                        examInfo.fetchData(
                             courseCode = examId.value.text,
                             anonymousCode = anonymousCode.value.text,
                             onSuccess = {
@@ -384,23 +412,25 @@ fun RecoveryView(onBackToLogin: () -> Unit, onNavigateToExam: () -> Unit, examIn
         ) {
             Text("Back to login", fontSize = 25.sp)
         }
-        Image(
-            painter = painterResource(id = R.drawable.chalmers_logo),
-            contentDescription = "The Chalmers logo",
-            modifier = Modifier
-                .padding(20.dp)
-                .fillMaxSize()
-                .align(alignment = Alignment.CenterHorizontally)
-        )
     }
-    CustomAlertDialog(
-        showDialog = showAlertDialog.value,
-        title = errorTitle.value,
-        message = errorMessage.value,
-        onConfirm = {
-            showAlertDialog.value = false
-            
-        },
-        onDismissRequest = { showAlertDialog.value = false }
+    Image(
+        painter = painterResource(id = R.drawable.chalmers_logo),
+        contentDescription = "The Chalmers logo",
+        modifier = Modifier
+            .size(300.dp)
+            .align(Alignment.BottomEnd)
+            .padding(20.dp)
     )
+}
+
+CustomAlertDialog(
+    showDialog = showAlertDialog.value,
+    title = errorTitle.value,
+    message = errorMessage.value,
+    onConfirm = {
+        showAlertDialog.value = false
+
+    },
+    onDismissRequest = { showAlertDialog.value = false }
+)
 }
