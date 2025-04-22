@@ -67,6 +67,9 @@ import androidx.compose.material.TabRowDefaults.Divider
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.TopAppBarDefaults
 import android.widget.Toast
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
 import androidx.compose.material3.OutlinedButton
@@ -83,8 +86,11 @@ import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.Modifier
 import com.example.dat068_tentamina.viewmodel.BackgroundType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import androidx.compose.material3.Checkbox
 import androidx.compose.material.icons.filled.Warning
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,8 +101,6 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode: Boolean
     var selectedTabIndex by remember { mutableStateOf(0) }
     val questionNumbers = viewModel.questions.keys.sorted()
     val tabs = questionNumbers.map { "Question $it" }
-
-
 
     var examOverDialogVisible by remember { mutableStateOf(false) }
 
@@ -707,9 +711,22 @@ fun MenuScreen(
                             1700,
                             activity
                         )
-
-                        examInfo.sendPdf(pdfFile)
-                        signout()
+                    examInfo.sendPdf(
+                        context = activity,
+                        pdfFile = pdfFile,
+                        onSuccess = {
+                            Toast.makeText(activity, "✅ Exam submitted successfully", Toast.LENGTH_SHORT).show()
+                            // Launch a coroutine to delay signout
+                            CoroutineScope(Dispatchers.Main).launch {
+                                delay(3000) // wait
+                                signout()
+                            }
+                        },
+                        onFailure = {
+                            Toast.makeText(activity, "❌ Submission failed", Toast.LENGTH_LONG).show()
+                            // Stay on the same screen
+                        }
+                    )
                         submitDialog = false
                     },
                     enabled = isChecked,

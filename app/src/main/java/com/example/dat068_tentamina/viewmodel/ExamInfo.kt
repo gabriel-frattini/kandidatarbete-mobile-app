@@ -38,6 +38,7 @@ import java.util.Locale
 import java.util.Date
 import java.util.TimeZone
 import com.mohamedrejeb.richeditor.model.RichTextState
+import kotlinx.serialization.builtins.serializer
 
 
 class ExamInfo() : ViewModel() {
@@ -232,6 +233,8 @@ class ExamInfo() : ViewModel() {
             // Convert the serialized answers to JSON format
             val answersJsonString = Json.encodeToString(ListSerializer(Answer.serializer()), serializedAnswers)
 
+
+
             // Update the storageObject with the serialized data
             storageObject = JSONObject().apply {
                 put("examID", course)
@@ -359,10 +362,15 @@ class ExamInfo() : ViewModel() {
         }
     }
 
-
-    fun sendPdf(pdfFile: File) {
-        apiHelper.sendPdfToServer(pdfFile, course, user)
+    fun sendPdf(
+        context: Context,
+        pdfFile: File,
+        onSuccess: () -> Unit,
+        onFailure: () -> Unit
+    ) {
+        apiHelper.sendPdfToServer(context, pdfFile, course, user, onSuccess, onFailure)
     }
+
 
     fun getTentaModel() : TentaViewModel{
         return tentaViewModel
