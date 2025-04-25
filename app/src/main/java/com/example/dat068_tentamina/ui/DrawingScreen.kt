@@ -51,6 +51,7 @@ import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
 import com.example.dat068_tentamina.viewmodel.BackgroundType
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
+import com.example.dat068_tentamina.viewmodel.ToolMode
 import kotlin.math.max
 import com.mohamedrejeb.richeditor.model.RichTextState
 import kotlin.math.abs
@@ -209,10 +210,10 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                 } else {
                                     detectDragGestures(
                                         onDragStart = {
-                                            if (!viewModel.textMode.value) viewModel.saveHistory()
+                                            if (!viewModel.isTextMode) viewModel.saveHistory()
                                         },
                                         onDrag = { change, dragAmount ->
-                                            if (!viewModel.textMode.value) {
+                                            if (!viewModel.isTextMode) {
                                                 change.consume()
                                                 val start = change.position - dragAmount
                                                 val end = change.position
@@ -225,10 +226,10 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                                     val newLine = Line(
                                                         start = start,
                                                         end = end,
-                                                        strokeWidth = if (viewModel.eraser) viewModel.eraserWidth else viewModel.strokeWidth,
-                                                        color = if (viewModel.eraser) Color.White else Color.Black
+                                                        strokeWidth = if (viewModel.isEraser) viewModel.eraserWidth else viewModel.strokeWidth,
+                                                        color = if (viewModel.isEraser) Color.White else Color.Black
                                                     ).apply {
-                                                        if (viewModel.eraser) cap = StrokeCap.Square
+                                                        if (viewModel.isEraser) cap = StrokeCap.Square
                                                     }
 
                                                     viewModel.addObject(newLine)
@@ -249,7 +250,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                 if (!isMoveMode) {
                                     detectTapGestures(
                                         onTap = { offset ->
-                                            if (viewModel.textMode.value) {
+                                            if (viewModel.isTextMode) {
                                                 val tappedTextBox =
                                                     findTappedTextBox(viewModel, offset)
                                                 if (tappedTextBox != null) {
@@ -268,8 +269,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                                     )
                                                     textValue = ""
                                                     textOffset = Offset.Zero
-                                                    viewModel.textMode.value = false
-                                                    viewModel.eraser = false
+                                                    viewModel.selectedTool.value = ToolMode.PEN
                                                 }
                                             } else {
                                                 val tappedTextBox =
@@ -347,7 +347,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
         }
 //Junyi
 
-        if (viewModel.textMode.value && textOffset != Offset.Zero) {
+        if (viewModel.isTextMode && textOffset != Offset.Zero) {
             var adjustedOffset = Offset(
                 textOffset.x / density,
                 (textOffset.y - verticalScrollState.value) / density
@@ -371,8 +371,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                     }
                     textValue = ""
                     adjustedOffset = Offset.Zero
-                    viewModel.textMode.value = false
-                    viewModel.eraser = false
+                    viewModel.selectedTool.value = ToolMode.PEN
                 }
             )
         }

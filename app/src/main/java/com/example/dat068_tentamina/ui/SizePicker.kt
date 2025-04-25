@@ -22,26 +22,30 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.dat068_tentamina.R
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
-@Composable
-fun SizePicker(viewModel: TentaViewModel, tool: String = "pen") {
-    var expanded by remember { mutableStateOf(false) }
+import com.example.dat068_tentamina.viewmodel.ToolMode
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
+@Composable
+fun SizePicker(viewModel: TentaViewModel, tool: String = "pen", iconTint: Color = Color.Black) {
+    var expanded by remember { mutableStateOf(false) }
+    val isEraser = tool == "eraser"
+
+    Box(contentAlignment = Alignment.Center) {
         IconButton(onClick = {
             expanded = !expanded
-            viewModel.eraser = (tool != "pen")
-            viewModel.textMode.value = false
+            viewModel.selectedTool.value = if (isEraser) ToolMode.ERASER else ToolMode.PEN
         }) {
-            if (tool == "pen") {
-                Icon(Icons.Filled.Edit, contentDescription = "pen")
-            } else {
+            if (isEraser) {
                 Icon(
                     painter = painterResource(id = R.drawable.eraser),
-                    contentDescription = "eraser",
-                    modifier = Modifier.size(30.dp)
+                    contentDescription = "Eraser",
+                    modifier = Modifier.size(30.dp),
+                    tint = iconTint
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = "Pen",
+                    tint = iconTint
                 )
             }
         }
@@ -51,29 +55,26 @@ fun SizePicker(viewModel: TentaViewModel, tool: String = "pen") {
             onDismissRequest = { expanded = false }
         ) {
             listOf(
-                2.dp to 24.dp,   // Small size
-                4.dp to 32.dp,   // Medium size
-                6.dp to 48.dp,   // Large size
-                8.dp to 64.dp,   // Extra Large
-                10.dp to 96.dp,  // XXL
-                12.dp to 128.dp  // Mega
+                2.dp to 24.dp,
+                4.dp to 32.dp,
+                6.dp to 48.dp,
+                8.dp to 64.dp,
+                10.dp to 96.dp,
+                12.dp to 128.dp
             ).forEach { (penSize, eraserSize) ->
                 DropdownMenuItem(
                     text = { },
                     leadingIcon = {
-                        Canvas(modifier = Modifier.size(if (viewModel.eraser) eraserSize /2 else penSize)) {
+                        Canvas(modifier = Modifier.size(if (isEraser) eraserSize / 2 else penSize)) {
                             drawCircle(
-                                color = if (viewModel.eraser) Color.White else Color.Black,
+                                color = if (isEraser) Color.White else Color.Black,
                                 radius = size.minDimension / 2
                             )
                         }
                     },
                     onClick = {
-                        if (viewModel.eraser) {
-                            viewModel.eraserWidth = eraserSize
-                        } else {
-                            viewModel.strokeWidth = penSize
-                        }
+                        if (isEraser) viewModel.eraserWidth = eraserSize
+                        else viewModel.strokeWidth = penSize
                         expanded = false
                     }
                 )
@@ -81,3 +82,4 @@ fun SizePicker(viewModel: TentaViewModel, tool: String = "pen") {
         }
     }
 }
+

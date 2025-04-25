@@ -19,9 +19,15 @@ import android.util.Log
 import androidx.compose.ui.geometry.Rect
 import com.example.dat068_tentamina.model.TextBox
 
+enum class ToolMode {
+    PEN,
+    ERASER,
+    TEXT,
+}
+
 enum class BackgroundType {
     BLANK, GRAPH, LINED, DOTTED
-}  //Junyi
+}
 
 
 class TentaViewModel {
@@ -80,7 +86,12 @@ class TentaViewModel {
     var questionChangeTrigger = mutableStateOf(0)
     val currentBackgroundType: BackgroundType
         get() = backgroundTypes[currentQuestion.intValue] ?: BackgroundType.BLANK
-//Junyi
+
+    var selectedTool = mutableStateOf<ToolMode?>(null)
+
+    val isTextMode: Boolean get() = selectedTool.value == ToolMode.TEXT
+    val isEraser: Boolean get() = selectedTool.value == ToolMode.ERASER
+    val isPen: Boolean get() = selectedTool.value == ToolMode.PEN
 
     fun copy() {
         copy.value = true
