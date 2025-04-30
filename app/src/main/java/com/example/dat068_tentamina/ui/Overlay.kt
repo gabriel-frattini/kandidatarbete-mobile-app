@@ -740,7 +740,7 @@ fun MenuScreen(
                         context = activity,
                         pdfFile = pdfFile,
                         onSuccess = {
-                            Toast.makeText(activity, "✅ Exam submitted successfully", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(activity, "Exam submitted successfully ✅", Toast.LENGTH_SHORT).show()
                             // Launch a coroutine to delay signout
                             CoroutineScope(Dispatchers.Main).launch {
                                 delay(3000) // wait
@@ -748,7 +748,7 @@ fun MenuScreen(
                             }
                         },
                         onFailure = {
-                            Toast.makeText(activity, "❌ Submission failed", Toast.LENGTH_LONG).show()
+                            Toast.makeText(activity, "Submission failed ❌", Toast.LENGTH_LONG).show()
                             // Stay on the same screen
                         }
                     )
