@@ -76,6 +76,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import java.util.Calendar
@@ -199,7 +200,7 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode: Boolean
 
 
     val tabWidth = 150.dp
-    val selectedTabColor = Color(0xFFFAF8FF)
+    val selectedTabColor = Color.White
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -219,7 +220,7 @@ fun Overlay(viewModel: TentaViewModel, examInfo: ExamInfo, recoveryMode: Boolean
                                         drawerState.apply { if (isClosed) open() else close() }
                                     }
                                 },
-                                modifier = Modifier.background(Color(0xFFFAF8FF), shape = RoundedCornerShape(12.dp))                            ) {
+                                modifier = Modifier.background(Color.White, shape = RoundedCornerShape(12.dp))                            ) {
                                 Icon(Icons.Filled.Menu, contentDescription = null)
                             }
                         },
@@ -330,15 +331,25 @@ fun ExamTimer(examInfo: ExamInfo, modifier: Modifier = Modifier) {
     val hours = remainingTime / (1000 * 60 * 60)
     val timeStr = String.format("%02d:%02d:%02d", hours, minutes, seconds)
 
-    Surface(
-        modifier = modifier,
-        color = Color.White,
-        shape = RoundedCornerShape(30.dp),
-        border = BorderStroke(2.dp, Color(0xFF071D4F))
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .background(Color.White, RoundedCornerShape(12.dp))
+            .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(text = timeStr, color = Color(0xFF071D4F))
-        }
+        Icon(
+            imageVector = Icons.Filled.Timer,
+            contentDescription = "Exam Timer",
+            tint = Color(0xFF071D4F),
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = timeStr,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF071D4F)
+        )
     }
 }
 
@@ -503,27 +514,49 @@ fun MenuScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp)
-                .background(Color(0xFFBEC6D9))
+                .background(Color(0xFFE4E5EF))
         ) {
-            IconButton(
-                onClick = { showInfoDialog = true },
+            Row(
                 modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = 40.dp, top = 16.dp)
-                    .size(50.dp)
-                    .border(2.dp, Color(0xFF003366), RoundedCornerShape(50))
-                    .clip(RoundedCornerShape(50))
-                    .background(Color(0xFFFAF8FF))
-                    .padding(5.dp)
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Person,
-                    contentDescription = "Profile Icon",
-                    modifier = Modifier.fillMaxSize(),
-                    tint = Color.Black
+                Spacer(modifier = Modifier.width(10.dp))
+
+                IconButton(
+                    onClick = { showInfoDialog = true },
+                    modifier = Modifier
+                        .size(50.dp)
+                        .border(2.dp, Color(0xFF003366), RoundedCornerShape(50))
+                        .clip(RoundedCornerShape(50))
+                        .background(Color(0xFFFAF8FF))
+                        .padding(5.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Person,
+                        contentDescription = "Profile Icon",
+                        modifier = Modifier.fillMaxSize(),
+                        tint = Color.Black
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+
+                ExamTimer(
+                    examInfo = examInfo,
+                    modifier = Modifier
+                        .width(130.dp)
+                        .height(50.dp)
+                        .padding(end = 12.dp)
                 )
             }
         }
+
+        Divider(
+            color = Color.LightGray,
+            thickness = 1.dp,
+            modifier = Modifier.padding(horizontal = 20.dp)
+        )
 
         Box(
             modifier = Modifier
@@ -605,14 +638,6 @@ fun MenuScreen(
             modifier = Modifier.padding(horizontal = 20.dp)
         )
 
-        ExamTimer(
-            examInfo = examInfo,
-            modifier = Modifier
-                .padding(top = 16.dp)
-                .align(Alignment.CenterHorizontally)
-                .width(200.dp)
-                .height(60.dp)
-        )
 
         OutlinedButton(
             onClick = { submitDialog = true },
@@ -623,11 +648,11 @@ fun MenuScreen(
                 .align(Alignment.CenterHorizontally),
             shape = RoundedCornerShape(30.dp),
             colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = Color(0xFF49546C), // Samma mörkblå bakgrund som första knappen
-                contentColor = Color.White,         // Vit text
+                containerColor = Color(0xFF49546C),
+                contentColor = Color.White,
                 disabledContentColor = Color.LightGray
             ),
-            border = BorderStroke(2.dp, Color(0xFF071D4F)) // Samma mörkblå kant
+            border = BorderStroke(2.dp, Color(0xFF071D4F))
         ) {
             Text(
                 text = "Submit Exam",
@@ -727,7 +752,7 @@ fun MenuScreen(
                         context = activity,
                         pdfFile = pdfFile,
                         onSuccess = {
-                            Toast.makeText(activity, "✅ Exam submitted successfully", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(activity, "Exam submitted successfully ✅", Toast.LENGTH_SHORT).show()
                             // Launch a coroutine to delay signout
                             CoroutineScope(Dispatchers.Main).launch {
                                 delay(3000) // wait
@@ -735,7 +760,7 @@ fun MenuScreen(
                             }
                         },
                         onFailure = {
-                            Toast.makeText(activity, "❌ Submission failed", Toast.LENGTH_LONG).show()
+                            Toast.makeText(activity, "Submission failed ❌", Toast.LENGTH_LONG).show()
                             // Stay on the same screen
                         }
                     )

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -51,10 +52,14 @@ import com.example.dat068_tentamina.model.Line
 import com.example.dat068_tentamina.model.TextBox
 import com.example.dat068_tentamina.viewmodel.BackgroundType
 import com.example.dat068_tentamina.viewmodel.TentaViewModel
-import com.example.dat068_tentamina.viewmodel.ToolMode
 import kotlin.math.max
 import com.mohamedrejeb.richeditor.model.RichTextState
 import kotlin.math.abs
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import com.example.dat068_tentamina.viewmodel.ToolMode
+
 
 @SuppressLint("RememberReturnType")
 @Composable
@@ -151,199 +156,204 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(verticalScrollState, enabled = isScrollMode) // Enables vertical scrolling
+                .verticalScroll(
+                    verticalScrollState,
+                    enabled = isScrollMode
+                ) // Enables vertical scrolling
                 .height(canvasHeight)
-                //.background(Color.White) --> Junyi
+            //.background(Color.White) --> Junyi
 
-        ){
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .then(
-                    if (!isScrollMode) {
-                        Modifier
-                            .pointerInput(isMarkAreaMode, isMoveMode) {
-                                if (isMarkAreaMode && !isMoveMode) {
-                                    detectDragGestures(
-                                        onDragStart = { start ->
-                                            markAreaStart = start
-                                            markAreaEnd = start
-                                        },
-                                        onDrag = { change, _ ->
-                                            change.consume()
-                                            markAreaEnd = change.position
-                                        },
-                                        onDragEnd = {
-                                            markAreaStart?.let {
-                                                markAreaEnd?.let { it1 ->
-                                                    viewModel.findObjectsInsideArea(
-                                                        it,
-                                                        it1
-                                                    )
-                                                }
-                                            }
-                                            isMoveMode = true;
-                                            viewModel.copyModeAvailable = true
-                                        }
-                                    )
-                                } else if (isMoveMode) {
-                                    detectDragGestures(
-                                        onDragStart = {
-                                            if (saveInMoveMode && !viewModel.copy.value) {
-                                                viewModel.saveHistory()
-                                                saveInMoveMode = false
-                                            }
-                                        },
-                                        onDrag = { _, dragAmount ->
-                                            markAreaStart = Offset(
-                                                x = markAreaStart!!.x + dragAmount.x,
-                                                y = markAreaStart!!.y + dragAmount.y
-                                            );
-                                            markAreaEnd = Offset(
-                                                x = markAreaEnd!!.x + dragAmount.x,
-                                                y = markAreaEnd!!.y + dragAmount.y
-                                            );
-
-                                            viewModel.moveObjects(dragAmount)
-                                        }
-                                    )
-                                } else {
-                                    detectDragGestures(
-                                        onDragStart = {
-                                            if (!viewModel.isTextMode) viewModel.saveHistory()
-                                        },
-                                        onDrag = { change, dragAmount ->
-                                            if (!viewModel.isTextMode) {
-                                                change.consume()
-                                                val start = change.position - dragAmount
-                                                val end = change.position
-
-                                                if (isInBounds(start, size) && isInBounds(
-                                                        end,
-                                                        size
-                                                    )
-                                                ) {
-                                                    val newLine = Line(
-                                                        start = start,
-                                                        end = end,
-                                                        strokeWidth = if (viewModel.isEraser) viewModel.eraserWidth else viewModel.strokeWidth,
-                                                        color = if (viewModel.isEraser) Color.White else Color.Black
-                                                    ).apply {
-                                                        if (viewModel.isEraser) cap = StrokeCap.Square
-                                                    }
-
-                                                    viewModel.addObject(newLine)
-                                                    expandCanvasIfNeeded(
-                                                        newLine,
-                                                        density,
-                                                        canvasHeight
-                                                    ) {
-                                                        canvasHeight = it
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                            .pointerInput(isMoveMode) {
-                                if (!isMoveMode) {
-                                    detectTapGestures(
-                                        onTap = { offset ->
-                                            if (viewModel.isTextMode) {
-                                                val tappedTextBox =
-                                                    findTappedTextBox(viewModel, offset)
-                                                if (tappedTextBox != null) {
-                                                    viewModel.removeObject(tappedTextBox)
-                                                    viewModel.saveHistory()
-                                                    textOffset = tappedTextBox.position
-                                                    textValue = tappedTextBox.text
-                                                } else if (textValue.isEmpty()) {
-                                                    textOffset = offset
-                                                } else {
-                                                    createTextBox(
-                                                        viewModel,
-                                                        textValue,
-                                                        textOffset,
-                                                        textMeasurer
-                                                    )
-                                                    textValue = ""
-                                                    textOffset = Offset.Zero
-                                                    viewModel.selectedTool.value = ToolMode.PEN
-                                                }
-                                            } else {
-                                                val tappedTextBox =
-                                                    findTappedTextBox(viewModel, offset)
-                                                if (tappedTextBox == null) {
-                                                    val dotLine = Line(
-                                                        start = offset,
-                                                        end = offset,
-                                                        strokeWidth = if (viewModel.eraser) viewModel.eraserWidth else viewModel.strokeWidth,
-                                                        color = if (viewModel.eraser) Color.White else Color.Black
-                                                    ).apply {
-                                                        if (viewModel.eraser) cap = StrokeCap.Square
-                                                    }
-
-                                                    viewModel.saveHistory()
-                                                    viewModel.addObject(dotLine)
-                                                    expandCanvasIfNeeded(
-                                                        dotLine,
-                                                        density,
-                                                        canvasHeight
-                                                    ) {
-                                                        canvasHeight = it
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                    } else Modifier
-                )
         ) {
-            // 1. Base white
-            drawRect(Color.White)
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (!isScrollMode) {
+                            Modifier
+                                .pointerInput(isMarkAreaMode, isMoveMode) {
+                                    if (isMarkAreaMode && !isMoveMode) {
+                                        detectDragGestures(
+                                            onDragStart = { start ->
+                                                markAreaStart = start
+                                                markAreaEnd = start
+                                            },
+                                            onDrag = { change, _ ->
+                                                change.consume()
+                                                markAreaEnd = change.position
+                                            },
+                                            onDragEnd = {
+                                                markAreaStart?.let {
+                                                    markAreaEnd?.let { it1 ->
+                                                        viewModel.findObjectsInsideArea(
+                                                            it,
+                                                            it1
+                                                        )
+                                                    }
+                                                }
+                                                isMoveMode = true;
+                                                viewModel.copyModeAvailable = true
+                                            }
+                                        )
+                                    } else if (isMoveMode) {
+                                        detectDragGestures(
+                                            onDragStart = {
+                                                if (saveInMoveMode && !viewModel.copy.value) {
+                                                    viewModel.saveHistory()
+                                                    saveInMoveMode = false
+                                                }
+                                            },
+                                            onDrag = { _, dragAmount ->
+                                                markAreaStart = Offset(
+                                                    x = markAreaStart!!.x + dragAmount.x,
+                                                    y = markAreaStart!!.y + dragAmount.y
+                                                );
+                                                markAreaEnd = Offset(
+                                                    x = markAreaEnd!!.x + dragAmount.x,
+                                                    y = markAreaEnd!!.y + dragAmount.y
+                                                );
 
-            // 2. Background (under strokes)
-            when (viewModel.currentBackgroundType) {
-                BackgroundType.GRAPH -> drawGraphPaperPattern(size)
-                BackgroundType.LINED -> drawLinedPaperPattern(size)
-                BackgroundType.DOTTED -> drawDottedPattern(size)
-                else -> {}
-            }
+                                                viewModel.moveObjects(dragAmount)
+                                            }
+                                        )
+                                    } else {
+                                        detectDragGestures(
+                                            onDragStart = {
+                                                if (!viewModel.isTextMode) viewModel.saveHistory()
+                                            },
+                                            onDrag = { change, dragAmount ->
+                                                if (!viewModel.isTextMode) {
+                                                    change.consume()
+                                                    val start = change.position - dragAmount
+                                                    val end = change.position
 
-            // 3. User content
-            viewModel.objects.forEach { it.draw(this) }
-            
-            if (isMarkAreaMode && markAreaStart != null && markAreaEnd != null) {
-                drawRect(
-                    color = Color.Gray.copy(alpha = 0.3f),
-                    topLeft = Offset(
-                        x = minOf(markAreaStart!!.x, markAreaEnd!!.x),
-                        y = minOf(markAreaStart!!.y, markAreaEnd!!.y)
-                    ),
-                    size = Size(
-                        width = abs(markAreaEnd!!.x - markAreaStart!!.x),
-                        height = abs(markAreaEnd!!.y - markAreaStart!!.y)
+                                                    if (isInBounds(start, size) && isInBounds(
+                                                            end,
+                                                            size
+                                                        )
+                                                    ) {
+                                                        val newLine = Line(
+                                                            start = start,
+                                                            end = end,
+                                                            strokeWidth = if (viewModel.isEraser) viewModel.eraserWidth else viewModel.strokeWidth,
+                                                            color = if (viewModel.isEraser) Color.White else Color.Black
+                                                        ).apply {
+                                                            if (viewModel.isEraser) cap =
+                                                                StrokeCap.Square
+                                                        }
+
+                                                        viewModel.addObject(newLine)
+                                                        expandCanvasIfNeeded(
+                                                            newLine,
+                                                            density,
+                                                            canvasHeight
+                                                        ) {
+                                                            canvasHeight = it
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                                .pointerInput(isMoveMode) {
+                                    if (!isMoveMode) {
+                                        detectTapGestures(
+                                            onTap = { offset ->
+                                                if (viewModel.isTextMode) {
+                                                    val tappedTextBox =
+                                                        findTappedTextBox(viewModel, offset)
+                                                    if (tappedTextBox != null) {
+                                                        viewModel.removeObject(tappedTextBox)
+                                                        viewModel.saveHistory()
+                                                        textOffset = tappedTextBox.position
+                                                        textValue = tappedTextBox.text
+                                                    } else if (textValue.isEmpty()) {
+                                                        textOffset = offset
+                                                    } else {
+                                                        createTextBox(
+                                                            viewModel,
+                                                            textValue,
+                                                            textOffset,
+                                                            textMeasurer
+                                                        )
+                                                        textValue = ""
+                                                        textOffset = Offset.Zero
+                                                        viewModel.selectedTool.value = ToolMode.PEN
+                                                    }
+                                                } else {
+                                                    val tappedTextBox =
+                                                        findTappedTextBox(viewModel, offset)
+                                                    if (tappedTextBox == null) {
+                                                        val dotLine = Line(
+                                                            start = offset,
+                                                            end = offset,
+                                                            strokeWidth = if (viewModel.isEraser) viewModel.eraserWidth else viewModel.strokeWidth,
+                                                            color = if (viewModel.isEraser) Color.White else Color.Black
+                                                        ).apply {
+                                                            if (viewModel.isEraser) cap =
+                                                                StrokeCap.Square
+                                                        }
+
+                                                        viewModel.saveHistory()
+                                                        viewModel.addObject(dotLine)
+                                                        expandCanvasIfNeeded(
+                                                            dotLine,
+                                                            density,
+                                                            canvasHeight
+                                                        ) {
+                                                            canvasHeight = it
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                        } else Modifier
                     )
-                )
-            } else if (!viewModel.mark) {
-                // reset start & end to initial 'null' values for the blue rectangle
-                // thus it will not be drawn next time tool is selected
-                isMoveMode = false;
-                markAreaStart = null;
-                markAreaEnd = null;
-            }
+            ) {
+                // 1. Base white
+                drawRect(Color.White)
 
-            // 4. Redraw background on top to restore erased areas
-            when (viewModel.currentBackgroundType) {
-                BackgroundType.GRAPH -> drawGraphPaperPattern(size)
-                BackgroundType.LINED -> drawLinedPaperPattern(size)
-                BackgroundType.DOTTED -> drawDottedPattern(size)
-                else -> {}
+                // 2. Background (under strokes)
+                when (viewModel.currentBackgroundType) {
+                    BackgroundType.GRAPH -> drawGraphPaperPattern(size)
+                    BackgroundType.LINED -> drawLinedPaperPattern(size)
+                    BackgroundType.DOTTED -> drawDottedPattern(size)
+                    else -> {}
+                }
+
+                // 3. User content
+                viewModel.objects.forEach { it.draw(this) }
+
+                if (isMarkAreaMode && markAreaStart != null && markAreaEnd != null) {
+                    drawRect(
+                        color = Color.Gray.copy(alpha = 0.3f),
+                        topLeft = Offset(
+                            x = minOf(markAreaStart!!.x, markAreaEnd!!.x),
+                            y = minOf(markAreaStart!!.y, markAreaEnd!!.y)
+                        ),
+                        size = Size(
+                            width = abs(markAreaEnd!!.x - markAreaStart!!.x),
+                            height = abs(markAreaEnd!!.y - markAreaStart!!.y)
+                        )
+                    )
+                } else if (!viewModel.mark) {
+                    // reset start & end to initial 'null' values for the blue rectangle
+                    // thus it will not be drawn next time tool is selected
+                    isMoveMode = false;
+                    markAreaStart = null;
+                    markAreaEnd = null;
+                }
+
+                // 4. Redraw background on top to restore erased areas
+                when (viewModel.currentBackgroundType) {
+                    BackgroundType.GRAPH -> drawGraphPaperPattern(size)
+                    BackgroundType.LINED -> drawLinedPaperPattern(size)
+                    BackgroundType.DOTTED -> drawDottedPattern(size)
+                    else -> {}
+                }
             }
-        }
         }
 //Junyi
 
@@ -379,15 +389,37 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
         CustomScrollIndicator(scrollState = verticalScrollState)
 
         // Toggle between scroll and draw modes
-        Button(
-            onClick = {
-                isScrollMode = !isScrollMode
-            },
+        Row(
             modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(60.dp)
+                .align(Alignment.TopStart)
+                .padding(start = 16.dp, top = 10.dp)
+                .clip(RoundedCornerShape(50))
+                .background(Color(0xFFE3E2E9)) // Bakgrund på hela raden
         ) {
-            Text(if (isScrollMode) "Enable Draw Mode" else "Enable Scroll Mode")
+            Text(
+                text = "Scroll",
+                modifier = Modifier
+                    .clickable { isScrollMode = true }
+                    .padding(horizontal = if (isScrollMode) 20.dp else 12.dp, vertical = 8.dp) // <-- MER padding om aktiv
+                    .background(
+                        if (isScrollMode) Color(0xFF2070B1) else Color.Transparent,
+                        RoundedCornerShape(50)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                color = if (isScrollMode) Color.White else Color.DarkGray
+            )
+            Text(
+                text = "Draw",
+                modifier = Modifier
+                    .clickable { isScrollMode = false }
+                    .padding(horizontal = if (!isScrollMode) 20.dp else 12.dp, vertical = 8.dp) // <-- MER padding om aktiv
+                    .background(
+                        if (!isScrollMode) Color(0xFF2070B1) else Color.Transparent,
+                        RoundedCornerShape(50)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                color = if (!isScrollMode) Color.White else Color.DarkGray
+            )
         }
     }
 }
@@ -415,7 +447,7 @@ fun CustomScrollIndicator(scrollState: ScrollState) {
                 .width(8.dp)
                 .fillMaxHeight(thumbHeightRatio)
                 .offset(y = (thumbOffset * adjustedHeight).dp)
-                .background(Color(0xFF2247FF))
+                .background(Color(0xFF49546C))
                 .align(Alignment.TopEnd) // Align the thumb to the top-right
         )
     }
@@ -535,5 +567,3 @@ private fun expandCanvasIfNeeded(
 private fun isInBounds(point: Offset, canvasSize: IntSize): Boolean {
     return point.x in 0f..canvasSize.width.toFloat() && point.y in 0f..canvasSize.height.toFloat()
 }
-
-

@@ -65,8 +65,8 @@ fun Login(examInfo: ExamInfo, onNavigateToExam: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginView(examInfo: ExamInfo, onNavigateToExam: () -> Unit, onNavigateToRecovery: () -> Unit) {
-    val examId = remember { mutableStateOf(TextFieldValue("")) }
-    val anonymousCode = remember { mutableStateOf(TextFieldValue("")) }
+    val examId = remember { mutableStateOf(TextFieldValue()) }
+    val anonymousCode = remember { mutableStateOf(TextFieldValue()) }
     val showAlertDialog = remember { mutableStateOf(false) }
     val errorTitle = remember { mutableStateOf("") }
     val errorMessage = remember { mutableStateOf("") }
