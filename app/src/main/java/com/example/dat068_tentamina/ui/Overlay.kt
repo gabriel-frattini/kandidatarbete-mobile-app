@@ -87,6 +87,7 @@ import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.Modifier
 import com.example.dat068_tentamina.viewmodel.BackgroundType
+import com.example.dat068_tentamina.viewmodel.ToolMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import androidx.compose.material3.Checkbox
@@ -383,10 +384,10 @@ fun ExamScreen(
 
 
 @Composable
-fun ExampageToolbar(
-    viewModel: TentaViewModel,
-    modifier: Modifier = Modifier
-) {
+fun ExampageToolbar(viewModel: TentaViewModel, modifier: Modifier = Modifier) {
+    val activeColor = Color(0xFF4A90E2)
+    val inactiveColor = Color.Black.copy(alpha = 0.7f)
+
     Card(
         modifier = modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -395,14 +396,12 @@ fun ExampageToolbar(
             modifier = Modifier.padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // Text mode button
-            IconButton(onClick = {
-                viewModel.textMode.value = true
-            }) {
+            //Text Tool (highlight if active)
+            IconButton(onClick = { viewModel.selectedTool.value = ToolMode.TEXT }) {
                 Icon(
                     painter = painterResource(id = R.drawable.text),
                     contentDescription = "Text Mode",
-                    modifier = Modifier.size(25.dp)
+                    tint = if (viewModel.isTextMode) activeColor else inactiveColor
                 )
             }
 
@@ -413,6 +412,7 @@ fun ExampageToolbar(
                 Icon(
                     painter = painterResource(id = R.drawable.highlight_alt),
                     contentDescription = "highlight_alt",
+                    tint = inactiveColor,
                     modifier = Modifier.size(30.dp)
                 )
             }
@@ -426,6 +426,7 @@ fun ExampageToolbar(
                 Icon(
                     painter = painterResource(id = R.drawable.content_copy),
                     contentDescription = "content_copy",
+                    tint = inactiveColor,
                     modifier = Modifier.size(30.dp)
                 )
             }
@@ -437,22 +438,33 @@ fun ExampageToolbar(
                 Icon(
                     painter = painterResource(id = R.drawable.delete),
                     contentDescription = "delete",
+                    tint = Color.Black.copy(alpha = 0.7f),
                     modifier = Modifier.size(30.dp)
                 )
             }
 
-            // Eraser size picker
-            IconButton(onClick = {}) {
-                SizePicker(viewModel, "eraser")
+            //Eraser (highlight if active)
+            IconButton(onClick = {
+                viewModel.selectedTool.value = ToolMode.ERASER }) {
+                SizePicker(
+                    viewModel,
+                    tool = "eraser",
+                    iconTint = if (viewModel.isEraser) activeColor else inactiveColor
+                )
             }
 
-            // Pen size picker
-            IconButton(onClick = {}) {
-                SizePicker(viewModel)
+            //Pen (highlight if active)
+            IconButton(onClick = {
+                viewModel.selectedTool.value = ToolMode.PEN }) {
+                SizePicker(
+                    viewModel,
+                    tool = "pen",
+                    iconTint = if (viewModel.isPen) activeColor else inactiveColor
+                )
             }
 
             IconButton(onClick = {}) {
-                BackgroundPicker(viewModel) //Junyi
+                BackgroundPicker(viewModel)
             }
 
             // Undo button

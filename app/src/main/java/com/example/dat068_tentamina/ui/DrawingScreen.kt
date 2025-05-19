@@ -58,6 +58,7 @@ import kotlin.math.abs
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import com.example.dat068_tentamina.viewmodel.ToolMode
 
 
 @SuppressLint("RememberReturnType")
@@ -217,10 +218,10 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                     } else {
                                         detectDragGestures(
                                             onDragStart = {
-                                                if (!viewModel.textMode.value) viewModel.saveHistory()
+                                                if (!viewModel.isTextMode) viewModel.saveHistory()
                                             },
                                             onDrag = { change, dragAmount ->
-                                                if (!viewModel.textMode.value) {
+                                                if (!viewModel.isTextMode) {
                                                     change.consume()
                                                     val start = change.position - dragAmount
                                                     val end = change.position
@@ -233,10 +234,10 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                                         val newLine = Line(
                                                             start = start,
                                                             end = end,
-                                                            strokeWidth = if (viewModel.eraser) viewModel.eraserWidth else viewModel.strokeWidth,
-                                                            color = if (viewModel.eraser) Color.White else Color.Black
+                                                            strokeWidth = if (viewModel.isEraser) viewModel.eraserWidth else viewModel.strokeWidth,
+                                                            color = if (viewModel.isEraser) Color.White else Color.Black
                                                         ).apply {
-                                                            if (viewModel.eraser) cap =
+                                                            if (viewModel.isEraser) cap =
                                                                 StrokeCap.Square
                                                         }
 
@@ -258,7 +259,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                     if (!isMoveMode) {
                                         detectTapGestures(
                                             onTap = { offset ->
-                                                if (viewModel.textMode.value) {
+                                                if (viewModel.isTextMode) {
                                                     val tappedTextBox =
                                                         findTappedTextBox(viewModel, offset)
                                                     if (tappedTextBox != null) {
@@ -277,8 +278,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                                         )
                                                         textValue = ""
                                                         textOffset = Offset.Zero
-                                                        viewModel.textMode.value = false
-                                                        viewModel.eraser = false
+                                                        viewModel.selectedTool.value = ToolMode.PEN
                                                     }
                                                 } else {
                                                     val tappedTextBox =
@@ -287,10 +287,10 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                                                         val dotLine = Line(
                                                             start = offset,
                                                             end = offset,
-                                                            strokeWidth = if (viewModel.eraser) viewModel.eraserWidth else viewModel.strokeWidth,
-                                                            color = if (viewModel.eraser) Color.White else Color.Black
+                                                            strokeWidth = if (viewModel.isEraser) viewModel.eraserWidth else viewModel.strokeWidth,
+                                                            color = if (viewModel.isEraser) Color.White else Color.Black
                                                         ).apply {
-                                                            if (viewModel.eraser) cap =
+                                                            if (viewModel.isEraser) cap =
                                                                 StrokeCap.Square
                                                         }
 
@@ -357,7 +357,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
         }
 //Junyi
 
-        if (viewModel.textMode.value && textOffset != Offset.Zero) {
+        if (viewModel.isTextMode && textOffset != Offset.Zero) {
             var adjustedOffset = Offset(
                 textOffset.x / density,
                 (textOffset.y - verticalScrollState.value) / density
@@ -381,8 +381,7 @@ fun DrawingScreen(viewModel: TentaViewModel, examInfo : ExamInfo, recoveryMode :
                     }
                     textValue = ""
                     adjustedOffset = Offset.Zero
-                    viewModel.textMode.value = false
-                    viewModel.eraser = false
+                    viewModel.selectedTool.value = ToolMode.PEN
                 }
             )
         }
@@ -568,5 +567,3 @@ private fun expandCanvasIfNeeded(
 private fun isInBounds(point: Offset, canvasSize: IntSize): Boolean {
     return point.x in 0f..canvasSize.width.toFloat() && point.y in 0f..canvasSize.height.toFloat()
 }
-
-
